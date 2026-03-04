@@ -21,23 +21,8 @@ class Install {
 	 * @return void
 	 */
 	public function init() {
-
-		$this->install_pages();
 		$this->install_tables();
 		$this->insert_data();
-	}
-
-	/**
-	 * Install the pages
-	 *
-	 * @return void
-	 */
-	private function install_pages() {
-		c24_install_page(
-			Template::FRONTEND_TEMPLATE_NAME,
-			Template::FRONTEND_TEMPLATE_SLUG,
-			Template::FRONTEND_TEMPLATE
-		);
 	}
 
 	/**

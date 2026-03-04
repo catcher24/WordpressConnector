@@ -22,7 +22,7 @@ class Admin {
 	/**
 	 * Script handle for Catcher24\WordPress_Connector.
 	 */
-	const HANDLE = 'wordpress-plugin-boilerplate';
+	const HANDLE = 'catcher24-wordpress-connector';
 
 	/**
 	 * JS Object name for Catcher24\WordPress_Connector.
@@ -40,7 +40,7 @@ class Admin {
 	 * @var array
 	 */
 	private $allowed_screens = array(
-		'toplevel_page_wordpress-plugin-boilerplate',
+		'toplevel_page_catcher24-wordpress-connector',
 	);
 
 	/**

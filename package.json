@@ -1,5 +1,5 @@
 {
-  "name": "wordpress-plugin-boilerplate",
+  "name": "catcher24-wordpress-connector",
   "version": "1.0.0",
   "type": "module",
   "packageManager": "pnpm@10.30.0",
@@ -12,7 +12,7 @@
     "dev": "npm run dev:admin",
     "dev:admin": "vite -c vite.admin.config.js",
     "dev:all": "concurrently \"npm run dev\" \"npm run block:start\"",
-    "dev:server": "concurrently \"npm run dev\" \"npx @wp-now/wp-now start\"",
+    "dev:server": "concurrently \"npm run dev\" \"npx @wp-now/wp-now start --php=8.3 \"",
     "build": "vite build -c vite.admin.config.js && npm run block:build",
     "preview": "vite preview",
     "format:check": "prettier --check catcher24-wordpress-connector",
@@ -22,7 +22,7 @@
     "release": "npm run build && grunt release",
     "rename": "grunt rename --force && npm run change-text-domain && composer dump-autoload",
     "change-text-domain": "grunt change-text-domain --force",
-    "i18n": "wp i18n make-pot catcher24-wordpress-connector languages/wordpress-plugin-boilerplate.pot --domain=wordpress-plugin-boilerplate --exclude='*/js/*,build'",
+    "i18n": "wp i18n make-pot catcher24-wordpress-connector languages/catcher24-wordpress-connector.pot --domain=catcher24-wordpress-connector --exclude='*/js/*,build'",
     "block:start": "wp-scripts start --webpack-src-dir=src/blocks/block-1 --output-path=assets/blocks/block-1",
     "block:build": "wp-scripts build --webpack-src-dir=src/blocks/block-1 --output-path=assets/blocks/block-1"
   },

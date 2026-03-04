@@ -17,7 +17,7 @@ class Template {
 
 	const FRONTEND_TEMPLATE      = 'frontend-template.php';
 	const FRONTEND_TEMPLATE_NAME = 'Catcher24\WordPress_Connector';
-	const FRONTEND_TEMPLATE_SLUG = 'wordpress-plugin-boilerplate';
+	const FRONTEND_TEMPLATE_SLUG = 'catcher24-wordpress-connector';
 
 	/**
 	 * Initialize the class.

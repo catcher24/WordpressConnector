@@ -20,7 +20,7 @@ class Menu {
 	 *
 	 * @var string
 	 */
-	private $parent_slug = 'wordpress-plugin-boilerplate';
+	private $parent_slug = 'catcher24-wordpress-connector';
 
 	/**
 	 * Initializes the admin menu.
@@ -40,8 +40,8 @@ class Menu {
 	public function menu() {
 
 		add_menu_page(
-			__( 'MyPlugin', 'wordpress-plugin-boilerplate' ),
-			__( 'MyPlugin', 'wordpress-plugin-boilerplate' ),
+			__( 'Catcher24', 'catcher24-wordpress-connector' ),
+			__( 'Catcher24', 'catcher24-wordpress-connector' ),
 			'manage_options',
 			$this->parent_slug,
 			array( $this, 'admin_page' ),
@@ -60,16 +60,16 @@ class Menu {
 		$submenu_pages = array(
 			array(
 				'parent_slug' => $this->parent_slug,
-				'page_title'  => __( 'Dashboard', 'wordpress-plugin-boilerplate' ),
-				'menu_title'  => __( 'Dashboard', 'wordpress-plugin-boilerplate' ),
+				'page_title'  => __( 'Dashboard', 'catcher24-wordpress-connector' ),
+				'menu_title'  => __( 'Dashboard', 'catcher24-wordpress-connector' ),
 				'capability'  => 'manage_options',
 				'menu_slug'   => $this->parent_slug,
 				'function'    => array( $this, 'admin_page' ), // Uses the same callback function as parent menu.
 			),
 			array(
 				'parent_slug' => $this->parent_slug,
-				'page_title'  => __( 'Inbox', 'wordpress-plugin-boilerplate' ),
-				'menu_title'  => __( 'Inbox', 'wordpress-plugin-boilerplate' ),
+				'page_title'  => __( 'Inbox', 'catcher24-wordpress-connector' ),
+				'menu_title'  => __( 'Inbox', 'catcher24-wordpress-connector' ),
 				'capability'  => 'manage_options',
 				'menu_slug'   => $plugin_url . '/#/inbox',
 				'function'    => null, // Uses the same callback function as parent menu.
@@ -77,8 +77,8 @@ class Menu {
 
 			array(
 				'parent_slug' => $this->parent_slug,
-				'page_title'  => __( 'Chart', 'wordpress-plugin-boilerplate' ),
-				'menu_title'  => __( 'Chart', 'wordpress-plugin-boilerplate' ),
+				'page_title'  => __( 'Chart', 'catcher24-wordpress-connector' ),
+				'menu_title'  => __( 'Chart', 'catcher24-wordpress-connector' ),
 				'capability'  => 'manage_options',
 				'menu_slug'   => $plugin_url . '/#/charts',
 				'function'    => null, // Uses the same callback function as parent menu.
@@ -86,8 +86,8 @@ class Menu {
 
 			array(
 				'parent_slug' => $this->parent_slug,
-				'page_title'  => __( 'Settings', 'wordpress-plugin-boilerplate' ),
-				'menu_title'  => __( 'Settings', 'wordpress-plugin-boilerplate' ),
+				'page_title'  => __( 'Settings', 'catcher24-wordpress-connector' ),
+				'menu_title'  => __( 'Settings', 'catcher24-wordpress-connector' ),
 				'capability'  => 'manage_options',
 				'menu_slug'   => $plugin_url . '/#/settings',
 				'function'    => null, // Uses the same callback function as parent menu.

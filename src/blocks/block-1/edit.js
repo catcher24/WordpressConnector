@@ -32,7 +32,7 @@ import './editor.scss';
 export default function Edit() {
 	return (
 		<p { ...useBlockProps() }>
-			{ __( 'Hello from the editor!', 'wordpress-plugin-boilerplate' ) }
+			{ __( 'Hello from the editor!', 'catcher24-wordpress-connector' ) }
 		</p>
 	);
 }

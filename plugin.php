@@ -2,7 +2,6 @@
 use Catcher24\WordPress_Connector\Core\Api;
 use Catcher24\WordPress_Connector\Admin\Menu;
 use Catcher24\WordPress_Connector\Core\Template;
-use Catcher24\WordPress_Connector\Assets\Frontend;
 use Catcher24\WordPress_Connector\Assets\Admin;
 use Catcher24\WordPress_Connector\Traits\Base;
 
@@ -11,7 +10,7 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Class Catcher24_Wordpress_Connector
  *
- * The main class for the Coldmailar plugin, responsible for initialization and setup.
+ * The main class for the Catcher24 wordpress connector plugin, responsible for initialization and setup.
  *
  * @since 1.0.0
  */
@@ -31,7 +30,7 @@ final class Catcher24_Wordpress_Connector {
 		define( 'CATCHER24_DIR', plugin_dir_path( __FILE__ ) );
 		define( 'CATCHER24_URL', plugin_dir_url( __FILE__ ) );
 		define( 'CATCHER24_ASSETS_URL', CATCHER24_URL . '/assets' );
-		define( 'CATCHER24_ROUTE_PREFIX', 'wordpress-plugin-boilerplate/v1' );
+		define( 'CATCHER24_ROUTE_PREFIX', 'catcher24-wordpress-connector/v1' );
 	}
 
 	/**
@@ -49,9 +48,8 @@ final class Catcher24_Wordpress_Connector {
 		}
 
 		// Initialze core functionalities.
-		Frontend::get_instance()->bootstrap();
 		API::get_instance()->init();
-		Template::get_instance()->init();
+    Template::get_instance()->init();
 
 		add_action( 'init', array( $this, 'i18n' ) );
 		add_action( 'init', array( $this, 'register_blocks' ) );
@@ -71,6 +69,6 @@ final class Catcher24_Wordpress_Connector {
 	 * @return void
 	 */
 	public function i18n() {
-		load_plugin_textdomain( 'wordpress-plugin-boilerplate', false, dirname( plugin_basename( __FILE__ ) ) . '/languages/' );
+		load_plugin_textdomain( 'catcher24-wordpress-connector', false, dirname( plugin_basename( __FILE__ ) ) . '/languages/' );
 	}
 }
