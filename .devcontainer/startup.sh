@@ -35,5 +35,11 @@ echo $DOCKER_REGISTRY > ~/.docker/config.json
 chmod 700 ~/.docker
 chmod 600 ~/.docker/config.json
 
+log "INFO" "Installing"
+
+composer install
+
+pnpm install
+
 log "INFO" "Startup script execution completed successfully."
 exit 0

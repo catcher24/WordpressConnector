@@ -36,7 +36,7 @@ RUN curl -fsSL https://get.docker.com | sh
 
 RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
     apt-get install -y nodejs && \
-    npm install --global yarn
+    npm install --global yarn pnpm
 
 RUN /bin/bash -c "$(curl -fsSL dub.sh/plugkit/linux)"
 

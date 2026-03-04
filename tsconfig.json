@@ -1,0 +1,27 @@
+{
+  "include": [
+    "vite.admin.config.js",
+    "src/**/*"
+  ],
+  "compilerOptions": {
+    "allowJs": true,
+    "baseUrl": "./catcher24-wordpress-connector",
+    "paths": {
+      "@/*": [
+        "./src/*"
+      ]
+    },
+    "checkJs": true,
+    "declaration": true,
+    "esModuleInterop": true,
+    "jsx": "react-jsx",
+    "module": "ES2022",
+    "moduleResolution": "Node",
+    "noEmit": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "sourceMap": true,
+    "strict": true,
+    "target": "ES2020"
+  }
+}
