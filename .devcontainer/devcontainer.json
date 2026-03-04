@@ -1,0 +1,23 @@
+{
+  "name": "WP Plugin Boilerplate",
+  "build": {
+    "dockerfile": "Dockerfile"
+  },
+  "onCreateCommand": "/on-create.sh",
+  "customizations": {
+    "jetbrains": {
+      "settings": {
+        "org.jetbrains.plugins.github:app:GithubSettings.clone_git_using_ssh": true,
+        "JavaScript:app:JSEditorOptions.automatically_replace_with_template_string_on_typing": false,
+        "JavaScript:app:JSEditorOptions.escape_pasted_text": false,
+        "JavaScript:app:JSEditorOptions.escape_doc_on_copy_paste": false,
+        "com.intellij:app:JsonEditorOptions.comma_on_enter": false,
+        "com.intellij:app:JsonEditorOptions.comma_on_matching_braces": false,
+        "com.intellij:app:JsonEditorOptions.comma_on_paste": false,
+        "com.intellij:app:JsonEditorOptions.auto_quote_prop_name": false,
+        "com.intellij:app:JsonEditorOptions.auto_whitespace_after_colon": false,
+        "com.intellij:app:JsonEditorOptions.escape_pasted_text": false
+      }
+    }
+  }
+}
