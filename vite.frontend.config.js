@@ -15,7 +15,7 @@ export default {
   },
   plugins: [
     v4wp({
-      input: "src/frontend/main.jsx",
+      input: "src/frontend/main.tsx",
       outDir: "assets/frontend/dist",
     }),
     // wp_scripts(),

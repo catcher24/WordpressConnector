@@ -5,23 +5,19 @@
   ],
   "compilerOptions": {
     "allowJs": true,
-    "baseUrl": "./catcher24-wordpress-connector",
-    "paths": {
-      "@/*": [
-        "./src/*"
-      ]
-    },
+    "baseUrl": "./",
     "checkJs": true,
-    "declaration": true,
+    "declaration": false,
     "esModuleInterop": true,
     "jsx": "react-jsx",
     "module": "ES2022",
-    "moduleResolution": "Node",
+    "moduleResolution": "Bundler",
     "noEmit": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "sourceMap": true,
     "strict": true,
-    "target": "ES2020"
+    "target": "ES2020",
+    "skipLibCheck": true
   }
 }

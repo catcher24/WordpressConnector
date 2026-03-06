@@ -2,84 +2,48 @@
 
 namespace Catcher24\WordPress_Connector\Controllers\Accounts;
 
-/**
- * Class Messages
- *
- * Provides static methods to generate standardized messages related to accounts actions.
- *
- * @package Catcher24\WordPress_Connector\Controllers\Accounts
- */
 class Messages {
+	public static function success_signin( $accessToken, $refreshToken ) {
+		return array(
+			'status'        => 'success',
+			'access_token'  => $accessToken,
+			'refresh_token' => $refreshToken,
+		);
+	}
 
-	/**
-	 * Returns an error message for account existence.
-	 *
-	 * @return array
-	 */
-	public static function error_account_exists() {
+	public static function error_auth_failed( $error ) {
 		return array(
 			'status'  => 'error',
-			'message' => 'account already exists',
+			'message' => 'Authentication failed: ' . $error,
 		);
 	}
 
-	/**
-	 * Returns a success message for account creation.
-	 *
-	 * @return array
-	 */
-	public static function success_acount_created() {
-		return array(
-			'status'  => 'success',
-			'message' => 'account created',
-		);
-	}
-
-	/**
-	 * Returns a success message for account deletion.
-	 *
-	 * @return array
-	 */
-	public static function success_account_deleted() {
-		return array(
-			'status'  => 'success',
-			'message' => 'account deleted successfully',
-		);
-	}
-
-	/**
-	 * Returns an error message for account deletion failure.
-	 *
-	 * @return array
-	 */
-	public static function error_account_deleted() {
+	public static function error_missing_token() {
 		return array(
 			'status'  => 'error',
-			'message' => 'unable to delete account',
+			'message' => 'Missing authorization token.',
 		);
 	}
 
-	/**
-	 * Returns a success message for account update.
-	 *
-	 * @return array
-	 */
-	public static function success_account_update() {
+	public static function user_data( $data ) {
 		return array(
-			'status'  => 'success',
-			'message' => 'account updated successfully',
+			'status' => 'success',
+			'data'   => $data,
 		);
 	}
 
-	/**
-	 * Returns an error message for account update failure.
-	 *
-	 * @return array
-	 */
-	public static function error_account_update() {
+	public static function error_user_details_failed( $error ) {
 		return array(
 			'status'  => 'error',
-			'message' => 'unable to update account',
+			'message' => 'Failed to fetch user details: ' . $error,
+		);
+	}
+
+	public static function success_signout( $logoutUrl ) {
+		return array(
+			'status'     => 'success',
+			'message'    => 'Signed out successfully.',
+			'logout_url' => $logoutUrl,
 		);
 	}
 }

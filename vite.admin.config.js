@@ -15,7 +15,7 @@ export default {
   },
   plugins: [
     v4wp({
-      input: "src/admin/main.jsx",
+      input: "src/admin/main.tsx",
       outDir: "assets/admin/dist",
     }),
     // wp_scripts(),

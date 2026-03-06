@@ -2,127 +2,109 @@
 
 namespace Catcher24\WordPress_Connector\Controllers\Accounts;
 
-use Catcher24\WordPress_Connector\Models\Accounts;
+use Catcher24\WordPress_Connector\Libs\API\KeycloakPKCEProvider;
+use League\OAuth2\Client\Provider\AbstractProvider;
+use Exception;
+use WP_REST_Request;
 
-/**
- * Class Actions
- *
- * Handles account-related actions such as creation, retrieval, deletion, and update.
- *
- * @package Catcher24\WordPress_Connector\Controllers\Accounts
- */
 class Actions {
 
-	/**
-	 * Gmail SMTP host.
-	 *
-	 * @var string
-	 */
-	const GMAIL_SMPT_HOST = 'smtp.gmail.com';
+	private function get_provider() {
+		$provider = new KeycloakPKCEProvider([
+			'authServerUrl' => 'https://auth.dev.catcher24.net',
+			'realm'         => '3efa9fb5-41e4-4695-85c1-44d9dc256c0a',
+			'clientId'      => 'wordpress-connector',
+			'redirectUri'   => rest_url( CATCHER24_ROUTE_PREFIX . '/accounts/callback' ),
+			'pkceMethod'    => AbstractProvider::PKCE_METHOD_S256,
+		]);
 
-	/**
-	 * Outlook SMTP host.
-	 *
-	 * @var string
-	 */
-	const OUTLOOK_SMPT_HOST = 'smtp-mail.outlook.com';
+		// Force Guzzle to use WordPress's bundled certificates
+		$httpClient = new \GuzzleHttp\Client([
+			'verify' => ABSPATH . WPINC . '/certificates/ca-bundle.crt',
+		]);
 
-	/**
-	 * Gmail port.
-	 *
-	 * @var int
-	 */
-	const GMAIL_PORT = 465;
+		$provider->setHttpClient( $httpClient );
 
-	/**
-	 * Outlook port.
-	 *
-	 * @var int
-	 */
-	const OUTLOOK_PORT = 587;
+		return $provider;
+	}
 
-	/**
-	 * Creates a new account based on the provided request.
-	 *
-	 * @param \WP_REST_Request $request The REST request object.
-	 * @return array The response message.
-	 */
-	public function create( \WP_REST_Request $request ) {
-		if ( Accounts::where(
-			'email',
-			$request->get_param( 'email' )
-		)->exists() ) {
-			return Messages::error_account_exists();
+// ONLY handles sending the user to Keycloak
+	public function signin( WP_REST_Request $request ) {
+		$provider = $this->get_provider();
+		$authUrl = $provider->getAuthorizationUrl([
+			'scope' => 'openid profile email'
+		]);
+		$pkce     = $provider->getPkceCode();
+
+		set_transient( 'oauth2_state_' . $provider->getState(), $pkce, 15 * MINUTE_IN_SECONDS );
+
+		wp_redirect( $authUrl );
+		exit;
+	}
+
+	// ONLY handles the return trip from Keycloak
+	public function callback( WP_REST_Request $request ) {
+		$provider = $this->get_provider();
+		$code     = $request->get_param( 'code' );
+		$state    = $request->get_param( 'state' );
+
+		if ( empty( $code ) ) {
+			return Messages::error_auth_failed( 'Authorization code missing. Your server might be stripping query parameters.' );
 		}
 
-		if ( $this->add( $request ) ) {
-			return Messages::success_acount_created();
+		$saved_pkce = get_transient( 'oauth2_state_' . $state );
+
+		if ( empty( $state ) || ! $saved_pkce ) {
+			return Messages::error_auth_failed( 'Invalid state or expired session.' );
 		}
-	}
 
-	/**
-	 * Adds a new account to the database.
-	 *
-	 * @param \WP_REST_Request $request The REST request object.
-	 * @return void
-	 */
-	public function add( $request ) {
-		$account             = new Accounts();
-		$account->host       = self::GMAIL_SMPT_HOST;
-		$account->port       = self::GMAIL_PORT;
-		$account->first_name = $request->get_param( 'firstName' );
-		$account->last_name  = $request->get_param( 'lastName' );
-		$account->email      = $request->get_param( 'email' );
-		$account->password   = $request->get_param( 'appPassword' );
-		$account->save();
-	}
-
-	/**
-	 * Retrieves all accounts from the database.
-	 *
-	 * @return mixed The list of accounts.
-	 */
-	public function get() {
-		return Accounts::all();
-	}
-
-	/**
-	 * Deletes an account based on the provided request.
-	 *
-	 * @param \WP_REST_Request $request The REST request object.
-	 * @return array The response message.
-	 */
-	public function delete( \WP_REST_Request $request ) {
-		$id = $request->get_param( 'id' ); // Account ID requested to delete.
-		try {
-			Accounts::where( 'id', $id )->delete();
-			return Messages::success_account_deleted();
-		} catch ( \Exception $e ) {
-			return Messages::error_account_deleted();
-		}
-	}
-
-	/**
-	 * Updates an account based on the provided request.
-	 *
-	 * @param \WP_REST_Request $request The REST request object.
-	 * @return array The response message.
-	 */
-	public function update( \WP_REST_Request $request ) {
-		$id = $request->get_param( 'id' );
+		delete_transient( 'oauth2_state_' . $state );
 
 		try {
-			Accounts::where( 'id', $id )->update(
-				array(
-					'first_name' => $request->get_param( 'firstName' ),
-					'last_name'  => $request->get_param( 'lastName' ),
-					'email'      => $request->get_param( 'email' ),
-					'password'   => $request->get_param( 'appPassword' ),
-				)
-			);
-			return Messages::success_account_update();
-		} catch ( \Exception $e ) {
-			return Messages::error_account_update();
+			$provider->setPkceCode( $saved_pkce );
+
+			$token = $provider->getAccessToken( 'authorization_code', [
+				'code' => $code
+			] );
+
+			$user      = $provider->getResourceOwner( $token );
+			$user_data = $user->toArray();
+			$email     = $user_data['email'] ?? null;
+
+			if ( ! $email ) {
+				throw new Exception( 'Email not provided by identity provider.' );
+			}
+
+			$account_data = [
+				'email'         => $email,
+				'first_name'    => $user_data['given_name'] ?? '',
+				'last_name'     => $user_data['family_name'] ?? '',
+				'access_token'  => $token->getToken(),
+				'refresh_token' => $token->getRefreshToken(),
+				'expires'       => $token->getExpires(),
+			];
+
+			update_option( 'catcher24_saas_connection', $account_data );
+
+			// Redirect back to the React Dashboard
+			$react_app_url = admin_url( 'admin.php?page=catcher24-wordpress-connecto#/dashboard' );
+			wp_redirect( $react_app_url );
+			exit;
+
+		} catch ( Exception $e ) {
+			return Messages::error_auth_failed( $e->getMessage() );
 		}
+	}
+
+	public function status() {
+		$account = get_option( 'catcher24_saas_connection' );
+		$is_connected = ! empty( $account['access_token'] );
+
+		return Messages::connection_status( $is_connected );
+	}
+
+	public function disconnect() {
+		delete_option( 'catcher24_saas_connection' );
+		return Messages::success_signout();
 	}
 }

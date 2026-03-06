@@ -27,12 +27,12 @@ class Admin {
 	/**
 	 * JS Object name for Catcher24\WordPress_Connector.
 	 */
-	const OBJ_NAME = 'wordpressPluginBoilerplate';
+	const OBJ_NAME = 'catcher24WordpressConnector';
 
 	/**
 	 * Development script path for Catcher24\WordPress_Connector.
 	 */
-	const DEV_SCRIPT = 'src/admin/main.jsx';
+	const DEV_SCRIPT = 'src/admin/main.tsx';
 
 	/**
 	 * List of allowed screens for script enqueue.
@@ -103,9 +103,9 @@ class Admin {
 	public function get_data() {
 
 		return array(
-			'developer' => 'prappo',
+			'developer' => 'catcher24',
 			'isAdmin'   => is_admin(),
-			'apiUrl'    => rest_url(),
+			'apiUrl'    => rest_url(CATCHER24_ROUTE_PREFIX),
 			'userInfo'  => $this->get_user_data(),
 		);
 	}
@@ -116,23 +116,16 @@ class Admin {
 	 * @return array The user data.
 	 */
 	private function get_user_data() {
-		$username   = '';
-		$avatar_url = '';
+		$account = get_option( 'catcher24_saas_connection' );
 
-		if ( is_user_logged_in() ) {
-			// Get current user's data .
-			$current_user = wp_get_current_user();
-
-			// Get username.
-			$username = $current_user->user_login; // or use user_nicename, display_name, etc.
-
-			// Get avatar URL.
-			$avatar_url = get_avatar_url( $current_user->ID );
+		if ( empty( $account ) ) {
+			return null;
 		}
 
 		return array(
-			'username' => $username,
-			'avatar'   => $avatar_url,
+			'email'      => $account['email'] ?? '',
+			'first_name' => $account['first_name'] ?? '',
+			'last_name'  => $account['last_name'] ?? '',
 		);
 	}
 }

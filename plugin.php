@@ -30,7 +30,7 @@ final class Catcher24_Wordpress_Connector {
 		define( 'CATCHER24_DIR', plugin_dir_path( __FILE__ ) );
 		define( 'CATCHER24_URL', plugin_dir_url( __FILE__ ) );
 		define( 'CATCHER24_ASSETS_URL', CATCHER24_URL . '/assets' );
-		define( 'CATCHER24_ROUTE_PREFIX', 'catcher24-wordpress-connector/v1' );
+		define( 'CATCHER24_ROUTE_PREFIX', 'catcher24/v1' );
 	}
 
 	/**

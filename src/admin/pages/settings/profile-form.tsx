@@ -1,30 +1,16 @@
 "use client"
 
+import { useRef } from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { useFieldArray, useForm } from "react-hook-form"
+import { useFieldArray, useForm, Controller } from "react-hook-form"
 import { z } from "zod"
 
 import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form"
-import { Input } from "@/components/ui/input"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
-import { Textarea } from "@/components/ui/textarea"
-import { toast } from "@/components/ui/use-toast"
+import { InputText } from "primereact/inputtext"
+import { Dropdown } from "primereact/dropdown"
+import { InputTextarea } from "primereact/inputtextarea"
+import { Button } from "primereact/button"
+import { Toast } from "primereact/toast"
 
 const profileFormSchema = z.object({
   username: z
@@ -52,7 +38,6 @@ const profileFormSchema = z.object({
 
 type ProfileFormValues = z.infer<typeof profileFormSchema>
 
-// This can come from your database or API.
 const defaultValues: Partial<ProfileFormValues> = {
   bio: "I own a computer.",
   urls: [
@@ -61,7 +46,15 @@ const defaultValues: Partial<ProfileFormValues> = {
   ],
 }
 
+const emailOptions = [
+  { label: "m@example.com", value: "m@example.com" },
+  { label: "m@google.com", value: "m@google.com" },
+  { label: "m@support.com", value: "m@support.com" },
+]
+
 export function ProfileForm() {
+  const toast = useRef<Toast>(null)
+
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileFormSchema),
     defaultValues,
@@ -74,117 +67,140 @@ export function ProfileForm() {
   })
 
   function onSubmit(data: ProfileFormValues) {
-    toast({
-      title: "You submitted the following values:",
-      description: (
-        <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
-          <code className="text-white">{JSON.stringify(data, null, 2)}</code>
-        </pre>
-      ),
+    toast.current?.show({
+      severity: "success",
+      summary: "You submitted the following values:",
+      detail: JSON.stringify(data, null, 2),
+      life: 5000,
     })
   }
 
   return (
-    <Form {...form}>
+    <>
+      <Toast ref={toast} position="top-center" />
+
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-        <FormField
-          control={form.control}
-          name="username"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Username</FormLabel>
-              <FormControl>
-                <Input placeholder="shadcn" {...field} />
-              </FormControl>
-              <FormDescription>
-                This is your public display name. It can be your real name or a
-                pseudonym. You can only change this once every 30 days.
-              </FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="email"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Email</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select a verified email to display" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  <SelectItem value="m@example.com">m@example.com</SelectItem>
-                  <SelectItem value="m@google.com">m@google.com</SelectItem>
-                  <SelectItem value="m@support.com">m@support.com</SelectItem>
-                </SelectContent>
-              </Select>
-              <FormDescription>
-                You can manage verified email addresses in your{" "}
-                <a href="/examples/forms">email settings</a>.
-              </FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="bio"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Bio</FormLabel>
-              <FormControl>
-                <Textarea
-                  placeholder="Tell us a little bit about yourself"
-                  className="resize-none"
+        <div className="flex flex-col gap-2">
+          <label htmlFor="username" className="text-sm font-medium">Username</label>
+          <Controller
+            name="username"
+            control={form.control}
+            render={({ field, fieldState }) => (
+              <>
+                <InputText
+                  id={field.name}
+                  placeholder="shadcn"
+                  className={cn("w-full", fieldState.invalid && "p-invalid")}
                   {...field}
                 />
-              </FormControl>
-              <FormDescription>
-                You can <span>@mention</span> other users and organizations to
-                link to them.
-              </FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+                <small className="text-muted-foreground">
+                  This is your public display name. It can be your real name or a
+                  pseudonym. You can only change this once every 30 days.
+                </small>
+                {fieldState.error && (
+                  <small className="text-red-500 font-medium">{fieldState.error.message}</small>
+                )}
+              </>
+            )}
+          />
+        </div>
+
+        <div className="flex flex-col gap-2">
+          <label htmlFor="email" className="text-sm font-medium">Email</label>
+          <Controller
+            name="email"
+            control={form.control}
+            render={({ field, fieldState }) => (
+              <>
+                <Dropdown
+                  id={field.name}
+                  value={field.value}
+                  onChange={(e) => field.onChange(e.value)}
+                  options={emailOptions}
+                  placeholder="Select a verified email to display"
+                  className={cn("w-full", fieldState.invalid && "p-invalid")}
+                />
+                <small className="text-muted-foreground">
+                  You can manage verified email addresses in your{" "}
+                  <a href="/examples/forms" className="underline">email settings</a>.
+                </small>
+                {fieldState.error && (
+                  <small className="text-red-500 font-medium">{fieldState.error.message}</small>
+                )}
+              </>
+            )}
+          />
+        </div>
+
+        <div className="flex flex-col gap-2">
+          <label htmlFor="bio" className="text-sm font-medium">Bio</label>
+          <Controller
+            name="bio"
+            control={form.control}
+            render={({ field, fieldState }) => (
+              <>
+                <InputTextarea
+                  id={field.name}
+                  placeholder="Tell us a little bit about yourself"
+                  autoResize
+                  rows={3}
+                  className={cn("w-full resize-none", fieldState.invalid && "p-invalid")}
+                  {...field}
+                />
+                <small className="text-muted-foreground">
+                  You can <span>@mention</span> other users and organizations to
+                  link to them.
+                </small>
+                {fieldState.error && (
+                  <small className="text-red-500 font-medium">{fieldState.error.message}</small>
+                )}
+              </>
+            )}
+          />
+        </div>
+
         <div>
           {fields.map((field, index) => (
-            <FormField
-              control={form.control}
-              key={field.id}
-              name={`urls.${index}.value`}
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className={cn(index !== 0 && "sr-only")}>
-                    URLs
-                  </FormLabel>
-                  <FormDescription className={cn(index !== 0 && "sr-only")}>
-                    Add links to your website, blog, or social media profiles.
-                  </FormDescription>
-                  <FormControl>
-                    <Input {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            <div key={field.id} className="flex flex-col gap-2 mb-4">
+              <label
+                htmlFor={`urls.${index}.value`}
+                className={cn("text-sm font-medium", index !== 0 && "sr-only")}
+              >
+                URLs
+              </label>
+              <small className={cn("text-muted-foreground", index !== 0 && "sr-only")}>
+                Add links to your website, blog, or social media profiles.
+              </small>
+              <Controller
+                name={`urls.${index}.value`}
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <>
+                    <InputText
+                      id={field.name}
+                      className={cn("w-full", fieldState.invalid && "p-invalid")}
+                      {...field}
+                    />
+                    {fieldState.error && (
+                      <small className="text-red-500 font-medium">{fieldState.error.message}</small>
+                    )}
+                  </>
+                )}
+              />
+            </div>
           ))}
           <Button
             type="button"
-            variant="outline"
-            size="sm"
+            label="Add URL"
+            outlined
+            size="small"
             className="mt-2"
             onClick={() => append({ value: "" })}
-          >
-            Add URL
-          </Button>
+          />
         </div>
-        <Button type="submit">Update profile</Button>
+
+        <Button type="submit" label="Update profile" />
       </form>
-    </Form>
+    </>
   )
 }

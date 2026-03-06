@@ -16,11 +16,10 @@ Route::prefix(
 	function ( Route $route ) {
 
 		// Define accounts API routes.
-
-		$route->post( '/accounts/create', '\Catcher24\WordPress_Connector\Controllers\Accounts\Actions@create' );
-		$route->get( '/accounts/get', '\Catcher24\WordPress_Connector\Controllers\Accounts\Actions@get' );
-		$route->post( '/accounts/delete', '\Catcher24\WordPress_Connector\Controllers\Accounts\Actions@delete' );
-		$route->post( '/accounts/update', '\Catcher24\WordPress_Connector\Controllers\Accounts\Actions@update' );
+		$route->get( '/accounts/signin', '\Catcher24\WordPress_Connector\Controllers\Accounts\Actions@signin' );
+		$route->get( '/accounts/callback', '\Catcher24\WordPress_Connector\Controllers\Accounts\Actions@callback' );
+		$route->get( '/accounts/status', '\Catcher24\WordPress_Connector\Controllers\Accounts\Actions@status' );
+		$route->post( '/accounts/disconnect', '\Catcher24\WordPress_Connector\Controllers\Accounts\Actions@disconnect' );
 
 		// Posts routes.
 		$route->get( '/posts/get', '\Catcher24\WordPress_Connector\Controllers\Posts\Actions@get_all_posts' );

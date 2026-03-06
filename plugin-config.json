@@ -3,13 +3,13 @@
     "plugin_description":"A boilerplate for WordPress plugins.",
     "plugin_version":"1.0.0",
     "plugin_file_name":"catcher24-wordpress-connector.php",
-    "author_name":"Prappo",
-    "author_uri":"https://prappo.github.io",
+    "author_name":"Catcher24",
+    "author_uri":"https://catcher24.com",
     "text_domain":"catcher24-wordpress-connector",
     "domain_path":"/languages",
-    "main_class_name":"WordPressPluginBoilerplate",
-    "main_function_name":"wordpress_plugin_boilerplate_init",
-    "namespace":"WordPressPluginBoilerplate",
-    "plugin_prefix":"wpb",
-    "constant_prefix":"WPB"
+    "main_class_name":"Catcher24WordpressConnector",
+    "main_function_name":"catcher24_wordpress_connector_init",
+    "namespace":"Catcher24WordpressConnector",
+    "plugin_prefix":"c24",
+    "constant_prefix":"C24"
 }

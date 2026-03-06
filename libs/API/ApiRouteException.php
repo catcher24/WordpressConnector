@@ -2,7 +2,7 @@
 /**
  * API route exception.
  *
- * @package WordpressPluginBoilerplate
+ * @package Catcher24WordpressConnector
  * @since 1.0.0
  */
 

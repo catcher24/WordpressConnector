@@ -39,13 +39,17 @@ class Menu {
 	 */
 	public function menu() {
 
+    $svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M10 2a8 8 0 100 16 8 8 0 000-16z"/></svg>';
+
+    $icon_url = 'data:image/svg+xml;base64,' . base64_encode( $svg );
+
 		add_menu_page(
 			__( 'Catcher24', 'catcher24-wordpress-connector' ),
 			__( 'Catcher24', 'catcher24-wordpress-connector' ),
 			'manage_options',
 			$this->parent_slug,
 			array( $this, 'admin_page' ),
-			'dashicons-email',
+      $icon_url,
 			3
 		);
 
@@ -56,67 +60,16 @@ class Menu {
 		if ( $current_page === $this->parent_slug ) {
 			$plugin_url = '';
 		}
-
-		$submenu_pages = array(
-			array(
-				'parent_slug' => $this->parent_slug,
-				'page_title'  => __( 'Dashboard', 'catcher24-wordpress-connector' ),
-				'menu_title'  => __( 'Dashboard', 'catcher24-wordpress-connector' ),
-				'capability'  => 'manage_options',
-				'menu_slug'   => $this->parent_slug,
-				'function'    => array( $this, 'admin_page' ), // Uses the same callback function as parent menu.
-			),
-			array(
-				'parent_slug' => $this->parent_slug,
-				'page_title'  => __( 'Inbox', 'catcher24-wordpress-connector' ),
-				'menu_title'  => __( 'Inbox', 'catcher24-wordpress-connector' ),
-				'capability'  => 'manage_options',
-				'menu_slug'   => $plugin_url . '/#/inbox',
-				'function'    => null, // Uses the same callback function as parent menu.
-			),
-
-			array(
-				'parent_slug' => $this->parent_slug,
-				'page_title'  => __( 'Chart', 'catcher24-wordpress-connector' ),
-				'menu_title'  => __( 'Chart', 'catcher24-wordpress-connector' ),
-				'capability'  => 'manage_options',
-				'menu_slug'   => $plugin_url . '/#/charts',
-				'function'    => null, // Uses the same callback function as parent menu.
-			),
-
-			array(
-				'parent_slug' => $this->parent_slug,
-				'page_title'  => __( 'Settings', 'catcher24-wordpress-connector' ),
-				'menu_title'  => __( 'Settings', 'catcher24-wordpress-connector' ),
-				'capability'  => 'manage_options',
-				'menu_slug'   => $plugin_url . '/#/settings',
-				'function'    => null, // Uses the same callback function as parent menu.
-			),
-		);
-
-		$plugin_submenu_pages = apply_filters( 'c24_submenu_pages', $submenu_pages );
-
-		foreach ( $plugin_submenu_pages as $submenu ) {
-
-			add_submenu_page(
-				$submenu['parent_slug'],
-				$submenu['page_title'],
-				$submenu['menu_title'],
-				$submenu['capability'],
-				$submenu['menu_slug'],
-				$submenu['function']
-			);
-		}
 	}
 
 	/**
-	 * Callback function for the main "MyPlugin" menu page.
+	 * Callback function for the main "Catcher24 Connector" menu page.
 	 *
 	 * @return void
 	 */
 	public function admin_page() {
 		?>
-		<div id="myplugin" class="myplugin-app"></div>
+		<div id="catcher24Connector" class="catcher24Connector-app"></div>
 		<?php
 	}
 }
