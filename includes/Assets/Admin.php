@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Catcher24\WordPress_Connector\Assets;
 
 use Catcher24\WordPress_Connector\Core\Template;
+use Catcher24\WordPress_Connector\Libs\API\Catcher24Client;
 use Catcher24\WordPress_Connector\Traits\Base;
 use Catcher24\WordPress_Connector\Libs\Assets;
 
@@ -101,31 +102,66 @@ class Admin {
 	 * @return array The localized script data.
 	 */
 	public function get_data() {
+		$token = Catcher24Client::get_valid_token();
+
+		if ( ! $token && get_transient('catcher24_retry_silent_auth') ) {
+			// Clean up the flag immediately so we don't loop
+			delete_transient('catcher24_retry_silent_auth');
+
+			// Trigger silent re-auth
+			$auth_url = Catcher24Client::generate_login_flow( true );
+			wp_redirect( $auth_url );
+			exit;
+		}
+
+		$organization_id = get_option( CATCHER24_SETTING_SELECTED_ORGANIZATION, null );
+
+		// Validate organizationId against the token claims
+		if ( $token && $organization_id ) {
+			if ( ! $this->is_organization_valid( $token, $organization_id ) ) {
+				// Option exists but is no longer valid for this user/session
+				delete_option( CATCHER24_SETTING_SELECTED_ORGANIZATION );
+				$organization_id = null;
+			}
+		}
+
+		$target_id = get_option( CATCHER24_SETTING_SELECTED_TARGET, null );
 
 		return array(
 			'developer' => 'catcher24',
 			'isAdmin'   => is_admin(),
 			'apiUrl'    => rest_url(CATCHER24_ROUTE_PREFIX),
-			'userInfo'  => $this->get_user_data(),
+			'userInfo'  => Catcher24Client::get_user_info(),
+			'organizationId' => $organization_id,
+			'targetId' => $target_id,
+			'siteName'       => get_bloginfo( 'name' ),
+			'siteHostname'   => wp_parse_url( home_url(), PHP_URL_HOST ),
 		);
 	}
 
 	/**
-	 * Get user data for script localization.
-	 *
-	 * @return array The user data.
+	 * Validates the selected organization ID against the JWT claims.
 	 */
-	private function get_user_data() {
-		$account = get_option( 'catcher24_saas_connection' );
-
-		if ( empty( $account ) ) {
-			return null;
+	private function is_organization_valid( string $token, string $org_id ): bool {
+		$token_parts = explode( '.', $token );
+		if ( count( $token_parts ) !== 3 ) {
+			return false;
 		}
 
-		return array(
-			'email'      => $account['email'] ?? '',
-			'first_name' => $account['first_name'] ?? '',
-			'last_name'  => $account['last_name'] ?? '',
-		);
+		$payload = json_decode( base64_decode( $token_parts[1] ), true );
+		$organizations_claim = $payload['organizations'] ?? [];
+
+		if ( is_string( $organizations_claim ) ) {
+			$organizations_claim = json_decode( $organizations_claim, true );
+		}
+
+		if ( ! is_array( $organizations_claim ) ) {
+			return false;
+		}
+
+		// Check if the org_id exists in the 'name' field of the organizations array
+		$valid_ids = array_column( $organizations_claim, 'name' );
+
+		return in_array( $org_id, $valid_ids, true );
 	}
 }

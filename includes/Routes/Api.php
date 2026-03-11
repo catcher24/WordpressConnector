@@ -21,9 +21,12 @@ Route::prefix(
 		$route->get( '/accounts/status', '\Catcher24\WordPress_Connector\Controllers\Accounts\Actions@status' );
 		$route->post( '/accounts/disconnect', '\Catcher24\WordPress_Connector\Controllers\Accounts\Actions@disconnect' );
 
-		// Posts routes.
-		$route->get( '/posts/get', '\Catcher24\WordPress_Connector\Controllers\Posts\Actions@get_all_posts' );
-		$route->get( '/posts/get/{id}', '\Catcher24\WordPress_Connector\Controllers\Posts\Actions@get_post' );
+		$route->get( '/organizations', '\Catcher24\WordPress_Connector\Controllers\Organizations\Actions@get_organizations' );
+		$route->post( '/organizations/select', '\Catcher24\WordPress_Connector\Controllers\Organizations\Actions@select_organization' );
+
+		$route->get( '/targets', '\Catcher24\WordPress_Connector\Controllers\Targets\Actions@get_targets' );
+		$route->post( '/targets/select', '\Catcher24\WordPress_Connector\Controllers\Targets\Actions@select_target' );
+
 		// Allow hooks to add more custom API routes.
 		do_action( 'c24_api', $route );
 	}

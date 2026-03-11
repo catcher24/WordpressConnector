@@ -1,0 +1,65 @@
+<?php
+
+namespace Catcher24\WordPress_Connector\Controllers\Organizations;
+
+use Catcher24\WordPress_Connector\Libs\API\Catcher24Client;
+use Exception;
+
+class Actions {
+	public function get_organizations() {
+		try {
+			$token = Catcher24Client::get_valid_token();
+		} catch ( Exception $e ) {
+			return [];
+		}
+
+		$token_parts = explode( '.', $token );
+		if ( count( $token_parts ) !== 3 ) {
+			return [];
+		}
+
+		$payload = json_decode( base64_decode( $token_parts[1] ), true );
+		$tenant_id = $payload['__tenant__'] ?? null;
+		$organizations_claim = $payload['organizations'] ?? null;
+
+		if ( ! $tenant_id || empty( $organizations_claim ) ) {
+			return [];
+		}
+
+		if ( is_string( $organizations_claim ) ) {
+			$organizations_claim = json_decode( $organizations_claim, true );
+		}
+
+		$fetched_organizations = [];
+
+		foreach ( $organizations_claim as $org_data ) {
+			if ( empty( $org_data['name'] ) ) {
+				continue;
+			}
+
+			$organization_id = $org_data['name'];
+			$endpoint = rtrim( CATCHER24_API_GATEWAY_URL, '/' ) . "/api/tenants/{$tenant_id}/organizations/by-id/{$organization_id}";
+
+			try {
+				$fetched_organizations[] = Catcher24Client::request( 'GET', $endpoint );
+			} catch ( Exception $e ) {
+				continue;
+			}
+		}
+
+		return $fetched_organizations;
+	}
+
+	public function select_organization( \WP_REST_Request $request ) {
+		$body = json_decode( $request->get_body(), true );
+		$organization_id = $body['organization_id'] ?? '';
+
+		if ( empty( $organization_id ) ) {
+			return new \WP_REST_Response( [ 'message' => 'Organization ID is required' ], 400 );
+		}
+
+		update_option( CATCHER24_SETTING_SELECTED_ORGANIZATION, $organization_id );
+
+		return new \WP_REST_Response( [ 'message' => 'Organization selected successfully' ], 200 );
+	}
+}

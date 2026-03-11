@@ -34,12 +34,10 @@ const navigation: NavigationItem[] = [
   }
 ];
 
-export default function ApplicationLayout() {
+export default function ApplicationLayout({ children }: {
+  children?: React.ReactNode
+}) {
   let showApplicationLayout = catcher24WordpressConnector.userInfo;
-  const location = useLocation();
-  const navigate = useNavigate();
-  const pageTitle = location.pathname.split("/")[1];
-
   const menuRight = useRef<Menu>(null);
 
   const userMenuItems: MenuItem[] = [
@@ -50,14 +48,6 @@ export default function ApplicationLayout() {
       ]
     }
   ];
-
-  useEffect(() => {
-    if (pageTitle) {
-      navigate(pageTitle);
-    } else {
-      navigate(navigation[0].href);
-    }
-  }, [navigate, pageTitle]);
 
   return (
     <div className={`min-h-screen w-full`}>
@@ -94,7 +84,7 @@ export default function ApplicationLayout() {
           </header>
         )}
         <main className={'p-8'}>
-          <Outlet />
+          {children || <Outlet />}
         </main>
       </div>
     </div>

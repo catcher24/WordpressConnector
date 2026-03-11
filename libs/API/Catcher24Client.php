@@ -2,46 +2,167 @@
 
 namespace Catcher24\WordPress_Connector\Libs\API;
 
-use Stevenmaguire\OAuth2\Client\Provider\Keycloak;
+use GuzzleHttp\Client;
+use League\OAuth2\Client\Provider\AbstractProvider;
 use Exception;
 
-class Catcher24Client {private string $base_url = 'https://api.dev.catcher24.net';
+class Catcher24Client {
 
-	private function get_provider(): Keycloak {
-		return new Keycloak([
+	private static string $base_url = 'https://api.dev.catcher24.net';
+
+	private static function get_provider() {
+		$provider = new KeycloakPKCEProvider([
 			'authServerUrl' => 'https://auth.dev.catcher24.net',
 			'realm'         => '3efa9fb5-41e4-4695-85c1-44d9dc256c0a',
 			'clientId'      => 'wordpress-connector',
+			'redirectUri'   => rest_url( CATCHER24_ROUTE_PREFIX . '/accounts/callback' ),
+			'pkceMethod'    => AbstractProvider::PKCE_METHOD_S256,
 		]);
+
+		$httpClient = new Client([
+			'verify' => ABSPATH . WPINC . '/certificates/ca-bundle.crt',
+		]);
+
+		$provider->setHttpClient( $httpClient );
+
+		return $provider;
 	}
 
-	private function get_valid_token(): string {
-		$account = get_option( 'catcher24_saas_connection' );
+	public static function generate_login_flow( bool $silent = false ): string {
+		$provider = self::get_provider();
 
-		if ( empty( $account ) || empty( $account['access_token'] ) ) {
-			throw new Exception( 'Not authenticated with SaaS.' );
+		$options = [
+			'scope' => 'openid profile email'
+		];
+
+		if ( $silent ) {
+			$options['prompt'] = 'none';
 		}
 
-		if ( time() >= ( $account['expires'] - 60 ) ) {
-			$provider = $this->get_provider();
+		$authUrl  = $provider->getAuthorizationUrl( $options );
+		$pkce     = $provider->getPkceCode();
 
-			$new_token = $provider->getAccessToken( 'refresh_token', [
-				'refresh_token' => $account['refresh_token']
-			] );
+		set_transient( 'oauth2_state_' . $provider->getState(), $pkce, 15 * MINUTE_IN_SECONDS );
 
-			$account['access_token']  = $new_token->getToken();
-			$account['refresh_token'] = $new_token->getRefreshToken();
-			$account['expires']       = $new_token->getExpires();
+		return $authUrl;
+	}
 
-			update_option( 'catcher24_saas_connection', $account );
+	public static function handle_callback( string $code, string $state ): void {
+		$saved_pkce = get_transient( 'oauth2_state_' . $state );
+
+		if ( empty( $state ) || ! $saved_pkce ) {
+			throw new Exception( 'Invalid state or expired session.' );
+		}
+
+		delete_transient( 'oauth2_state_' . $state );
+
+		$provider = self::get_provider();
+		$provider->setPkceCode( $saved_pkce );
+
+		$token = $provider->getAccessToken( 'authorization_code', [
+			'code' => $code
+		] );
+
+		$user      = $provider->getResourceOwner( $token );
+		$user_data = $user->toArray();
+		$email     = $user_data['email'] ?? null;
+
+		if ( ! $email ) {
+			throw new Exception( 'Email not provided by identity provider.' );
+		}
+
+		$account_data = [
+			'email'         => $email,
+			'first_name'    => $user_data['given_name'] ?? '',
+			'last_name'     => $user_data['family_name'] ?? '',
+			'access_token'  => $token->getToken(),
+			'refresh_token' => $token->getRefreshToken(),
+			'expires'       => $token->getExpires(),
+		];
+
+		update_option( 'catcher24_saas_connection', $account_data );
+	}
+
+	public static function is_connected(): bool {
+		$account = get_option( 'catcher24_saas_connection' );
+		return ! empty( $account['access_token'] );
+	}
+
+	public static function disconnect(): void {
+		delete_option( 'catcher24_saas_connection' );
+	}
+
+	/**
+	 * Tries to get a valid access token.
+	 * Returns the token string if valid/refreshed, or null if unauthenticated/expired.
+	 */
+	public static function get_valid_token(): ?string {
+		$account = get_option('catcher24_saas_connection');
+
+		if (empty($account) || empty($account['access_token'])) {
+			return null;
+		}
+
+		if (time() >= ($account['expires'] - 60)) {
+			$provider = self::get_provider();
+
+			try {
+				$new_token = $provider->getAccessToken('refresh_token', [
+					'refresh_token' => $account['refresh_token']
+				]);
+
+				$account['access_token']  = $new_token->getToken();
+				$account['refresh_token'] = $new_token->getRefreshToken();
+				$account['expires']       = $new_token->getExpires();
+
+				$token_parts = explode( '.', $new_token );
+				if ( count( $token_parts ) !== 3 ) {
+					return [];
+				}
+
+				$payload = json_decode( base64_decode( $token_parts[1] ), true );
+				$tenant_id = $payload['__tenant__'] ?? null;
+
+				update_option( CATCHER24_SETTING_SELECTED_TENANT, $tenant_id );
+
+				update_option('catcher24_saas_connection', $account);
+			} catch (Exception $e) {
+				self::disconnect();
+				// Set a flag indicating we should try a silent re-auth once
+				set_transient('catcher24_retry_silent_auth', get_current_user_id(), 30);
+				return null;
+			}
 		}
 
 		return $account['access_token'];
 	}
 
-	public function request( string $method, string $endpoint, array $body = [] ) {
-		$token = $this->get_valid_token();
-		$url   = rtrim( $this->base_url, '/' ) . '/' . ltrim( $endpoint, '/' );
+	public static function get_user_info(): ?array {
+		self::get_valid_token();
+
+		$account = get_option( 'catcher24_saas_connection' );
+
+		if ( empty( $account ) ) {
+			return null;
+		}
+
+		return array(
+			'email'      => $account['email'] ?? '',
+			'first_name' => $account['first_name'] ?? '',
+			'last_name'  => $account['last_name'] ?? '',
+		);
+	}
+
+	public static function request( string $method, string $endpoint, array $body = [] ) {
+		$token = self::get_valid_token();
+
+		if ( ! $token ) {
+			throw new Exception( 'Session expired. Please re-authenticate.' );
+		}
+
+		$url = str_starts_with( $endpoint, 'http' )
+			? $endpoint
+			: rtrim( self::$base_url, '/' ) . '/' . ltrim( $endpoint, '/' );
 
 		$args = [
 			'method'  => strtoupper( $method ),
@@ -64,8 +185,15 @@ class Catcher24Client {private string $base_url = 'https://api.dev.catcher24.net
 		}
 
 		$status_code = wp_remote_retrieve_response_code( $response );
-		$body        = wp_remote_retrieve_body( $response );
-		$decoded     = json_decode( $body, true );
+
+		// Handle 401 Unauthorized explicitly from the API
+		if ( $status_code === 401 ) {
+			self::disconnect();
+			throw new Exception( 'Session expired. Please re-authenticate.' );
+		}
+
+		$response_body = wp_remote_retrieve_body( $response );
+		$decoded       = json_decode( $response_body, true );
 
 		if ( $status_code >= 400 ) {
 			throw new Exception( $decoded['message'] ?? 'SaaS API Error' );

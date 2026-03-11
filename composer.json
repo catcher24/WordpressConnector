@@ -4,17 +4,14 @@
   "autoload": {
     "psr-4": {
       "Catcher24\\WordPress_Connector\\": "includes/",
-      "Catcher24\\WordPress_Connector\\Database\\": "database/",
       "Catcher24\\WordPress_Connector\\Libs\\": "libs/"
     },
     "files": [
       "libs/assets.php",
-      "libs/db.php",
       "includes/functions.php"
     ]
   },
   "require": {
-    "prappo/wp-eloquent": "^3.0",
     "stevenmaguire/oauth2-keycloak": "^6.1"
   }
 }

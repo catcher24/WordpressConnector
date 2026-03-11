@@ -1,18 +1,35 @@
-import {createHashRouter, Navigate} from "react-router-dom";
+import { createHashRouter, Navigate, Outlet } from "react-router-dom";
 import Settings from "./pages/settings/index";
 import Dashboard from "./pages/dashboard";
 import ErrorPage from "./pages/error/Error";
 import ApplicationLayout from "./components/application-layout/layout";
 import LoginPage from "./pages/login/login";
+import SetupWizard from "./pages/setup/setup";
 
-const ProtectedRoute = () => {
+const RequireAuth = () => {
   const isAuthenticated = !!catcher24WordpressConnector?.userInfo;
 
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
   }
 
-  return <ApplicationLayout />;
+  return <Outlet />;
+};
+
+/**
+ * Gatekeeper for the Setup flow.
+ * If the user has both an Org and a Target, they see the Dashboard/Layout.
+ * Otherwise, they are redirected to the Wizard.
+ */
+const RequireSetup = () => {
+  const hasOrg = !!catcher24WordpressConnector?.organizationId;
+  const hasTarget = !!catcher24WordpressConnector?.targetId;
+
+  if (!hasOrg || !hasTarget) {
+    return <Navigate to="/setup" replace />;
+  }
+
+  return <Outlet />;
 };
 
 export const router = createHashRouter([
@@ -21,21 +38,34 @@ export const router = createHashRouter([
     element: <LoginPage />,
   },
   {
-    path: "/",
-    element: <ProtectedRoute />,
+    element: <RequireAuth />,
     errorElement: <ErrorPage />,
     children: [
       {
-        index: true,
-        element: <Dashboard />,
-      },
-      {
-        path: "dashboard",
-        element: <Dashboard />,
-      },
-      {
-        path: "settings",
-        element: <Settings />,
+        element: <ApplicationLayout />,
+        children: [
+          {
+            path: "/setup",
+            element: <SetupWizard />,
+          },
+          {
+            element: <RequireSetup />,
+            children: [
+              {
+                path: "/",
+                element: <Dashboard />,
+              },
+              {
+                path: "dashboard",
+                element: <Dashboard />,
+              },
+              {
+                path: "settings",
+                element: <Settings />,
+              },
+            ],
+          },
+        ],
       },
     ],
   },

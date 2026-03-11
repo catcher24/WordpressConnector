@@ -2,8 +2,6 @@
 
 namespace Catcher24\WordPress_Connector\Core;
 
-use Catcher24\WordPress_Connector\Database\Migrations\Accounts;
-use Catcher24\WordPress_Connector\Database\Seeders\Accounts as SeedersAccounts;
 use Catcher24\WordPress_Connector\Traits\Base;
 
 /**
@@ -21,26 +19,7 @@ class Install {
 	 * @return void
 	 */
 	public function init() {
-		$this->install_tables();
-		$this->insert_data();
 	}
 
-	/**
-	 * Install the tables
-	 *
-	 * @return void
-	 */
-	private function install_tables() {
-		Accounts::up();
-	}
 
-	/**
-	 * Insert data to the tables
-	 *
-	 * @return void
-	 */
-	private function insert_data() {
-		// Insert data to the tables.
-		SeedersAccounts::run();
-	}
 }

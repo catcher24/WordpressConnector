@@ -12,7 +12,7 @@
     "dev": "npm run dev:admin",
     "dev:admin": "vite -c vite.admin.config.js",
     "dev:all": "concurrently \"npm run dev\" \"npm run block:start\"",
-    "dev:server": "concurrently \"npm run dev\" \"npx @wp-playground/cli@latest start --php=8.3 --xdebug --experimental-unsafe-ide-integration=phpstorm \"",
+    "dev:server": "concurrently \"npm run dev\" \"npx @wp-playground/cli@3.1.0 start --blueprint=blueprint.json --xdebug \"",
     "build": "vite build -c vite.admin.config.js && npm run block:build",
     "preview": "vite preview",
     "format:check": "prettier --check catcher24-wordpress-connector",
