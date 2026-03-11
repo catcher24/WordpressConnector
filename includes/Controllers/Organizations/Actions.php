@@ -62,4 +62,8 @@ class Actions {
 
 		return new \WP_REST_Response( [ 'message' => 'Organization selected successfully' ], 200 );
 	}
+
+	public function get_scanners( \WP_REST_Request $request ) {
+		return Catcher24Client::proxy_request( 'GET', 'scanners', $request->get_query_params(), [], true, true );
+	}
 }

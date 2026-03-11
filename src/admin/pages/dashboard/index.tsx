@@ -1,162 +1,223 @@
-import { useRef } from "react";
-import { Button } from "primereact/button";
+import { useEffect, useState, useRef, useMemo, useCallback } from "react";
 import { Toast } from "primereact/toast";
 import { Card } from "primereact/card";
-import { TabView, TabPanel } from "primereact/tabview";
+import { Tag } from "primereact/tag";
+import { Button } from "primereact/button";
+import { ProgressBar } from "primereact/progressbar";
+import { DataTable } from "primereact/datatable";
+import { Column } from "primereact/column";
+import { HubConnection, HubConnectionBuilder, LogLevel } from "@microsoft/signalr";
 
 export default function DashboardPage() {
   const toast = useRef<Toast>(null);
+  const { apiUrl, targetId, siteHostname } = catcher24WordpressConnector;
 
-  const showDownloadToast = () => {
-    toast.current?.show({
-      severity: "success",
-      summary: "Download Started",
-      detail: "Your report is downloading.",
-      life: 3000,
+  // State
+  const [loading, setLoading] = useState(true);
+  const [vulnerabilities, setVulnerabilities] = useState<any[]>([]);
+  const [recentScans, setRecentScans] = useState<any[]>([]);
+  const [activeScans, setActiveScans] = useState<any[]>([]);
+  const [certificates, setCertificates] = useState<any[]>([]);
+  const [rootDomains, setRootDomains] = useState<any[]>([]);
+
+  const fetchDashboardData = useCallback(async () => {
+    if (!targetId) return;
+    try {
+      const [vulnRes, scansRes, activeScansRes, certsRes, domainsRes] = await Promise.all([
+        fetch(`${apiUrl}/targets/${targetId}/vulnerabilities?pageSize=500`).then((r) => r.json()),
+        fetch(`${apiUrl}/targets/${targetId}/scans?orderBy=startedAt%20desc&pageSize=5`).then((r) => r.json()),
+        fetch(`${apiUrl}/targets/${targetId}/scans?filter=status=running`).then((r) => r.json()),
+        fetch(`${apiUrl}/targets/${targetId}/certificates?pageSize=5`).then((r) => r.json()),
+        fetch(`${apiUrl}/targets/${targetId}/rootDomains?pageSize=5`).then((r) => r.json()),
+      ]);
+
+      setVulnerabilities(vulnRes.items || []);
+      setRecentScans(scansRes.items || []);
+      setActiveScans(activeScansRes.items || []);
+      setCertificates(certsRes.items || []);
+      setRootDomains(domainsRes.items || []);
+    } catch (error) {
+      console.error("Failed to fetch dashboard data", error);
+    } finally {
+      setLoading(false);
+    }
+  }, [apiUrl, targetId]);
+
+  useEffect(() => {
+    fetchDashboardData();
+  }, [fetchDashboardData]);
+
+  useEffect(() => {
+    if (!targetId) return;
+
+    let newConnection: HubConnection | null = null;
+    let isCancelled = false;
+
+    const setupSignalR = async () => {
+      try {
+        const res = await fetch(`${apiUrl}/hub/public/negotiate`, { method: "POST" });
+        if (!res.ok) return;
+
+        const data = await res.json();
+        
+        if (isCancelled) return;
+
+        newConnection = new HubConnectionBuilder()
+          .withUrl(data.url, {
+            accessTokenFactory: () => data.accessToken,
+          })
+          .configureLogging(LogLevel.Warning)
+          .withAutomaticReconnect()
+          .build();
+
+        newConnection.on("ScanCreated", fetchDashboardData);
+        newConnection.on("ScanStarted", fetchDashboardData);
+        newConnection.on("ScanUpdated", fetchDashboardData);
+        newConnection.on("ScanCompleted", fetchDashboardData);
+        newConnection.on("ScanRunnerCompleted", fetchDashboardData);
+        newConnection.on("ScanFailed", fetchDashboardData);
+
+        await newConnection.start();
+      } catch (e) {
+        console.error("SignalR Connection Error: ", e);
+      }
+    };
+
+    setupSignalR();
+
+    return () => {
+      isCancelled = true;
+      if (newConnection) {
+        newConnection.stop();
+      }
+    };
+  }, [apiUrl, targetId, fetchDashboardData]);
+
+  // Derived calculations
+  const severityCounts = useMemo(() => {
+    const counts = { Critical: 0, High: 0, Medium: 0, Low: 0 };
+    vulnerabilities.forEach((v) => {
+      if (v.severity === 4) counts.Critical++;
+      if (v.severity === 3) counts.High++;
+      if (v.severity === 2) counts.Medium++;
+      if (v.severity === 1) counts.Low++;
     });
+    return counts;
+  }, [vulnerabilities]);
+
+  const stats = [
+    { label: "Critical", value: severityCounts.Critical, color: "text-red-600 bg-red-100 dark:bg-red-900 dark:text-red-300" },
+    { label: "High", value: severityCounts.High, color: "text-orange-600 bg-orange-100 dark:bg-orange-900 dark:text-orange-300" },
+    { label: "Medium", value: severityCounts.Medium, color: "text-yellow-600 bg-yellow-100 dark:bg-yellow-900 dark:text-yellow-300" },
+    { label: "Low", value: severityCounts.Low, color: "text-blue-600 bg-blue-100 dark:bg-blue-900 dark:text-blue-300" },
+  ];
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center p-8 min-h-[400px]">
+        <i className="pi pi-spin pi-spinner text-4xl text-primary" />
+      </div>
+    );
+  }
+
+  const renderScanStatus = (rowData: any) => {
+    switch (rowData.status) {
+      case 0: return <Tag severity="info" value="Created" />;
+      case 1: return <Tag severity="warning" value="Running" />;
+      case 2: return <Tag severity="success" value="Completed" />;
+      case 3: return <Tag severity="danger" value="Failed" />;
+      case 4: return <Tag severity="danger" value="Cancelled" />;
+      default: return <Tag value="Unknown" />;
+    }
+  };
+
+  const formatDate = (rowData: any, field: string) => {
+    return rowData[field] ? new Date(rowData[field]).toLocaleString() : "N/A";
   };
 
   return (
     <>
       <Toast ref={toast} position="bottom-right" />
-      <div className="hidden dark:bg-gray-900 flex-col md:flex">
-        <div className="flex-1 space-y-4">
-          <div className="flex items-center justify-between space-y-2">
-            <h2 className="text-3xl dark:text-white font-bold tracking-tight">Dashboard</h2>
+      <div className="flex-col md:flex dark:bg-gray-900 min-h-screen">
+        <div className="flex-1 space-y-6 pt-6 mb-12">
+          {/* Header */}
+          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+            <div>
+              <h2 className="text-3xl dark:text-white font-bold tracking-tight">Vulnerability Overview</h2>
+              <p className="text-gray-500 dark:text-gray-400 mt-1">
+                Target: <strong>{siteHostname}</strong>
+              </p>
+            </div>
             <div className="flex items-center space-x-2">
-              <Button label="Download" onClick={showDownloadToast} />
+              <Button
+                label="View Full Insights on Catcher24"
+                icon="pi pi-external-link"
+                className="p-button-outlined bg-white dark:bg-gray-800"
+                onClick={() => window.open(`https://catcher24.com/dashboard/organization/targets`, "_blank")}
+              />
             </div>
           </div>
 
-          <TabView className="mt-4">
-            <TabPanel header="Overview">
-              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 pt-4">
-                <Card className="shadow-sm border border-surface-200 dark:border-surface-700">
-                  <div className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <h3 className="text-sm font-medium">Total Revenue</h3>
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      className="h-4 w-4 text-muted-foreground"
-                    >
-                      <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
-                    </svg>
+          {/* Active Scans Banner */}
+          {activeScans.length > 0 && (
+            <Card title="Active Scans Running" className="shadow-sm border border-blue-200 bg-blue-50 dark:bg-blue-900/20 dark:border-blue-800">
+              {activeScans.map((scan) => (
+                <div key={scan.id} className="mb-4 last:mb-0">
+                  <div className="flex justify-between text-sm mb-1 text-blue-900 dark:text-blue-100 font-medium">
+                    <span>Scan Strategy: {scan.scanStrategyName || "Default"}</span>
+                    <span>{Math.round(scan.progress)}%</span>
                   </div>
-                  <div>
-                    <div className="text-2xl font-bold">$45,231.89</div>
-                    <p className="text-xs text-muted-foreground">
-                      +20.1% from last month
-                    </p>
-                  </div>
-                </Card>
+                  <ProgressBar value={Math.round(scan.progress)} showValue={false} style={{ height: '8px' }} color="#3b82f6" />
+                </div>
+              ))}
+            </Card>
+          )}
 
-                <Card className="shadow-sm border border-surface-200 dark:border-surface-700">
-                  <div className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <h3 className="text-sm font-medium">Subscriptions</h3>
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      className="h-4 w-4 text-muted-foreground"
-                    >
-                      <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-                      <circle cx="9" cy="7" r="4" />
-                      <path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />
-                    </svg>
+          {/* Severity Overview Cards */}
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            {stats.map((stat, i) => (
+              <Card key={i} className="shadow-sm border border-surface-200 dark:border-surface-700">
+                <div className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <h3 className="text-sm font-medium text-gray-600 dark:text-gray-300">{stat.label}</h3>
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center ${stat.color}`}>
+                    <i className="pi pi-shield"></i>
                   </div>
-                  <div>
-                    <div className="text-2xl font-bold">+2350</div>
-                    <p className="text-xs text-muted-foreground">
-                      +180.1% from last month
-                    </p>
-                  </div>
-                </Card>
+                </div>
+                <div>
+                  <div className="text-4xl font-bold dark:text-white">{stat.value}</div>
+                </div>
+              </Card>
+            ))}
+          </div>
 
-                <Card className="shadow-sm border border-surface-200 dark:border-surface-700">
-                  <div className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <h3 className="text-sm font-medium">Sales</h3>
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      className="h-4 w-4 text-muted-foreground"
-                    >
-                      <rect width="20" height="14" x="2" y="5" rx="2" />
-                      <path d="M2 10h20" />
-                    </svg>
-                  </div>
-                  <div>
-                    <div className="text-2xl font-bold">+12,234</div>
-                    <p className="text-xs text-muted-foreground">
-                      +19% from last month
-                    </p>
-                  </div>
-                </Card>
+          {/* Detailed Lists */}
+          <div className="grid gap-6 lg:grid-cols-2">
+            <Card title="Recent Scans" className="shadow-sm border border-surface-200 dark:border-surface-700 h-full">
+              <DataTable value={recentScans} emptyMessage="No recent scans found" stripedRows size="small" rows={5}>
+                <Column field="scanStrategyName" header="Strategy" />
+                <Column header="Status" body={renderScanStatus} />
+                <Column header="Started At" body={(rowData) => formatDate(rowData, "startedAt")} />
+              </DataTable>
+            </Card>
 
-                <Card className="shadow-sm border border-surface-200 dark:border-surface-700">
-                  <div className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <h3 className="text-sm font-medium">Active Now</h3>
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      className="h-4 w-4 text-muted-foreground"
-                    >
-                      <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
-                    </svg>
-                  </div>
-                  <div>
-                    <div className="text-2xl font-bold">+573</div>
-                    <p className="text-xs text-muted-foreground">
-                      +201 since last hour
-                    </p>
-                  </div>
-                </Card>
-              </div>
+            <div className="flex flex-col gap-6">
+              <Card title="Certificates" className="shadow-sm border border-surface-200 dark:border-surface-700">
+                <DataTable value={certificates} emptyMessage="No certificates found" stripedRows size="small" rows={3}>
+                  <Column field="subject" header="Subject" />
+                  <Column field="issuer" header="Issuer" />
+                  <Column header="Valid To" body={(rowData) => formatDate(rowData, "validTo")} />
+                </DataTable>
+              </Card>
 
-              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7 mt-4">
-                <Card
-                  title="Overview"
-                  className="col-span-4 shadow-sm border border-surface-200 dark:border-surface-700"
-                >
-                  <div className="h-[350px] flex items-center justify-center text-muted-foreground bg-muted/10 rounded-md border border-dashed">
-                    Overview Placeholder
-                  </div>
-                </Card>
-
-                <Card
-                  title="Recent Sales"
-                  subTitle="You made 265 sales this month."
-                  className="col-span-3 shadow-sm border border-surface-200 dark:border-surface-700"
-                >
-                  <div className="h-[350px] flex items-center justify-center text-muted-foreground bg-muted/10 rounded-md border border-dashed">
-                    Recent Sales Placeholder
-                  </div>
-                </Card>
-              </div>
-            </TabPanel>
-
-            <TabPanel header="Analytics" disabled></TabPanel>
-            <TabPanel header="Reports" disabled></TabPanel>
-            <TabPanel header="Notifications" disabled></TabPanel>
-          </TabView>
+              <Card title="DNS Records" className="shadow-sm border border-surface-200 dark:border-surface-700">
+                <DataTable value={rootDomains} emptyMessage="No DNS records found" stripedRows size="small" rows={3}>
+                  <Column field="domain" header="Domain" />
+                  <Column field="recordType" header="Type" />
+                  <Column field="value" header="Value" />
+                </DataTable>
+              </Card>
+            </div>
+          </div>
         </div>
       </div>
     </>

@@ -201,4 +201,40 @@ class Catcher24Client {
 
 		return $decoded;
 	}
+
+	public static function proxy_request( string $method, string $sub_path, array $query_params = [], array $body = [], bool $include_tenant = false, bool $include_org = false, string $target_id = null ) {
+		$tenant_id = get_option( CATCHER24_SETTING_SELECTED_TENANT );
+		$organization_id = get_option( CATCHER24_SETTING_SELECTED_ORGANIZATION );
+
+		if ( $include_tenant && ! $tenant_id ) {
+			return new \WP_REST_Response( array( 'message' => 'Missing tenant context' ), 400 );
+		}
+
+		if ( $include_org && ! $organization_id ) {
+			return new \WP_REST_Response( array( 'message' => 'Missing organization context' ), 400 );
+		}
+
+		$pathSegments = [];
+		if ( $include_tenant ) {
+			$pathSegments[] = "tenants/{$tenant_id}";
+		}
+		if ( $include_org ) {
+			$pathSegments[] = "organizations/{$organization_id}";
+		}
+		if ( $target_id ) {
+			$pathSegments[] = "targets/{$target_id}";
+		}
+		$pathSegments[] = ltrim( $sub_path, '/' );
+
+		$full_path = implode( '/', $pathSegments );
+		$endpoint = rtrim( self::$base_url, '/' ) . "/api/{$full_path}";
+		
+		$url = add_query_arg( array_filter( $query_params ), $endpoint );
+
+		try {
+			return self::request( $method, $url, $body );
+		} catch ( Exception $e ) {
+			return new \WP_REST_Response( array( 'message' => $e->getMessage() ), 500 );
+		}
+	}
 }

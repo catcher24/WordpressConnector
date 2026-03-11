@@ -26,6 +26,16 @@ Route::prefix(
 
 		$route->get( '/targets', '\Catcher24\WordPress_Connector\Controllers\Targets\Actions@get_targets' );
 		$route->post( '/targets/select', '\Catcher24\WordPress_Connector\Controllers\Targets\Actions@select_target' );
+		$route->get( '/targets/{targetId}/vulnerabilities', '\Catcher24\WordPress_Connector\Controllers\Targets\Actions@get_vulnerabilities' );
+		$route->get( '/targets/{targetId}/scans', '\Catcher24\WordPress_Connector\Controllers\Targets\Actions@get_scans' );
+		$route->get( '/targets/{targetId}/certificates', '\Catcher24\WordPress_Connector\Controllers\Targets\Actions@get_certificates' );
+		$route->get( '/targets/{targetId}/rootDomains', '\Catcher24\WordPress_Connector\Controllers\Targets\Actions@get_root_domains' );
+
+		$route->get( '/scanners', '\Catcher24\WordPress_Connector\Controllers\Organizations\Actions@get_scanners' );
+		$route->get( '/collectors', '\Catcher24\WordPress_Connector\Controllers\Collectors\Actions@get_collectors' );
+		$route->get( '/collectorGroups', '\Catcher24\WordPress_Connector\Controllers\CollectorGroups\Actions@get_collector_groups' );
+
+		$route->post( '/hub/public/negotiate', '\Catcher24\WordPress_Connector\Controllers\Hub\Actions@public_negotiate' );
 
 		// Allow hooks to add more custom API routes.
 		do_action( 'c24_api', $route );

@@ -127,6 +127,14 @@ class Admin {
 
 		$target_id = get_option( CATCHER24_SETTING_SELECTED_TARGET, null );
 
+		// Validate targetId against the organization
+		if ( $token && $organization_id && $target_id ) {
+			if ( ! $this->is_target_valid( $token, $organization_id, $target_id ) ) {
+				delete_option( CATCHER24_SETTING_SELECTED_TARGET );
+				$target_id = null;
+			}
+		}
+
 		return array(
 			'developer' => 'catcher24',
 			'isAdmin'   => is_admin(),
@@ -163,5 +171,40 @@ class Admin {
 		$valid_ids = array_column( $organizations_claim, 'name' );
 
 		return in_array( $org_id, $valid_ids, true );
+	}
+
+	/**
+	 * Validates if the selected target belongs to the selected organization.
+	 */
+	private function is_target_valid( string $token, string $org_id, string $target_id ): bool {
+		$transient_key = 'catcher24_target_valid_' . $target_id;
+		$cached = get_transient( $transient_key );
+
+		if ( false !== $cached ) {
+			return $cached === 'valid';
+		}
+
+		$token_parts = explode( '.', $token );
+		if ( count( $token_parts ) !== 3 ) {
+			return false;
+		}
+
+		$payload = json_decode( base64_decode( $token_parts[1] ), true );
+		$tenant_id = $payload['__tenant__'] ?? null;
+
+		if ( ! $tenant_id ) {
+			return false;
+		}
+
+		$endpoint = rtrim( CATCHER24_API_GATEWAY_URL, '/' ) . "/api/tenants/{$tenant_id}/organizations/{$org_id}/targets/{$target_id}";
+		
+		try {
+			Catcher24Client::request( 'GET', $endpoint );
+			set_transient( $transient_key, 'valid', 12 * HOUR_IN_SECONDS );
+			return true;
+		} catch ( \Exception $e ) {
+			set_transient( $transient_key, 'invalid', 1 * HOUR_IN_SECONDS );
+			return false;
+		}
 	}
 }

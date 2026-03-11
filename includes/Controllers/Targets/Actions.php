@@ -14,27 +14,15 @@ class Actions {
 	 */
 
 	public function get_targets( WP_REST_Request $request ) {
-		$tenant_id = get_option( CATCHER24_SETTING_SELECTED_TENANT );
-		$organization_id = get_option( CATCHER24_SETTING_SELECTED_ORGANIZATION );
-		if ( ! $organization_id ) return [];
+		$response = Catcher24Client::proxy_request( 'GET', 'targets', $request->get_query_params(), [], true, true );
 
-		// Map Gridify-style query params from Angular to your SaaS API
-		$query_params = [
-			'page'     => $request->get_param( 'page' ) ?? 1,
-			'pageSize' => $request->get_param( 'pageSize' ) ?? 20,
-			'filter'   => $request->get_param( 'filter' ),
-			'orderBy'  => $request->get_param( 'orderBy' ),
-		];
-
-		try {
-			// Build the URL with query string
-			$endpoint = rtrim( CATCHER24_API_GATEWAY_URL, '/' ) . "/api/tenants/{$tenant_id}/organizations/{$organization_id}/targets";
-			$url = add_query_arg( array_filter( $query_params ), $endpoint );
-
-			return Catcher24Client::request( 'GET', $url );
-		} catch ( Exception $e ) {
+		// If it failed, proxy_request returns a WP_REST_Response with the error.
+		// The original code expects `[ 'items' => [], 'totalResults' => 0 ]` on error.
+		if ( is_wp_error( $response ) || ( $response instanceof WP_REST_Response && $response->get_status() >= 400 ) ) {
 			return [ 'items' => [], 'totalResults' => 0 ];
 		}
+
+		return $response;
 	}
 
 	/**
@@ -58,26 +46,38 @@ class Actions {
 	 * Create a new target via the SaaS API.
 	 */
 	public function create_target( WP_REST_Request $request ) {
-		$body            = json_decode( $request->get_body(), true );
-		$tenant_id = get_option( CATCHER24_SETTING_SELECTED_TENANT );
-		$organization_id = get_option( CATCHER24_SETTING_SELECTED_ORGANIZATION );
+		$body = json_decode( $request->get_body(), true ) ?? [];
+		$response = Catcher24Client::proxy_request( 'POST', 'targets', $request->get_query_params(), $body, true, true );
 
-		if ( ! $organization_id ) {
-			return new WP_REST_Response( array( 'message' => 'No organization selected' ), 400 );
-		}
-
-		try {
-			$endpoint = "/api/tenants/{$tenant_id}/organizations/{$organization_id}/targets";
-			$response = Catcher24Client::request( 'POST', $endpoint, $body );
-
-			// If created successfully, we automatically select it
-			if ( isset( $response['id'] ) ) {
-				update_option( CATCHER24_SETTING_SELECTED_TARGET, $response['id'] );
-			}
-
+		if ( ! ( $response instanceof \WP_REST_Response ) && isset( $response['id'] ) ) {
+			update_option( CATCHER24_SETTING_SELECTED_TARGET, $response['id'] );
 			return new WP_REST_Response( $response, 201 );
-		} catch ( Exception $e ) {
-			return new WP_REST_Response( array( 'message' => $e->getMessage() ), 500 );
 		}
+
+		return $response;
+	}
+
+	public function get_vulnerabilities( \WP_REST_Request $request ) {
+		$target_id = $request->get_param( 'targetId' );
+		if ( ! $target_id ) return new \WP_REST_Response( array( 'message' => 'Missing target context' ), 400 );
+		return Catcher24Client::proxy_request( 'GET', 'vulnerabilities', $request->get_query_params(), [], true, true, $target_id );
+	}
+
+	public function get_scans( \WP_REST_Request $request ) {
+		$target_id = $request->get_param( 'targetId' );
+		if ( ! $target_id ) return new \WP_REST_Response( array( 'message' => 'Missing target context' ), 400 );
+		return Catcher24Client::proxy_request( 'GET', 'scans', $request->get_query_params(), [], true, true, $target_id );
+	}
+
+	public function get_certificates( \WP_REST_Request $request ) {
+		$target_id = $request->get_param( 'targetId' );
+		if ( ! $target_id ) return new \WP_REST_Response( array( 'message' => 'Missing target context' ), 400 );
+		return Catcher24Client::proxy_request( 'GET', 'certificates', $request->get_query_params(), [], true, true, $target_id );
+	}
+
+	public function get_root_domains( \WP_REST_Request $request ) {
+		$target_id = $request->get_param( 'targetId' );
+		if ( ! $target_id ) return new \WP_REST_Response( array( 'message' => 'Missing target context' ), 400 );
+		return Catcher24Client::proxy_request( 'GET', 'rootDomains', $request->get_query_params(), [], true, true, $target_id );
 	}
 }
