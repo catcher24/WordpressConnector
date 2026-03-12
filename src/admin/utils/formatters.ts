@@ -1,4 +1,8 @@
-export const formatDate = (dateString?: string) => {
+export const formatDate = (dateOrObj?: any, field?: string) => {
+  let dateString = dateOrObj;
+  if (dateOrObj && typeof dateOrObj === 'object' && field) {
+    dateString = dateOrObj[field];
+  }
   return dateString ? new Date(dateString).toLocaleString() : "N/A";
 };
 

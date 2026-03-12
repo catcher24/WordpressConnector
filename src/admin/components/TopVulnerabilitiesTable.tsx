@@ -1,24 +1,19 @@
-import React from "react";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
+import { getSeverityColor, getSeverityLabel } from "../models/shared";
 
 interface TopVulnerabilitiesTableProps {
   vulnerabilities: any[];
 }
 
 const renderSeverity = (rowData: any) => {
-  const mapping: Record<string, { bg: string, text: string, label: string }> = {
-    "Noise": { bg: 'bg-severity-noise-light', text: 'text-severity-noise-dark', label: 'Noise' },
-    "Low": { bg: 'bg-severity-low-light', text: 'text-severity-low-dark', label: 'Low' },
-    "Medium": { bg: 'bg-severity-medium-light', text: 'text-severity-medium-dark', label: 'Medium' },
-    "High": { bg: 'bg-severity-high-light', text: 'text-severity-high-dark', label: 'High' },
-    "Critical": { bg: 'bg-severity-critical-light', text: 'text-severity-critical-dark', label: 'Critical' }
-  };
-  const ui = mapping[rowData.severity] || { bg: 'bg-gray-100', text: 'text-gray-800', label: 'Unknown' };
+  const severity = rowData.severity;
+  const ui = getSeverityColor(severity);
+  const label = getSeverityLabel(severity);
   
   return (
-    <div className={`inline-flex items-center justify-center px-2 py-1 rounded text-xs font-bold ${ui.bg} ${ui.text}`}>
-      {ui.label}
+    <div className={`inline-flex items-center justify-center px-2 py-1 rounded text-[10px] font-bold ${ui.border} ${ui.light} ${ui.text} border`}>
+      {label} {severity.toFixed(1)}
     </div>
   );
 };

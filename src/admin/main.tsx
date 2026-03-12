@@ -14,6 +14,7 @@ import { MessagePassThroughMethodOptions } from "primereact/message";
 import { MessagesPassThroughMethodOptions } from "primereact/messages";
 import Tailwind from "primereact/passthrough/tailwind";
 import { classNames } from "primereact/utils";
+import { PanelPassThroughMethodOptions } from "primereact/panel";
 
 export const CustomTailwind: PrimeReactPTOptions = {
   ...Tailwind,
@@ -363,6 +364,33 @@ export const CustomTailwind: PrimeReactPTOptions = {
             state.messages[index ?? 0].message.severity == "error"
         })
       };
+    }
+  },
+  panel: {
+    header: ({ props }: PanelPassThroughMethodOptions) => ({
+        className: classNames(
+            'flex items-center justify-between', // flex and alignments
+            'border border-gray-300 text-gray-700 rounded-tl-lg rounded-tr-lg', // borders and colors
+            'dark:bg-gray-900 dark:border-blue-900/40 dark:text-white/80', // Dark mode
+            { 'p-5': !props.toggleable, 'py-3 px-5': props.toggleable } // condition
+        )
+    }),
+    title: {
+      className: "font-bold leading-none"
+    },
+    toggler: {
+      className: classNames(
+        "inline-flex items-center justify-center overflow-hidden relative no-underline",
+        "w-8 h-8 text-surface-600 border-0 bg-transparent rounded-full transition duration-200 ease-in-out",
+        "hover:text-surface-900 hover:bg-surface-100 dark:hover:text-surface-0 dark:hover:bg-surface-800",
+        "focus:outline-none focus:outline-offset-0 focus:shadow-[0_0_0_0.2rem_rgba(191,219,254,1)] dark:focus:shadow-[0_0_0_0.2rem_rgba(147,197,253,0.5)]"
+      )
+    },
+    content: {
+      className: classNames(
+        "p-5 border border-t-0 border-surface-200 bg-surface-0 text-surface-700 rounded-b-lg",
+        "dark:bg-surface-900 dark:border-surface-700 dark:text-surface-0"
+      )
     }
   }
 };

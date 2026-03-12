@@ -95,13 +95,14 @@ export const TargetsScanProgressBar = ({ scan }: { scan: ScanModel }) => {
           return (
             <span 
               key={i} 
-              className={`h-full border-r border-white border-opacity-50 last:border-0 ${item.isRunning ? 'p-metergroup-meter intermediate' : ''}`} 
+              className={`h-full border-r border-white border-opacity-50 last:border-0}`} 
               style={{ width: percentValue(item.value), backgroundColor: item.color, transition: 'width 0.3s ease' }}
               title={item.label}
             ></span>
           );
         })}
       </div>
+      
 
       {/* Labels below the progress bar */}
       <div className="flex flex-wrap gap-x-4 gap-y-2 mt-1">
