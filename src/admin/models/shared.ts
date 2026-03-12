@@ -3,6 +3,54 @@ export enum TargetType {
   Network = 1,
 }
 
+export enum CollectorStatus {
+  Created = "Created",
+  Starting = "Starting",
+  Running = "Running",
+  Completed = "Completed",
+  Failed = "Failed",
+  Cancelled = "Cancelled"
+}
+
+export enum VulnerabilitySeverity {
+  Noise = "Noise",
+  Low = "Low",
+  Medium = "Medium",
+  High = "High",
+  Critical = "Critical"
+}
+
+export interface DnsAdviceModel {
+  title: string;
+  advice: string;
+  severity: number;
+  isVulnerability: boolean;
+}
+
+export interface PackageCountModel {
+  packageId: string;
+  unitCount: number;
+}
+
+export interface SubscriptionModel {
+  status: number;
+  tenantOrganizationPackages?: Record<string, Record<string, PackageCountModel>>;
+}
+
+export interface UsageMetricsModel {
+  targetTypeCounts?: Record<string, number>;
+}
+
+export interface OrganizationModel {
+  id: string;
+  tenantId: string;
+  name: string;
+  isActive: boolean;
+  isTrial: boolean;
+  subscription?: SubscriptionModel;
+  usageMetrics?: UsageMetricsModel;
+}
+
 export enum PortType {
   Tcp = 0,
   Udp = 1,
@@ -50,7 +98,7 @@ export interface VulnerabilityModel {
   name: string;
   displayName: string;
   family: string;
-  severity: number;
+  severity: VulnerabilitySeverity | number;
   summary: string;
   insight: string;
   affected: string;
@@ -59,6 +107,17 @@ export interface VulnerabilityModel {
   cves: any[];
   targetIds: string[];
   occurrences: number;
+}
+
+export interface ScanRunnerModel {
+  collectorId: string;
+  collectorSpecializationId: string;
+  progression: number | null;
+  startedAt: string | null;
+  endedAt: string | null;
+  collectorType: number;
+  collectorStatus: CollectorStatus | number;
+  configuration: any;
 }
 
 export interface ScanModel {
@@ -70,7 +129,7 @@ export interface ScanModel {
   targetType: TargetType;
   startedAt: string;
   endedAt?: string;
-  runners: any[];
+  runners: ScanRunnerModel[];
 }
 
 export interface CertificatePortModel {

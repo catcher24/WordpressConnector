@@ -61,13 +61,31 @@ class Actions {
 	/**
 	 * Create a new target via the SaaS API.
 	 */
-	public function create_target( WP_REST_Request $request ) {
+	public function create_target( \WP_REST_Request $request ) {
 		$body = json_decode( $request->get_body(), true ) ?? [];
 		$response = Catcher24Client::proxy_request( 'POST', 'targets', $request->get_query_params(), $body, true, true );
 
 		if ( ! ( $response instanceof \WP_REST_Response ) && isset( $response['id'] ) ) {
 			update_option( CATCHER24_SETTING_SELECTED_TARGET, $response['id'] );
 			return new WP_REST_Response( $response, 201 );
+		}
+
+		return $response;
+	}
+
+	/**
+	 * Update an existing target via the SaaS API.
+	 */
+	public function update_target( \WP_REST_Request $request ) {
+		$target_id = $request->get_param( 'targetId' );
+		if ( ! $target_id ) return new \WP_REST_Response( array( 'message' => 'Missing target context' ), 400 );
+
+		$body = json_decode( $request->get_body(), true ) ?? [];
+		
+		$response = Catcher24Client::proxy_request( 'PUT', "targets/{$target_id}", $request->get_query_params(), $body, true, true );
+
+		if ( ! ( $response instanceof \WP_REST_Response ) && isset( $response['id'] ) ) {
+			return new \WP_REST_Response( $response, 200 );
 		}
 
 		return $response;

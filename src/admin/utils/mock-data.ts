@@ -8,7 +8,9 @@ import {
   TargetPortModel,
   TargetType,
   PortType,
-  SeverityModel 
+  SeverityModel,
+  VulnerabilitySeverity,
+  CollectorStatus
 } from "../models/shared";
 
 // Seed the faker so we get mostly consistent mock data across story renders
@@ -55,7 +57,13 @@ export const generateMockVulnerabilities = (count: number = 5): VulnerabilityMod
     name: faker.hacker.phrase(),
     displayName: faker.company.catchPhrase(),
     family: faker.hacker.noun(),
-    severity: faker.helpers.arrayElement([0, 1, 2, 3, 4]),
+    severity: faker.helpers.arrayElement([
+      VulnerabilitySeverity.Noise, 
+      VulnerabilitySeverity.Low, 
+      VulnerabilitySeverity.Medium, 
+      VulnerabilitySeverity.High, 
+      VulnerabilitySeverity.Critical
+    ]),
     summary: faker.lorem.paragraph(),
     insight: faker.lorem.sentences(2),
     affected: faker.system.filePath(),
@@ -77,7 +85,36 @@ export const generateMockScans = (count: number = 3, active: boolean = false): S
     targetType: TargetType.Web,
     startedAt: faker.date.recent().toISOString(),
     endedAt: active ? undefined : faker.date.recent().toISOString(),
-    runners: [],
+    runners: [
+      {
+        collectorId: faker.string.uuid(),
+        collectorType: faker.number.int({ min: 1, max: 10 }),
+        collectorStatus: active ? faker.helpers.arrayElement([CollectorStatus.Created, CollectorStatus.Starting, CollectorStatus.Running]) : faker.helpers.arrayElement([CollectorStatus.Completed, CollectorStatus.Failed, CollectorStatus.Cancelled]),
+        startedAt: faker.date.recent().toISOString(),
+        endedAt: active ? undefined : faker.date.recent().toISOString(),
+        progression: active ? faker.number.int({ min: 10, max: 90 }) : 100,
+        configuration: {
+          displayName: faker.hacker.noun(),
+          timeout: faker.number.int({ min: 30000, max: 120000 }),
+          averageDuration: "00:02:45",
+          timeoutDuration: "00:15:00"
+        }
+      },
+      {
+        collectorId: faker.string.uuid(),
+        collectorType: faker.number.int({ min: 1, max: 10 }),
+        collectorStatus: active ? faker.helpers.arrayElement([CollectorStatus.Created, CollectorStatus.Starting, CollectorStatus.Running]) : faker.helpers.arrayElement([CollectorStatus.Completed, CollectorStatus.Failed, CollectorStatus.Cancelled]),
+        startedAt: faker.date.recent().toISOString(),
+        endedAt: active ? undefined : faker.date.recent().toISOString(),
+        progression: active ? faker.number.int({ min: 10, max: 90 }) : 100,
+        configuration: {
+          displayName: faker.hacker.noun(),
+          timeout: faker.number.int({ min: 30000, max: 120000 }),
+          averageDuration: "00:04:10",
+          timeoutDuration: "00:10:00"
+        }
+      }
+    ],
     // properties used by Dashboard component:
     status: active ? faker.helpers.arrayElement([0, 1, 2, 3]) : faker.helpers.arrayElement([4, 5, 6]),
     progress: active ? faker.number.int({ min: 10, max: 90 }) : 100,

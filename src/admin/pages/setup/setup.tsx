@@ -160,11 +160,14 @@ export default function SetupWizard() {
   const isSubscriptionLimitReached = useMemo(() => {
     if (!selectedOrg) return false;
     
-    // 0 is TargetType.Web
-    const webAppUsage = selectedOrg.usageMetrics?.targetTypeCounts?.["0"] || selectedOrg.usageMetrics?.targetTypeCounts?.Web || 0;
+    // Check usage metric map (API might return TargetType.Web as "0" or "Web" depending on formatter, handling both)
+    const usageObj = selectedOrg.usageMetrics?.targetTypeCounts;
+    const webAppUsage = usageObj ? (usageObj["0"] || usageObj["Web"] || 0) : 0;
     
     let webAppLimit = 0;
-    const packages = selectedOrg.subscription?.tenantOrganizationPackages?.["0"] || selectedOrg.subscription?.tenantOrganizationPackages?.Web;
+    const packageMap = selectedOrg.subscription?.tenantOrganizationPackages;
+    const packages = packageMap ? (packageMap["0"] || packageMap["Web"]) : null;
+
     if (packages) {
       webAppLimit = Object.values(packages).reduce((acc: number, current: any) => acc + (current.unitCount || 0), 0);
     }

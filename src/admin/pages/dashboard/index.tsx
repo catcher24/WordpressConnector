@@ -1,15 +1,18 @@
 import { useEffect, useState, useRef, useCallback } from "react";
 import { Toast } from "primereact/toast";
 import { Card } from "primereact/card";
-import { Tag } from "primereact/tag";
 import { Button } from "primereact/button";
-import { ProgressBar } from "primereact/progressbar";
-import { DataTable } from "primereact/datatable";
-import { Column } from "primereact/column";
 import { HubConnection, HubConnectionBuilder, LogLevel } from "@microsoft/signalr";
 
-import { TargetModel, CertificateModel, DnsRootDomainModel, TargetPortModel } from "../../models/shared";
+import { TargetModel, CertificateModel, DnsRootDomainModel, TargetPortModel, DnsAdviceModel } from "../../models/shared";
 import { DnsFlattener } from "../../utils/dns-flattener";
+import { TargetsScanProgressBar } from "../../components/TargetsScanProgressBar";
+import { DashboardSeverityMetrics } from "../../components/DashboardSeverityMetrics";
+import { TopVulnerabilitiesTable } from "../../components/TopVulnerabilitiesTable";
+import { DnsRecordsTable } from "../../components/DnsRecordsTable";
+import { CertificatesTable } from "../../components/CertificatesTable";
+import { RecentScansTable } from "../../components/RecentScansTable";
+import { formatDate, formatDuration, topologicalSortRunners } from "../../utils/formatters";
 
 export default function DashboardPage() {
   const toast = useRef<Toast>(null);
@@ -24,6 +27,7 @@ export default function DashboardPage() {
   const [certificates, setCertificates] = useState<CertificateModel[]>([]);
   const [targetPorts, setTargetPorts] = useState<TargetPortModel[]>([]);
   const [flattenedDnsRecords, setFlattenedDnsRecords] = useState<any[]>([]);
+  const [dnsAdvices, setDnsAdvices] = useState<DnsAdviceModel[]>([]);
 
   const getApiUrl = (endpoint: string, params: Record<any, any> = {}) => {
     // 1. Create a full URL object (apiUrl should be the base from localized data)
@@ -82,19 +86,36 @@ export default function DashboardPage() {
       const rootDoms = domainsRes.items || [];
       
       let allRecords: any[] = [];
+      let allAdvices = new Map<string, DnsAdviceModel>();
+
       rootDoms.forEach((rd: DnsRootDomainModel) => {
         const flat = DnsFlattener.flattenRecords(rd);
         if (flat.aRecords) allRecords = allRecords.concat(flat.aRecords.map(r => ({ type: 'A', ...r })));
         if (flat.aaaaRecords) allRecords = allRecords.concat(flat.aaaaRecords.map(r => ({ type: 'AAAA', ...r })));
         if (flat.cnameRecords) allRecords = allRecords.concat(flat.cnameRecords.map(r => ({ type: 'CNAME', ...r })));
-        if (flat.mxRecords) allRecords = allRecords.concat(flat.mxRecords.map(r => ({ type: 'MX', ...r })));
+        
+        if (flat.mxRecords) {
+          allRecords = allRecords.concat(flat.mxRecords.map(r => ({ type: 'MX', ...r })));
+          flat.mxRecords.forEach(r => {
+            if (r.advice && Array.isArray(r.advice)) {
+              r.advice.forEach((adv: DnsAdviceModel) => allAdvices.set(adv.advice, adv));
+            }
+          });
+        }
+        
         if (flat.txtRecords) {
            flat.txtRecords.forEach(grp => {
              allRecords = allRecords.concat(grp.records.map((r: any) => ({ type: `TXT (${grp.type})`, ...r })));
+             grp.records.forEach((r: any) => {
+               if (r.advice && Array.isArray(r.advice)) {
+                 r.advice.forEach((adv: DnsAdviceModel) => allAdvices.set(adv.advice, adv));
+               }
+             });
            });
         }
       });
       setFlattenedDnsRecords(allRecords);
+      setDnsAdvices(Array.from(allAdvices.values()).sort((a, b) => b.severity - a.severity));
     } catch (error) {
       console.error("Failed to fetch dashboard data", error);
     } finally {
@@ -171,19 +192,28 @@ export default function DashboardPage() {
     return <div className="rounded bg-gray-200 px-2 py-1 font-bold text-gray-800">Not scanned</div>;
   };
 
-  const renderScanStatus = (rowData: any) => {
-    switch (rowData.status) {
-      case 0: return <Tag severity="info" value="Created" />;
-      case 1: return <Tag severity="warning" value="Running" />;
-      case 2: return <Tag severity="success" value="Completed" />;
-      case 3: return <Tag severity="danger" value="Failed" />;
-      case 4: return <Tag severity="danger" value="Cancelled" />;
-      default: return <Tag value="Unknown" />;
-    }
-  };
+  const renderCollectorsInline = (rowData: any) => {
+    if (!rowData.runners || rowData.runners.length === 0) return "N/A";
+    const sortedRunners = topologicalSortRunners(rowData.runners);
 
-  const formatDate = (rowData: any, field: string) => {
-    return rowData[field] ? new Date(rowData[field]).toLocaleString() : "N/A";
+    return (
+      <div className="flex flex-col gap-1 w-full min-w-[200px]">
+        {sortedRunners.map((r: any, idx: number) => {
+          const name = r.configuration?.displayName || r.specializationDisplayName || `Collector Type ${r.collectorType}`;
+          const isLast = idx === rowData.runners.length - 1;
+          return (
+            <div key={idx} className={`flex justify-between items-center text-xs py-1 ${!isLast ? 'border-b border-surface-200' : ''}`}>
+              <div className="flex items-center">
+                <span className="truncate mr-2 max-w-[150px]" title={name}>{name}</span>
+              </div>
+              <span className="bg-surface-100 text-surface-600 px-1.5 py-0.5 rounded text-[10px] font-medium border border-surface-200 uppercase">
+                {r.collectorStatus}
+              </span>
+            </div>
+          );
+        })}
+      </div>
+    );
   };
 
   return (
@@ -194,9 +224,10 @@ export default function DashboardPage() {
           {/* Header */}
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
             <div>
-              <div className="flex flex-row items-center gap-2 flex-wrap mb-2">
-                {renderTargetBadges()}
-                <Tag severity="info" value={target.type === 0 ? "Web" : "Network"} className="px-2 py-1" />
+              <div className="flex flex-row items-center gap-4 flex-wrap mb-2">
+                <div className="flex gap-2 items-center">
+                  {renderTargetBadges()}
+                </div>
               </div>
               <h2 className="text-3xl font-bold tracking-tight">{target.preferredDisplayName}</h2>
               <hr className="text-surface-200 mt-4 mb-2" />
@@ -215,7 +246,7 @@ export default function DashboardPage() {
                 </div>
               </div>
               <p className="text-gray-500 mt-1">
-                Target: <strong>{target.ip ?? target.hostname}</strong>
+                Target: <strong>{target.ip || target.hostname}</strong>
               </p>
             </div>
             <div className="flex items-center space-x-2">
@@ -231,16 +262,22 @@ export default function DashboardPage() {
             </div>
           </div>
 
+          <DashboardSeverityMetrics severity={target.severity} />
+
           {/* Active Scans Banner */}
           {activeScans.length > 0 && (
-            <Card title="Active Scans Running" className="shadow-sm border border-blue-200 bg-blue-50 ">
+            <Card title="Active Scans Running" className="shadow-sm border border-blue-200 bg-blue-50">
               {activeScans.map((scan) => (
-                <div key={scan.id} className="mb-4 last:mb-0">
-                  <div className="flex justify-between text-sm mb-1 text-blue-900 font-medium">
-                    <span>Scan Strategy: {scan.scanStrategyName || "Default"}</span>
-                    <span>{Math.round(scan.progress)}%</span>
+                <div key={scan.id} className="mb-6 last:mb-0">
+                  <div className="flex justify-between items-center text-sm mb-2 text-blue-900 font-medium pb-2 border-b border-blue-100">
+                    <div>
+                      <span className="font-bold mr-2 text-base">{scan.scanStrategyName || "Default"}</span>
+                      <span className="text-gray-500 text-xs">Started: {formatDate(scan.startedAt)}</span>
+                    </div>
                   </div>
-                  <ProgressBar value={Math.round(scan.progress)} showValue={false} style={{ height: '8px' }} color="#3b82f6" />
+                  <div className="flex flex-col gap-1 flex-1">
+                    <TargetsScanProgressBar scan={scan} />
+                  </div>
                 </div>
               ))}
             </Card>
@@ -251,34 +288,24 @@ export default function DashboardPage() {
           {/* Detailed Lists */}
           <div className="grid gap-6 lg:grid-cols-2">
             <Card title="Top Vulnerabilities" className="shadow-sm border border-surface-200 h-full">
-              <DataTable value={vulnerabilities} emptyMessage="No recent vulnerabilities found" stripedRows size="small" rows={5}>
-                <Column header="Name" field="displayName" />
-                <Column header="Severity" field="severity" />
-              </DataTable>
+              <TopVulnerabilitiesTable vulnerabilities={vulnerabilities} />
             </Card>
 
             <Card title="Recent Scans" className="shadow-sm border border-surface-200 h-full">
-              <DataTable value={recentScans} emptyMessage="No recent scans found" stripedRows size="small" rows={5}>
-                <Column field="scanStrategyName" header="Strategy" />
-                <Column header="Status" body={renderScanStatus} />
-                <Column header="Started At" body={(rowData) => formatDate(rowData, "startedAt")} />
-              </DataTable>
+              <RecentScansTable 
+                recentScans={recentScans} 
+                formatDate={formatDate} 
+                formatDuration={formatDuration} 
+                renderCollectorsInline={renderCollectorsInline} 
+              />
             </Card>
 
             <Card title="Certificates" className="shadow-sm border border-surface-200 ">
-              <DataTable value={certificates} emptyMessage="No certificates found" stripedRows size="small" rows={3}>
-                <Column field="commonName" header="Name" />
-                <Column field="issuer" header="Issuer" />
-                <Column header="Valid To" body={(rowData) => formatDate(rowData, "validTo")} />
-              </DataTable>
+              <CertificatesTable certificates={certificates} formatDate={formatDate} />
             </Card>
 
             <Card title="DNS Records" className="shadow-sm border border-surface-200 ">
-              <DataTable value={flattenedDnsRecords} emptyMessage="No DNS records found" stripedRows size="small" rows={3}>
-                <Column field="name" header="Name / Exchange" body={r => r.name || r.exchange || r.mName || 'N/A'} />
-                <Column field="type" header="Type" />
-                <Column field="value" header="Value / Address" body={r => r.value || r.address || r.addressIpv6 || 'N/A'} />
-              </DataTable>
+              <DnsRecordsTable dnsAdvices={dnsAdvices} flattenedDnsRecords={flattenedDnsRecords} />
             </Card>
           </div>
         </div>

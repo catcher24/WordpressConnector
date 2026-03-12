@@ -105,6 +105,7 @@
     "date-fns": "^3.3.1",
     "embla-carousel-react": "^8.4.0",
     "jotai": "^2.6.5",
+    "lodash": "^4.17.23",
     "lucide-react": "^0.302.0",
     "next-themes": "^0.2.1",
     "primereact": "^10.9.7",
@@ -119,6 +120,7 @@
     "tailwind-variants": "^0.1.18",
     "tailwindcss-animate": "^1.0.7",
     "tailwindcss-react-aria-components": "^1.0.0-rc.0",
+    "uniqolor": "^1.1.1",
     "vite-svg-loader": "^5.0.1",
     "zod": "^3.23.0-canary.20240222T232722"
   },

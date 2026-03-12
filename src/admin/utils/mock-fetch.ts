@@ -51,7 +51,7 @@ export const setupStorybookMocks = (customMocks: any = {}) => {
 
     if (url.includes("/vulnerabilities")) return respondWith({ items: customMocks.vulnerabilities || generateMockVulnerabilities(15) });
     if (url.includes("/scans")) {
-      if (url.includes("endedAt=")) return respondWith({ items: customMocks.activeScans || generateMockScans(2, true) });
+      if (url.includes("endedAt=") || url.includes("endedAt%3D")) return respondWith({ items: customMocks.activeScans || generateMockScans(1, true) });
       return respondWith({ items: customMocks.recentScans || generateMockScans(5, false) });
     }
     if (url.includes("/certificates")) return respondWith({ items: customMocks.certificates || generateMockCertificates(2) });

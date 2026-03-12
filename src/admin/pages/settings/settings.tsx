@@ -9,6 +9,7 @@ import { InputText } from "primereact/inputtext"
 import { Dropdown } from "primereact/dropdown"
 import { Button } from "primereact/button"
 import { Toast } from "primereact/toast"
+import { Message } from "primereact/message"
 import { ProgressSpinner } from "primereact/progressspinner"
 import {classNames} from "primereact/utils";
 
@@ -17,7 +18,8 @@ const settingsFormSchema = z.object({
   targetId: z.string().min(1, { message: "Please select a target." }),
   targetDisplayName: z.string().min(2, {
     message: "Display name must be at least 2 characters.",
-  })
+  }),
+  targetHostname: z.string().min(4, { message: "Hostname/IP must be at least 4 characters." }),
 })
 
 type SettingsFormValues = z.infer<typeof settingsFormSchema>
@@ -29,6 +31,8 @@ export function SettingsForm() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [organizations, setOrganizations] = useState<any[]>([])
   const [targets, setTargets] = useState<any[]>([])
+  const [isOrgDisabled, setIsOrgDisabled] = useState(false)
+  const [orgDisabledMessage, setOrgDisabledMessage] = useState("")
 
   const form = useForm<SettingsFormValues>({
     resolver: zodResolver(settingsFormSchema),
@@ -36,6 +40,7 @@ export function SettingsForm() {
       organizationId: "",
       targetId: "",
       targetDisplayName: "",
+      targetHostname: "",
     },
     mode: "onChange",
   })
@@ -58,6 +63,19 @@ export function SettingsForm() {
         setOrganizations(orgsData || [])
         setTargets(targetsList)
 
+        // Check capabilities/status
+        const currentOrg = orgsData.find((org: any) => org.id === organizationId || org.identifier === organizationId || org.name === organizationId);
+        if (currentOrg) {
+          if (currentOrg.isActive === false) {
+            setIsOrgDisabled(true);
+            setOrgDisabledMessage("This organization is currently inactive. Settings cannot be modified.");
+          } else if (currentOrg.subscription && currentOrg.subscription.status !== 0 && currentOrg.subscription.status !== 2) {
+            // 0 = Active, 2 = Trialing
+            setIsOrgDisabled(true);
+            setOrgDisabledMessage("Your subscription is inactive or canceled. Please renew to modify settings.");
+          }
+        }
+
         // Set Default Values
         const activeTarget = targetsList.find((t: any) => t.id === targetId)
 
@@ -65,6 +83,7 @@ export function SettingsForm() {
           organizationId: organizationId || "",
           targetId: targetId || "",
           targetDisplayName: activeTarget?.displayName || activeTarget?.preferredDisplayName || "",
+          targetHostname: activeTarget?.hostname || activeTarget?.ip || "",
         })
       } catch (error) {
         toast.current?.show({
@@ -110,7 +129,8 @@ export function SettingsForm() {
       const originalTarget = targets.find((t) => t.id === data.targetId)
       const hasEditedTarget =
         originalTarget &&
-        (originalTarget.displayName !== data.targetDisplayName)
+        (originalTarget.displayName !== data.targetDisplayName ||
+         originalTarget.hostname !== data.targetHostname)
 
       if (hasEditedTarget) {
         await fetch(`${apiUrl}/targets/${data.targetId}`, {
@@ -118,6 +138,8 @@ export function SettingsForm() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             displayName: data.targetDisplayName,
+            hostname: data.targetHostname,
+            ip: data.targetHostname, // Send to both depending on backend API model logic
           }),
         })
         needsReload = true
@@ -212,7 +234,7 @@ export function SettingsForm() {
                   value={field.value}
                   options={targetOptions}
                   placeholder="Select Target"
-                  disabled={targets.length <= 1 || isSubmitting}
+                  disabled={targets.length <= 1 || isSubmitting || isOrgDisabled}
                   className={classNames("w-full", fieldState.invalid && "p-invalid")}
                   onChange={(e) => {
                     field.onChange(e.value)
@@ -220,6 +242,7 @@ export function SettingsForm() {
                     const selected = targets.find((t) => t.id === e.value)
                     if (selected) {
                       form.setValue("targetDisplayName", selected.displayName || selected.preferredDisplayName || "")
+                      form.setValue("targetHostname", selected.hostname || selected.ip || "")
                     }
                   }}
                 />
@@ -246,7 +269,7 @@ export function SettingsForm() {
               <>
                 <InputText
                   id={field.name}
-                  disabled={isSubmitting}
+                  disabled={isSubmitting || isOrgDisabled}
                   className={classNames("w-full", fieldState.invalid && "p-invalid")}
                   {...field}
                 />
@@ -261,11 +284,40 @@ export function SettingsForm() {
           />
         </div>
 
+        {/* Edit Target Hostname */}
+        <div className="flex flex-col gap-2">
+          <label htmlFor="targetHostname" className="text-sm font-medium">Target Hostname/IP</label>
+          <Controller
+            name="targetHostname"
+            control={form.control}
+            render={({ field, fieldState }) => (
+              <>
+                <InputText
+                  id={field.name}
+                  disabled={isSubmitting || isOrgDisabled}
+                  className={classNames("w-full", fieldState.invalid && "p-invalid")}
+                  {...field}
+                />
+                <small className="text-muted-foreground">
+                  The hostname or IP address mapping to this site.
+                </small>
+                {fieldState.error && (
+                  <small className="text-red-500 font-medium">{fieldState.error.message}</small>
+                )}
+              </>
+            )}
+          />
+        </div>
+
+        {isOrgDisabled && (
+          <Message severity="warn" text={orgDisabledMessage} className="w-full justify-start mt-4" />
+        )}
+
         <Button
           type="submit"
           label="Save Settings"
           loading={isSubmitting}
-          disabled={!form.formState.isDirty}
+          disabled={!form.formState.isDirty || isOrgDisabled}
         />
       </form>
     </>
