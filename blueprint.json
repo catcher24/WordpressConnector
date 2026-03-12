@@ -1,3 +1,5 @@
 {
-  "landingPage": "/wp-admin/"
+  "$schema": "https://playground.wordpress.net/blueprint-schema.json",
+  "landingPage": "/wp-admin/admin.php",
+  "login": true
 }

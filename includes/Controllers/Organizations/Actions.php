@@ -50,6 +50,38 @@ class Actions {
 		return $fetched_organizations;
 	}
 
+	/**
+	 * Get a single organization by ID.
+	 *
+	 * @param \WP_REST_Request $request
+	 * @return array|\WP_REST_Response
+	 */
+	public function get_organization( \WP_REST_Request $request ) {
+		$organization_id = $request->get_param( 'organizationId' );
+
+		if ( empty( $organization_id ) ) {
+			return new \WP_REST_Response( [ 'message' => 'Organization ID is missing' ], 400 );
+		}
+
+		try {
+			$token = Catcher24Client::get_valid_token();
+			$token_parts = explode( '.', $token );
+			$payload = json_decode( base64_decode( $token_parts[1] ), true );
+			$tenant_id = $payload['__tenant__'] ?? null;
+
+			if ( ! $tenant_id ) {
+				return new \WP_REST_Response( [ 'message' => 'Invalid tenant session' ], 401 );
+			}
+
+			$endpoint = rtrim( CATCHER24_API_GATEWAY_URL, '/' ) . "/api/tenants/{$tenant_id}/organizations/by-id/{$organization_id}";
+
+			return Catcher24Client::request( 'GET', $endpoint );
+
+		} catch ( Exception $e ) {
+			return new \WP_REST_Response( [ 'message' => $e->getMessage() ], 500 );
+		}
+	}
+
 	public function select_organization( \WP_REST_Request $request ) {
 		$body = json_decode( $request->get_body(), true );
 		$organization_id = $body['organization_id'] ?? '';

@@ -1,92 +1,122 @@
 import {
-  CircleUser,
   Home,
   SlidersHorizontal,
   LucideIcon
-} from "lucide-react"
-import { useEffect, useRef } from "react";
+} from "lucide-react";
+import { useRef } from "react";
 import { Button } from "primereact/button";
 import { Menu } from "primereact/menu";
 import { MenuItem } from "primereact/menuitem";
-import { Outlet, useLocation, useNavigate } from "react-router-dom";
+import { Outlet, useLocation, Link } from "react-router-dom";
 import Logo from "../../icons/Logo";
 
+const {
+  userInfo,
+  organization
+} = catcher24WordpressConnector;
 
 interface NavigationItem {
   name: string;
   href: string;
   icon: LucideIcon;
-  current: boolean;
 }
 
 const navigation: NavigationItem[] = [
-  {
-    name: "Dashboard",
-    href: "dashboard",
-    icon: Home,
-    current: true,
-  },
-  {
-    name: "Settings",
-    href: "settings",
-    icon: SlidersHorizontal,
-    current: false,
-  }
+  { name: "Dashboard", href: "/dashboard", icon: Home },
+  { name: "Settings", href: "/settings", icon: SlidersHorizontal },
 ];
 
-export default function ApplicationLayout({ children }: {
-  children?: React.ReactNode
-}) {
-  let showApplicationLayout = catcher24WordpressConnector.userInfo;
+export default function ApplicationLayout({ children }: { children?: React.ReactNode }) {
+  const location = useLocation();
   const menuRight = useRef<Menu>(null);
 
   const userMenuItems: MenuItem[] = [
     {
-      label: 'My Account',
+      label: userInfo?.email || 'Account',
       items: [
-        { label: 'Logout' }
+        {
+          label: 'Logout',
+          icon: 'pi pi-power-off',
+          command: () => window.location.href = '/wp-login.php?action=logout'
+        }
       ]
     }
   ];
 
+  const getInitials = () => {
+    if (userInfo?.first_name && userInfo?.last_name) {
+      return `${userInfo.first_name[0]}${userInfo.last_name[0]}`.toUpperCase();
+    }
+    return userInfo?.email ? userInfo.email.slice(0, 2).toUpperCase() : "U";
+  };
+
+  // If no user is logged in, just render the content without the shell
+  if (!userInfo) return <main>{children || <Outlet />}</main>;
+
   return (
-    <div className={`min-h-screen w-full`}>
-      <div className="flex flex-col">
-        {showApplicationLayout && (
-          <header className="flex h-14 items-center gap-4 border-b bg-muted/40 lg:h-[60px] p-8">
-            <div className="flex h-14 items-center lg:h-[60px]">
-              <a href="#/dashboard" className="flex items-center gap-2 font-semibold">
-                <Logo />
-              </a>
-            </div>
+    <div className="min-h-screen w-full flex flex-col">
+      <header className="flex h-16 items-center gap-4 border-b bg-background px-8 shrink-0">
+        <div className="flex items-center gap-2 pr-4 border-r">
+          <Link to="/dashboard" className="flex items-center gap-2 font-semibold">
+            <Logo />
+          </Link>
+        </div>
 
-            <div className="w-full flex items-center h-full">
-            </div>
+        <nav className="flex items-center gap-6 text-sm font-medium h-full">
+          {navigation.map((item) => {
+            const isActive = location.pathname.includes(item.href);
+            return (
+              <Link
+                key={item.name}
+                to={item.href}
+                className={`flex items-center gap-2 transition-colors hover:text-primary ${
+                  isActive ? "text-foreground" : "text-muted-foreground"
+                }`}
+              >
+                <item.icon className="h-4 w-4" />
+                {item.name}
+              </Link>
+            );
+          })}
+        </nav>
 
-            <Menu
-              model={userMenuItems}
-              popup
-              ref={menuRight}
-              id="popup_menu_right"
-              popupAlignment="right"
-            />
-            <Button
-              text
-              rounded
-              className="p-2 text-foreground"
-              onClick={(event) => menuRight.current?.toggle(event)}
-              aria-controls="popup_menu_right"
-              aria-haspopup
-            >
-              <CircleUser className="h-5 w-5" />
-              <span className="sr-only">Toggle user menu</span>
-            </Button>
-          </header>
-        )}
-        <main className={'p-8'}>
-          {children || <Outlet />}
-        </main>
-      </div>
+        <div className="flex-1" />
+
+        <div className="flex items-center gap-4">
+          {organization && (
+            <div className="flex gap-2">
+              <span className="tracking-wider text-muted-foreground font-bold">Organization:</span>
+              <span className="font-medium text-foreground">
+                 {organization.displayName || organization.name}
+               </span>
+            </div>
+          )}
+
+          <Menu
+            model={userMenuItems}
+            popup
+            ref={menuRight}
+            id="popup_menu_right"
+            popupAlignment="right"
+          />
+
+          <Button
+            outlined={true}
+            severity={"secondary"}
+            size={"small"}
+            className={'px-2'}
+            onClick={(event) => menuRight.current?.toggle(event)}
+          >
+                <span className="font-bold uppercase">
+                    {getInitials()}
+                </span>
+          </Button>
+        </div>
+      </header>
+
+      <main className="flex-1 p-8 bg-muted/10">
+        {children || <Outlet />}
+      </main>
     </div>
-  )
+  );
 }

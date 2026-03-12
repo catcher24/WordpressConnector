@@ -399,15 +399,13 @@ class Route {
 	 * @since 1.0.0
 	 */
 	private static function convert_to_regex( $url ) {
-		// Replace placeholders with regex patterns.
-		$regex = preg_replace_callback(
+		return preg_replace_callback(
 			'/\{(\w+)\}/',
 			function ( $matches ) {
-				return '(?P<' . $matches[1] . '>\d+)'; // Capture numeric values.
+				// Matches alphanumeric, underscores, and hyphens (works for IDs and UUIDs)
+				return '(?P<' . $matches[1] . '>[a-zA-Z0-9\-_]+)';
 			},
 			$url
 		);
-
-		return $regex;
 	}
 }

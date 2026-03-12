@@ -26,6 +26,8 @@ Route::prefix(
 
 		$route->get( '/targets', '\Catcher24\WordPress_Connector\Controllers\Targets\Actions@get_targets' );
 		$route->post( '/targets/select', '\Catcher24\WordPress_Connector\Controllers\Targets\Actions@select_target' );
+		$route->post( '/targets/deselect', '\Catcher24\WordPress_Connector\Controllers\Targets\Actions@deselect_target' );
+		$route->get( '/targets/{targetId}', '\Catcher24\WordPress_Connector\Controllers\Targets\Actions@get_target' );
 		$route->get( '/targets/{targetId}/vulnerabilities', '\Catcher24\WordPress_Connector\Controllers\Targets\Actions@get_vulnerabilities' );
 		$route->get( '/targets/{targetId}/scans', '\Catcher24\WordPress_Connector\Controllers\Targets\Actions@get_scans' );
 		$route->get( '/targets/{targetId}/certificates', '\Catcher24\WordPress_Connector\Controllers\Targets\Actions@get_certificates' );

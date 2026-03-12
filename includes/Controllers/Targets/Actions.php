@@ -25,6 +25,12 @@ class Actions {
 		return $response;
 	}
 
+	public function get_target( \WP_REST_Request $request ) {
+		$target_id = $request->get_param( 'targetId' );
+		if ( ! $target_id ) return new \WP_REST_Response( array( 'message' => 'Missing target context' ), 400 );
+		return Catcher24Client::proxy_request( 'GET', "targets/{$target_id}", $request->get_query_params(), [], true, true );
+	}
+
 	/**
 	 * Save the selected target ID and handle creation logic.
 	 */
@@ -40,6 +46,16 @@ class Actions {
 		update_option( 'catcher24_selected_target', $target_id );
 
 		return new WP_REST_Response( array( 'message' => 'Target selected successfully' ), 200 );
+	}
+
+	/**
+	 * Remove current target
+	 */
+	public function deselect_target( WP_REST_Request $request ) {
+
+		update_option( 'catcher24_selected_target', null );
+
+		return new WP_REST_Response( array( 'message' => 'Target deselected successfully' ), 200 );
 	}
 
 	/**

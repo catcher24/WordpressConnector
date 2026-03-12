@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef, useMemo, useCallback } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { Toast } from "primereact/toast";
 import { Card } from "primereact/card";
 import { Tag } from "primereact/tag";
@@ -10,27 +10,61 @@ import { HubConnection, HubConnectionBuilder, LogLevel } from "@microsoft/signal
 
 export default function DashboardPage() {
   const toast = useRef<Toast>(null);
-  const { apiUrl, targetId, siteHostname } = catcher24WordpressConnector;
+  const { apiUrl, targetId, dashboardUrl, organization } = catcher24WordpressConnector;
 
   // State
   const [loading, setLoading] = useState(true);
+  const [target, setTarget] = useState<any>();
   const [vulnerabilities, setVulnerabilities] = useState<any[]>([]);
   const [recentScans, setRecentScans] = useState<any[]>([]);
   const [activeScans, setActiveScans] = useState<any[]>([]);
   const [certificates, setCertificates] = useState<any[]>([]);
   const [rootDomains, setRootDomains] = useState<any[]>([]);
 
+  const getApiUrl = (endpoint: string, params: Record<any, any> = {}) => {
+    // 1. Create a full URL object (apiUrl should be the base from localized data)
+    const url = new URL(`${apiUrl}${endpoint}`);
+
+    // 2. Use the searchParams interface to add filters
+    Object.keys(params).forEach(key => {
+      if (params[key] !== undefined && params[key] !== null) {
+        url.searchParams.set(key, params[key]);
+      }
+    });
+
+    // 3. .toString() provides a fully encoded absolute URL
+    return url.toString();
+  };
+
   const fetchDashboardData = useCallback(async () => {
     if (!targetId) return;
     try {
-      const [vulnRes, scansRes, activeScansRes, certsRes, domainsRes] = await Promise.all([
-        fetch(`${apiUrl}/targets/${targetId}/vulnerabilities?pageSize=500`).then((r) => r.json()),
-        fetch(`${apiUrl}/targets/${targetId}/scans?orderBy=startedAt%20desc&pageSize=5`).then((r) => r.json()),
-        fetch(`${apiUrl}/targets/${targetId}/scans?filter=status=running`).then((r) => r.json()),
-        fetch(`${apiUrl}/targets/${targetId}/certificates?pageSize=5`).then((r) => r.json()),
-        fetch(`${apiUrl}/targets/${targetId}/rootDomains?pageSize=5`).then((r) => r.json()),
+      const [targetRes, vulnRes, scansRes, activeScansRes, certsRes, domainsRes] = await Promise.all([
+        fetch(getApiUrl(`/targets/${targetId}`)).then((r) => r.json()),
+
+        fetch(getApiUrl(`/targets/${targetId}/vulnerabilities`, {
+          pageSize: 500
+        })).then((r) => r.json()),
+
+        fetch(getApiUrl(`/targets/${targetId}/scans`, {
+          orderBy: 'startedAt desc',
+          pageSize: 5
+        })).then((r) => r.json()),
+
+        fetch(getApiUrl(`/targets/${targetId}/scans`, {
+          filter: 'endedAt='
+        })).then((r) => r.json()),
+
+        fetch(getApiUrl(`/targets/${targetId}/certificates`, {
+          pageSize: 5
+        })).then((r) => r.json()),
+
+        fetch(getApiUrl(`/targets/${targetId}/rootDomains`, {
+          pageSize: 5
+        })).then((r) => r.json()),
       ]);
 
+      setTarget(targetRes);
       setVulnerabilities(vulnRes.items || []);
       setRecentScans(scansRes.items || []);
       setActiveScans(activeScansRes.items || []);
@@ -59,7 +93,7 @@ export default function DashboardPage() {
         if (!res.ok) return;
 
         const data = await res.json();
-        
+
         if (isCancelled) return;
 
         newConnection = new HubConnectionBuilder()
@@ -93,23 +127,11 @@ export default function DashboardPage() {
     };
   }, [apiUrl, targetId, fetchDashboardData]);
 
-  // Derived calculations
-  const severityCounts = useMemo(() => {
-    const counts = { Critical: 0, High: 0, Medium: 0, Low: 0 };
-    vulnerabilities.forEach((v) => {
-      if (v.severity === 4) counts.Critical++;
-      if (v.severity === 3) counts.High++;
-      if (v.severity === 2) counts.Medium++;
-      if (v.severity === 1) counts.Low++;
-    });
-    return counts;
-  }, [vulnerabilities]);
-
   const stats = [
-    { label: "Critical", value: severityCounts.Critical, color: "text-red-600 bg-red-100 dark:bg-red-900 dark:text-red-300" },
-    { label: "High", value: severityCounts.High, color: "text-orange-600 bg-orange-100 dark:bg-orange-900 dark:text-orange-300" },
-    { label: "Medium", value: severityCounts.Medium, color: "text-yellow-600 bg-yellow-100 dark:bg-yellow-900 dark:text-yellow-300" },
-    { label: "Low", value: severityCounts.Low, color: "text-blue-600 bg-blue-100 dark:bg-blue-900 dark:text-blue-300" },
+    { label: "Critical", value: target?.severity.critical, color: "text-red-600 bg-red-100 dark:bg-red-900 dark:text-red-300" },
+    { label: "High", value: target?.severity.high, color: "text-orange-600 bg-orange-100 dark:bg-orange-900 dark:text-orange-300" },
+    { label: "Medium", value: target?.severity.medium, color: "text-yellow-600 bg-yellow-100 dark:bg-yellow-900 dark:text-yellow-300" },
+    { label: "Low", value: target?.severity.low, color: "text-blue-600 bg-blue-100 dark:bg-blue-900 dark:text-blue-300" },
   ];
 
   if (loading) {
@@ -145,15 +167,18 @@ export default function DashboardPage() {
             <div>
               <h2 className="text-3xl dark:text-white font-bold tracking-tight">Vulnerability Overview</h2>
               <p className="text-gray-500 dark:text-gray-400 mt-1">
-                Target: <strong>{siteHostname}</strong>
+                Target: <strong>{target.preferredDisplayName}</strong>
               </p>
             </div>
             <div className="flex items-center space-x-2">
               <Button
                 label="View Full Insights on Catcher24"
                 icon="pi pi-external-link"
-                className="p-button-outlined bg-white dark:bg-gray-800"
-                onClick={() => window.open(`https://catcher24.com/dashboard/organization/targets`, "_blank")}
+                className="p-button-outlined"
+                onClick={() => {
+                  const baseUrl = dashboardUrl.replace(/\/$/, "");
+                  window.open(`${baseUrl}/org/${organization.identifier}/targets/${target.id}`, "_blank");
+                }}
               />
             </div>
           </div>
@@ -192,6 +217,13 @@ export default function DashboardPage() {
 
           {/* Detailed Lists */}
           <div className="grid gap-6 lg:grid-cols-2">
+            <Card title="Top Vulnerabilities" className="shadow-sm border border-surface-200 dark:border-surface-700 h-full">
+              <DataTable value={vulnerabilities} emptyMessage="No recent vulnerabilities found" stripedRows size="small" rows={5}>
+                <Column header="Name" field="displayName" />
+                <Column header="Severity" field="severity" />
+              </DataTable>
+            </Card>
+
             <Card title="Recent Scans" className="shadow-sm border border-surface-200 dark:border-surface-700 h-full">
               <DataTable value={recentScans} emptyMessage="No recent scans found" stripedRows size="small" rows={5}>
                 <Column field="scanStrategyName" header="Strategy" />
@@ -200,23 +232,21 @@ export default function DashboardPage() {
               </DataTable>
             </Card>
 
-            <div className="flex flex-col gap-6">
-              <Card title="Certificates" className="shadow-sm border border-surface-200 dark:border-surface-700">
-                <DataTable value={certificates} emptyMessage="No certificates found" stripedRows size="small" rows={3}>
-                  <Column field="subject" header="Subject" />
-                  <Column field="issuer" header="Issuer" />
-                  <Column header="Valid To" body={(rowData) => formatDate(rowData, "validTo")} />
-                </DataTable>
-              </Card>
+            <Card title="Certificates" className="shadow-sm border border-surface-200 dark:border-surface-700">
+              <DataTable value={certificates} emptyMessage="No certificates found" stripedRows size="small" rows={3}>
+                <Column field="subject" header="Subject" />
+                <Column field="issuer" header="Issuer" />
+                <Column header="Valid To" body={(rowData) => formatDate(rowData, "validTo")} />
+              </DataTable>
+            </Card>
 
-              <Card title="DNS Records" className="shadow-sm border border-surface-200 dark:border-surface-700">
-                <DataTable value={rootDomains} emptyMessage="No DNS records found" stripedRows size="small" rows={3}>
-                  <Column field="domain" header="Domain" />
-                  <Column field="recordType" header="Type" />
-                  <Column field="value" header="Value" />
-                </DataTable>
-              </Card>
-            </div>
+            <Card title="DNS Records" className="shadow-sm border border-surface-200 dark:border-surface-700">
+              <DataTable value={rootDomains} emptyMessage="No DNS records found" stripedRows size="small" rows={3}>
+                <Column field="domain" header="Domain" />
+                <Column field="recordType" header="Type" />
+                <Column field="value" header="Value" />
+              </DataTable>
+            </Card>
           </div>
         </div>
       </div>

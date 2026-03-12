@@ -3,6 +3,8 @@ declare const catcher24WordpressConnector: {
   isAdmin: boolean;
   targetId?: string;
   organizationId?: string;
+  organization?: any;
+  dashboardUrl: string;
   apiUrl: string;
   userInfo: {
     email: string;

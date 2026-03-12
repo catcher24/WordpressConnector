@@ -14,27 +14,27 @@ class Actions {
 	 */
 	public function public_negotiate( \WP_REST_Request $request ) {
 		$token = Catcher24Client::get_valid_token();
-		
+
 		if ( ! $token ) {
 			return new \WP_REST_Response( array( 'message' => 'Session expired. Please re-authenticate.' ), 401 );
 		}
-		
+
 		$query_params = $request->get_query_params();
-		
+
 		try {
-			// SignalR endpoints are often at /signalr/publicMessage or similar.
-			// The exact endpoint for Catcher24 API gateway is based on the route requested.
-			// Let's proxy to the SaaS's own negotiate endpoint for public message hub.
-			$endpoint = rtrim( CATCHER24_API_GATEWAY_URL, '/' ) . "/signalr/publicMessage/negotiate";
-			$url = add_query_arg( array_filter( $query_params ), $endpoint );
+			$organization_id = get_option( CATCHER24_SETTING_SELECTED_ORGANIZATION );
+
+			if ( $organization_id ) {
+				$query_params['organizationId'] = $organization_id;
+			}
+
+			$endpoint = rtrim( CATCHER24_API_GATEWAY_URL, '/' ) . "/signalr/organizations/hub/negotiate";
+			$url      = add_query_arg( array_filter( $query_params ), $endpoint );
 
 			$decoded = Catcher24Client::request( 'POST', $url );
 
-			// Provide the valid access token back to the frontend so it can establish 
-			// the actual WebSocket connection directly to the SaaS server.
-			$decoded['accessToken'] = $token;
-			$decoded['url'] = rtrim( CATCHER24_API_GATEWAY_URL, '/' ) . "/signalr/publicMessage";
-			
+			$decoded['url']         = rtrim( CATCHER24_API_GATEWAY_URL, '/' ) . "/signalr/organizations/hub";
+
 			return new \WP_REST_Response( $decoded, 200 );
 
 		} catch ( Exception $e ) {

@@ -8,8 +8,6 @@ use Exception;
 
 class Catcher24Client {
 
-	private static string $base_url = 'https://api.dev.catcher24.net';
-
 	private static function get_provider() {
 		$provider = new KeycloakPKCEProvider([
 			'authServerUrl' => 'https://auth.dev.catcher24.net',
@@ -117,7 +115,7 @@ class Catcher24Client {
 
 				$token_parts = explode( '.', $new_token );
 				if ( count( $token_parts ) !== 3 ) {
-					return [];
+					return null;
 				}
 
 				$payload = json_decode( base64_decode( $token_parts[1] ), true );
@@ -162,7 +160,7 @@ class Catcher24Client {
 
 		$url = str_starts_with( $endpoint, 'http' )
 			? $endpoint
-			: rtrim( self::$base_url, '/' ) . '/' . ltrim( $endpoint, '/' );
+			: rtrim( CATCHER24_API_GATEWAY_URL, '/' ) . '/' . ltrim( $endpoint, '/' );
 
 		$args = [
 			'method'  => strtoupper( $method ),
@@ -195,15 +193,10 @@ class Catcher24Client {
 		$response_body = wp_remote_retrieve_body( $response );
 		$decoded       = json_decode( $response_body, true );
 
-		if ( $status_code >= 400 ) {
-			throw new Exception( $decoded['message'] ?? 'SaaS API Error' );
-		}
-
 		return $decoded;
 	}
 
-	public static function proxy_request( string $method, string $sub_path, array $query_params = [], array $body = [], bool $include_tenant = false, bool $include_org = false, string $target_id = null ) {
-		$tenant_id = get_option( CATCHER24_SETTING_SELECTED_TENANT );
+	public static function proxy_request( string $method, string $sub_path, array $query_params = [], array $body = [], bool $include_tenant = false, bool $include_org = false, ?string $target_id = null ) {		$tenant_id = get_option( CATCHER24_SETTING_SELECTED_TENANT );
 		$organization_id = get_option( CATCHER24_SETTING_SELECTED_ORGANIZATION );
 
 		if ( $include_tenant && ! $tenant_id ) {
@@ -227,8 +220,8 @@ class Catcher24Client {
 		$pathSegments[] = ltrim( $sub_path, '/' );
 
 		$full_path = implode( '/', $pathSegments );
-		$endpoint = rtrim( self::$base_url, '/' ) . "/api/{$full_path}";
-		
+		$endpoint = rtrim( CATCHER24_API_GATEWAY_URL, '/' ) .  "/api/{$full_path}";
+
 		$url = add_query_arg( array_filter( $query_params ), $endpoint );
 
 		try {

@@ -115,6 +115,18 @@ class Admin {
 		}
 
 		$organization_id = get_option( CATCHER24_SETTING_SELECTED_ORGANIZATION, null );
+		$current_org = null;
+
+		// Validate organizationId and fetch full data
+		if ( $token && $organization_id ) {
+			if ( ! $this->is_organization_valid( $token, $organization_id ) ) {
+				delete_option( CATCHER24_SETTING_SELECTED_ORGANIZATION );
+				$organization_id = null;
+			} else {
+				// Fetch the actual organization object for the frontend
+				$current_org = $this->get_current_organization_details( $token, $organization_id );
+			}
+		}
 
 		// Validate organizationId against the token claims
 		if ( $token && $organization_id ) {
@@ -139,8 +151,10 @@ class Admin {
 			'developer' => 'catcher24',
 			'isAdmin'   => is_admin(),
 			'apiUrl'    => rest_url(CATCHER24_ROUTE_PREFIX),
+			'dashboardUrl'    => CATCHER24_DASHBOARD_URL,
 			'userInfo'  => Catcher24Client::get_user_info(),
 			'organizationId' => $organization_id,
+			'organization' => $current_org,
 			'targetId' => $target_id,
 			'siteName'       => get_bloginfo( 'name' ),
 			'siteHostname'   => wp_parse_url( home_url(), PHP_URL_HOST ),
@@ -197,7 +211,7 @@ class Admin {
 		}
 
 		$endpoint = rtrim( CATCHER24_API_GATEWAY_URL, '/' ) . "/api/tenants/{$tenant_id}/organizations/{$org_id}/targets/{$target_id}";
-		
+
 		try {
 			Catcher24Client::request( 'GET', $endpoint );
 			set_transient( $transient_key, 'valid', 12 * HOUR_IN_SECONDS );
@@ -205,6 +219,37 @@ class Admin {
 		} catch ( \Exception $e ) {
 			set_transient( $transient_key, 'invalid', 1 * HOUR_IN_SECONDS );
 			return false;
+		}
+	}
+
+	/**
+	 * Fetches full organization details from the API.
+	 */
+	private function get_current_organization_details( string $token, string $org_id ) {
+		$transient_key = 'catcher24_org_data_' . $org_id;
+		$cached = get_transient( $transient_key );
+
+		if ( false !== $cached ) {
+			return $cached;
+		}
+
+		$token_parts = explode( '.', $token );
+		$payload     = json_decode( base64_decode( $token_parts[1] ), true );
+		$tenant_id   = $payload['__tenant__'] ?? null;
+
+		if ( ! $tenant_id ) {
+			return null;
+		}
+
+		$endpoint = rtrim( CATCHER24_API_GATEWAY_URL, '/' ) . "/api/tenants/{$tenant_id}/organizations/by-id/{$org_id}";
+
+		try {
+			$data = Catcher24Client::request( 'GET', $endpoint );
+			// Cache for 1 hour to keep admin performance snappy
+			set_transient( $transient_key, $data, HOUR_IN_SECONDS );
+			return $data;
+		} catch ( \Exception $e ) {
+			return null;
 		}
 	}
 }

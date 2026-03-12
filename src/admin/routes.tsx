@@ -1,10 +1,10 @@
 import { createHashRouter, Navigate, Outlet } from "react-router-dom";
-import Settings from "./pages/settings/index";
 import Dashboard from "./pages/dashboard";
 import ErrorPage from "./pages/error/Error";
 import ApplicationLayout from "./components/application-layout/layout";
 import LoginPage from "./pages/login/login";
 import SetupWizard from "./pages/setup/setup";
+import {SettingsForm} from "./pages/settings/settings";
 
 const RequireAuth = () => {
   const isAuthenticated = !!catcher24WordpressConnector?.userInfo;
@@ -61,7 +61,7 @@ export const router = createHashRouter([
               },
               {
                 path: "settings",
-                element: <Settings />,
+                element: <SettingsForm />,
               },
             ],
           },
