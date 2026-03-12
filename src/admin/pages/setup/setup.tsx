@@ -7,6 +7,7 @@ import { InputText } from "primereact/inputtext";
 import { Message } from "primereact/message";
 import { ProgressSpinner } from "primereact/progressspinner";
 import { Divider } from "primereact/divider";
+import { TargetModel } from "../../models/shared";
 
 enum WizardStep {
   ORGANIZATION = "ORGANIZATION",
@@ -30,7 +31,7 @@ export default function SetupWizard() {
 
   // Lists
   const [organizations, setOrganizations] = useState<any[]>([]);
-  const [targets, setTargets] = useState<any[]>([]);
+  const [targets, setTargets] = useState<TargetModel[]>([]);
 
   // Current Selections
   const [selectedOrg, setSelectedOrg] = useState<any>(null);
@@ -186,11 +187,11 @@ export default function SetupWizard() {
   }
 
   return (
-    <div className="flex items-center justify-center min-h-screen p-4 bg-gray-50 dark:bg-gray-900">
+    <div className="flex items-center justify-center min-h-screen p-4 bg-gray-50 ">
       <Card className="w-full max-w-lg shadow-xl border-surface-200">
         {/* Header */}
         <div className="text-center mb-6">
-          <h1 className="text-3xl font-bold dark:text-white">Catcher24 Setup</h1>
+          <h1 className="text-3xl font-bold ">Catcher24 Setup</h1>
           <p className="text-gray-500 mt-2">Connect your WordPress site to the SaaS platform.</p>
         </div>
 

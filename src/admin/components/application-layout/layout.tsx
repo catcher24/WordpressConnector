@@ -10,11 +10,6 @@ import { MenuItem } from "primereact/menuitem";
 import { Outlet, useLocation, Link } from "react-router-dom";
 import Logo from "../../icons/Logo";
 
-const {
-  userInfo,
-  organization
-} = catcher24WordpressConnector;
-
 interface NavigationItem {
   name: string;
   href: string;
@@ -29,6 +24,8 @@ const navigation: NavigationItem[] = [
 export default function ApplicationLayout({ children }: { children?: React.ReactNode }) {
   const location = useLocation();
   const menuRight = useRef<Menu>(null);
+  
+  const { userInfo, organization } = catcher24WordpressConnector;
 
   const userMenuItems: MenuItem[] = [
     {

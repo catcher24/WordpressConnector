@@ -54,10 +54,10 @@ export default function OrganizationSelectionPage() {
   };
 
   return (
-    <div className="flex h-screen w-full items-center justify-center bg-gray-50 dark:bg-gray-900">
-      <Card className="w-full max-w-md shadow-lg border border-surface-200 dark:border-surface-700 text-center">
+    <div className="flex h-screen w-full items-center justify-center bg-gray-50 ">
+      <Card className="w-full max-w-md shadow-lg border border-surface-200 text-center">
         <div className="mb-6">
-          <h2 className="text-3xl font-bold dark:text-white tracking-tight">Select Organization</h2>
+          <h2 className="text-3xl font-bold tracking-tight">Select Organization</h2>
           <p className="text-muted-foreground mt-2">Choose your workspace to continue</p>
         </div>
 

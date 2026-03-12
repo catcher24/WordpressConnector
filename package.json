@@ -27,6 +27,7 @@
     "block:build": "wp-scripts build --webpack-src-dir=src/blocks/block-1 --output-path=assets/blocks/block-1"
   },
   "devDependencies": {
+    "@faker-js/faker": "^10.3.0",
     "@ianvs/prettier-plugin-sort-imports": "^4.1.1",
     "@kucrut/vite-for-wp": "^0.7.0",
     "@nkzw/eslint-config": "^1.8.1",

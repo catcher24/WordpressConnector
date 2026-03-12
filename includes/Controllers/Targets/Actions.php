@@ -96,4 +96,10 @@ class Actions {
 		if ( ! $target_id ) return new \WP_REST_Response( array( 'message' => 'Missing target context' ), 400 );
 		return Catcher24Client::proxy_request( 'GET', 'rootDomains', $request->get_query_params(), [], true, true, $target_id );
 	}
+
+	public function get_ports( \WP_REST_Request $request ) {
+		$target_id = $request->get_param( 'targetId' );
+		if ( ! $target_id ) return new \WP_REST_Response( array( 'message' => 'Missing target context' ), 400 );
+		return Catcher24Client::proxy_request( 'GET', 'ports', $request->get_query_params(), [], true, true, $target_id );
+	}
 }

@@ -32,6 +32,7 @@ Route::prefix(
 		$route->get( '/targets/{targetId}/scans', '\Catcher24\WordPress_Connector\Controllers\Targets\Actions@get_scans' );
 		$route->get( '/targets/{targetId}/certificates', '\Catcher24\WordPress_Connector\Controllers\Targets\Actions@get_certificates' );
 		$route->get( '/targets/{targetId}/rootDomains', '\Catcher24\WordPress_Connector\Controllers\Targets\Actions@get_root_domains' );
+		$route->get( '/targets/{targetId}/ports', '\Catcher24\WordPress_Connector\Controllers\Targets\Actions@get_ports' );
 
 		$route->get( '/scanners', '\Catcher24\WordPress_Connector\Controllers\Organizations\Actions@get_scanners' );
 		$route->get( '/collectors', '\Catcher24\WordPress_Connector\Controllers\Collectors\Actions@get_collectors' );

@@ -15,13 +15,13 @@ import { MessagesPassThroughMethodOptions } from "primereact/messages";
 import Tailwind from "primereact/passthrough/tailwind";
 import { classNames } from "primereact/utils";
 
-const CustomTailwind: PrimeReactPTOptions = {
+export const CustomTailwind: PrimeReactPTOptions = {
   ...Tailwind,
   avatar: {
     root: ({ props, state }: AvatarPassThroughMethodOptions) => ({
       className: classNames(
         "flex items-center justify-center",
-        "bg-gray-300 dark:bg-gray-800",
+        "bg-gray-300 ",
         {
           "rounded-lg": props.shape == "square",
           "rounded-full": props.shape == "circle"
@@ -32,7 +32,7 @@ const CustomTailwind: PrimeReactPTOptions = {
           "w-16 h-16 text-2xl": props.size == "xlarge"
         },
         {
-          "-ml-4 border-2 border-white dark:border-gray-900":
+          "-ml-4 border-2 border-white ":
           state.isNestedInAvatarGroup
         }
       )
@@ -45,7 +45,7 @@ const CustomTailwind: PrimeReactPTOptions = {
     root: {
       className: classNames(
         "bg-white text-gray-700 shadow-card rounded-md", // Background, text color, box shadow, and border radius.
-        "dark:bg-gray-900 dark:text-white " //dark
+        "" //dark
       )
     },
     body: {
@@ -59,56 +59,56 @@ const CustomTailwind: PrimeReactPTOptions = {
         "transition duration-200 ease-in-out",
         "focus:outline-none focus:outline-offset-0",
         {
-          "text-white dark:text-gray-900 bg-primary dark:bg-primary-dark border border-primary dark:border-primary-dark hover:bg-primary-light dark:hover:bg-primary hover:border-primary-light dark:hover:border-primary focus:shadow-[0_0_0_2px_rgba(255,255,255,1),0_0_0_4px_rgba(157,193,251,1),0_1px_2px_0_rgba(0,0,0,1)] dark:focus:shadow-[0_0_0_2px_rgba(28,33,39,1),0_0_0_4px_rgba(147,197,253,0.7),0_1px_2px_0_rgba(0,0,0,0)]":
+          "text-white bg-primary border border-primary hover:bg-primary-light hover:border-primary-light focus:shadow-[0_0_0_2px_rgba(255,255,255,1),0_0_0_4px_rgba(157,193,251,1),0_1px_2px_0_rgba(0,0,0,1)] ":
             !props.link &&
             props.severity === null &&
             !props.text &&
             !props.outlined &&
             !props.plain,
-          "text-primary-light bg-transparent border-transparent focus:shadow-[0_0_0_2px_rgba(255,255,255,1),0_0_0_4px_rgba(157,193,251,1),0_1px_2px_0_rgba(0,0,0,1)] dark:focus:shadow-[0_0_0_2px_rgba(28,33,39,1),0_0_0_4px_rgba(147,197,253,0.7),0_1px_2px_0_rgba(0,0,0,0)]":
+          "text-primary-light bg-transparent border-transparent focus:shadow-[0_0_0_2px_rgba(255,255,255,1),0_0_0_4px_rgba(157,193,251,1),0_1px_2px_0_rgba(0,0,0,1)] ":
           props.link
         },
         {
-          "focus:shadow-[0_0_0_2px_rgba(255,255,255,1),0_0_0_4px_rgba(176,185,198,1),0_1px_2px_0_rgba(0,0,0,1)] dark:focus:shadow-[0_0_0_2px_rgba(28,33,39,1),0_0_0_4px_rgba(203,213,225,0.7),0_1px_2px_0_rgba(0,0,0,0)]":
+          "focus:shadow-[0_0_0_2px_rgba(255,255,255,1),0_0_0_4px_rgba(176,185,198,1),0_1px_2px_0_rgba(0,0,0,1)] ":
             props.severity === "secondary",
-          "focus:shadow-[0_0_0_2px_rgba(255,255,255,1),0_0_0_4px_rgba(136,234,172,1),0_1px_2px_0_rgba(0,0,0,1)] dark:focus:shadow-[0_0_0_2px_rgba(28,33,39,1),0_0_0_4px_rgba(134,239,172,0.7),0_1px_2px_0_rgba(0,0,0,0)]":
+          "focus:shadow-[0_0_0_2px_rgba(255,255,255,1),0_0_0_4px_rgba(136,234,172,1),0_1px_2px_0_rgba(0,0,0,1)] ":
             props.severity === "success",
-          "focus:shadow-[0_0_0_2px_rgba(255,255,255,1),0_0_0_4px_rgba(157,193,251,1),0_1px_2px_0_rgba(0,0,0,1)] dark:focus:shadow-[0_0_0_2px_rgba(28,33,39,1),0_0_0_4px_rgba(147,197,253,0.7),0_1px_2px_0_rgba(0,0,0,0)]":
+          "focus:shadow-[0_0_0_2px_rgba(255,255,255,1),0_0_0_4px_rgba(157,193,251,1),0_1px_2px_0_rgba(0,0,0,1)] ":
             props.severity === "info",
-          "focus:shadow-[0_0_0_2px_rgba(255,255,255,1),0_0_0_4px_rgba(250,207,133,1),0_1px_2px_0_rgba(0,0,0,1)] dark:focus:shadow-[0_0_0_2px_rgba(28,33,39,1),0_0_0_4px_rgba(252,211,77,0.7),0_1px_2px_0_rgba(0,0,0,0)]":
+          "focus:shadow-[0_0_0_2px_rgba(255,255,255,1),0_0_0_4px_rgba(250,207,133,1),0_1px_2px_0_rgba(0,0,0,1)] ":
             props.severity === "warning",
-          "focus:shadow-[0_0_0_2px_rgba(255,255,255,1),0_0_0_4px_rgba(212,170,251,1),0_1px_2px_0_rgba(0,0,0,1)] dark:focus:shadow-[0_0_0_2px_rgba(28,33,39,1),0_0_0_4px_rgba(216,180,254,0.7),0_1px_2px_0_rgba(0,0,0,0)]":
+          "focus:shadow-[0_0_0_2px_rgba(255,255,255,1),0_0_0_4px_rgba(212,170,251,1),0_1px_2px_0_rgba(0,0,0,1)] ":
             props.severity === "help",
-          "focus:shadow-[0_0_0_2px_rgba(255,255,255,1),0_0_0_4px_rgba(247,162,162,1),0_1px_2px_0_rgba(0,0,0,1)] dark:focus:shadow-[0_0_0_2px_rgba(28,33,39,1),0_0_0_4px_rgba(252,165,165,0.7),0_1px_2px_0_rgba(0,0,0,0)]":
+          "focus:shadow-[0_0_0_2px_rgba(255,255,255,1),0_0_0_4px_rgba(247,162,162,1),0_1px_2px_0_rgba(0,0,0,1)] ":
             props.severity === "danger"
         },
         {
-          "text-white dark:text-gray-900 bg-gray-500 dark:bg-gray-400 border border-gray-500 dark:border-gray-400 hover:bg-gray-600 dark:hover:bg-gray-500 hover:border-gray-600 dark:hover:border-gray-500":
+          "text-white bg-gray-500 border border-gray-500 hover:bg-gray-600 hover:border-gray-600 ":
             props.severity === "secondary" &&
             !props.text &&
             !props.outlined &&
             !props.plain,
-          "text-white dark:text-gray-900 bg-success dark:bg-success-dark border border-success dark:border-success-dark hover:bg-success-light dark:hover:bg-success hover:border-success-light dark:hover:border-success":
+          "text-white bg-success border border-success hover:bg-success-light hover:border-success-light ":
             props.severity === "success" &&
             !props.text &&
             !props.outlined &&
             !props.plain,
-          "text-white dark:text-gray-900 dark:bg-primary-dark bg-primary dark:bg-primary-dark border border-primary dark:border-primary-dark hover:bg-primary-light hover:border-primary-light dark:hover:bg-primary dark:hover:border-primary":
+          "text-white bg-primary border border-primary hover:bg-primary-light hover:border-primary-light ":
             props.severity === "info" &&
             !props.text &&
             !props.outlined &&
             !props.plain,
-          "text-white dark:text-gray-900 bg-warning dark:bg-warning-dark border border-warning dark:border-warning-dark hover:bg-warning-light dark:hover:bg-warning hover:border-warning-light dark:hover:border-warning":
+          "text-white bg-warning border border-warning hover:bg-warning-light hover:border-warning-light ":
             props.severity === "warning" &&
             !props.text &&
             !props.outlined &&
             !props.plain,
-          "text-white dark:text-gray-900 bg-info dark:bg-info-dark border border-info dark:border-info-dark hover:bg-info-light dark:hover:bg-info hover:border-info-light dark:hover:border-info":
+          "text-white bg-info border border-info hover:bg-info-light hover:border-info-light ":
             props.severity === "help" &&
             !props.text &&
             !props.outlined &&
             !props.plain,
-          "text-white dark:text-gray-900 bg-danger dark:bg-danger-dark border border-danger dark:border-danger-dark hover:bg-danger-light dark:hover:bg-danger hover:border-danger-light dark:hover:border-danger":
+          "text-white bg-danger border border-danger hover:bg-danger-light hover:border-danger-light ":
             props.severity === "danger" &&
             !props.text &&
             !props.outlined &&
@@ -118,19 +118,19 @@ const CustomTailwind: PrimeReactPTOptions = {
         { "rounded-md": !props.rounded, "rounded-full": props.rounded },
         {
           "bg-transparent border-transparent": props.text && !props.plain,
-          "text-primary dark:text-primary-dark hover:bg-blue-300/20":
+          "text-primary hover:bg-blue-300/20":
             props.text &&
             (props.severity === null || props.severity === "info") &&
             !props.plain,
-          "text-gray-500 dark:text-gray-400 hover:bg-gray-300/20":
+          "text-gray-500 hover:bg-gray-300/20":
             props.text && props.severity === "secondary" && !props.plain,
-          "text-success dark:text-success-dark hover:bg-green-300/20":
+          "text-success hover:bg-green-300/20":
             props.text && props.severity === "success" && !props.plain,
-          "text-warning dark:text-warning-dark hover:bg-orange-300/20":
+          "text-warning hover:bg-orange-300/20":
             props.text && props.severity === "warning" && !props.plain,
-          "text-info dark:text-info-dark hover:bg-purple-300/20":
+          "text-info hover:bg-purple-300/20":
             props.text && props.severity === "help" && !props.plain,
-          "text-danger dark:text-danger-dark hover:bg-red-300/20":
+          "text-danger hover:bg-red-300/20":
             props.text && props.severity === "danger" && !props.plain
         },
         { "shadow-lg": props.raised && props.text },
@@ -143,19 +143,19 @@ const CustomTailwind: PrimeReactPTOptions = {
         },
         {
           "bg-transparent border": props.outlined && !props.plain,
-          "text-primary dark:text-primary-dark border border-primary dark:border-primary-dark hover:bg-blue-300/20":
+          "text-primary border border-primary hover:bg-blue-300/20":
             props.outlined &&
             (props.severity === null || props.severity === "info") &&
             !props.plain,
-          "text-gray-500 dark:text-gray-400 border border-gray-500 dark:border-gray-400 hover:bg-gray-300/20":
+          "text-gray-500 border border-gray-500 hover:bg-gray-300/20":
             props.outlined && props.severity === "secondary" && !props.plain,
-          "text-success dark:text-success-dark border border-success dark:border-success-dark hover:bg-green-300/20":
+          "text-success border border-success hover:bg-green-300/20":
             props.outlined && props.severity === "success" && !props.plain,
-          "text-warning dark:text-warning-dark border border-warning dark:border-warning-dark hover:bg-orange-300/20":
+          "text-warning border border-warning hover:bg-orange-300/20":
             props.outlined && props.severity === "warning" && !props.plain,
-          "text-info dark:text-info-dark border border-info dark:border-info-dark hover:bg-purple-300/20":
+          "text-info border border-info hover:bg-purple-300/20":
             props.outlined && props.severity === "help" && !props.plain,
-          "text-danger dark:text-danger-dark border border-danger dark:border-danger-dark hover:bg-red-300/20":
+          "text-danger border border-danger hover:bg-red-300/20":
             props.outlined && props.severity === "danger" && !props.plain
         },
         {
@@ -185,13 +185,13 @@ const CustomTailwind: PrimeReactPTOptions = {
         "flex justify-center items-center",
         "border-2 w-6 h-6 text-gray-700 rounded-full transition duration-200 ease-in-out",
         {
-          "border-gray-300 bg-white dark:border-blue-900/40 dark:bg-gray-900 dark:text-white/80":
+          "border-gray-300 bg-white ":
             !props.checked,
-          "border-primary bg-primary dark:border-primary-dark dark:bg-primary-light":
+          "border-primary bg-primary ":
           props.checked
         },
         {
-          "hover:border-primary dark:hover:border-primary-dark focus:outline-none focus:outline-offset-0 focus:shadow-[0_0_0_0.2rem_rgba(191,219,254,1)] dark:focus:shadow-[inset_0_0_0_0.2rem_rgba(147,197,253,0.5)]":
+          "hover:border-primary focus:outline-none focus:outline-offset-0 focus:shadow-[0_0_0_0.2rem_rgba(191,219,254,1)] ":
             !props.disabled,
           "cursor-default opacity-60": props.disabled
         }
@@ -200,7 +200,7 @@ const CustomTailwind: PrimeReactPTOptions = {
     icon: ({ props }: RadioButtonPassThroughMethodOptions) => ({
       className: classNames(
         "transform rounded-full",
-        "block w-3 h-3 transition duration-200 bg-white dark:bg-gray-900",
+        "block w-3 h-3 transition duration-200 bg-white ",
         {
           "backface-hidden scale-10 invisible": !props.checked,
           "transform scale-100 visible": props.checked
@@ -225,13 +225,13 @@ const CustomTailwind: PrimeReactPTOptions = {
         "flex items-center justify-center",
         "border-2 w-6 h-6 text-gray-600 rounded-lg transition-colors duration-200",
         {
-          "border-gray-300 bg-white dark:border-blue-900/40 dark:bg-gray-900":
+          "border-gray-300 bg-white ":
             !context.checked,
-          "border-primary bg-primary dark:primary-dark dark:primary-dark":
+          "border-primary bg-primary ":
           context.checked
         },
         {
-          "hover:border-primary dark:hover:border-primary-dark focus:outline-none focus:outline-offset-0 focus:shadow-[0_0_0_0.2rem_rgba(191,219,254,1)] dark:focus:shadow-[inset_0_0_0_0.2rem_rgba(147,197,253,0.5)]":
+          "hover:border-primary focus:outline-none focus:outline-offset-0 focus:shadow-[0_0_0_0.2rem_rgba(191,219,254,1)] ":
             !props.disabled,
           "cursor-default opacity-60": props.disabled
         }
@@ -239,7 +239,7 @@ const CustomTailwind: PrimeReactPTOptions = {
     }),
     icon: {
       className: classNames(
-        "w-4 h-4 transition-all duration-200 text-white text-base dark:text-gray-900"
+        "w-4 h-4 transition-all duration-200 text-white text-base "
       )
     }
   },
@@ -253,9 +253,9 @@ const CustomTailwind: PrimeReactPTOptions = {
       className: classNames(
         "cursor-pointer inline-flex relative select-none",
         "bg-white border border-gray-300 transition-colors duration-200 ease-in-out rounded-md",
-        "dark:bg-gray-900 dark:border-blue-900/40 dark:hover:border-blue-300",
+        "",
         "w-full",
-        "hover:border-blue-500 focus:outline-none focus:outline-offset-0 focus:shadow-[0_0_0_0.2rem_rgba(191,219,254,1)] dark:focus:shadow-[0_0_0_0.2rem_rgba(147,197,253,0.5)]",
+        "hover:border-blue-500 focus:outline-none focus:outline-offset-0 focus:shadow-[0_0_0_0.2rem_rgba(191,219,254,1)] ",
         {
           "opacity-60 select-none pointer-events-none cursor-default":
           props.disabled
@@ -266,7 +266,7 @@ const CustomTailwind: PrimeReactPTOptions = {
       className: classNames(
         "cursor-pointer block flex flex-auto overflow-hidden overflow-ellipsis whitespace-nowrap relative",
         "bg-transparent border-0 text-gray-800",
-        "dark:text-white/80",
+        "",
         "p-2 transition duration-200 bg-transparent rounded appearance-none font-sans text-sm",
         "focus:outline-none focus:shadow-none",
         { "pr-7": props.showClear }
@@ -282,7 +282,7 @@ const CustomTailwind: PrimeReactPTOptions = {
       className: classNames(
         "max-h-[200px] overflow-auto",
         "bg-white text-gray-700 border-0 rounded-md shadow-lg",
-        "dark:bg-gray-900 dark:text-white/80"
+        ""
       )
     },
     list: {
@@ -292,15 +292,15 @@ const CustomTailwind: PrimeReactPTOptions = {
       className: classNames(
         "cursor-pointer font-normal overflow-hidden relative whitespace-nowrap",
         "m-0 p-3 border-0  transition-shadow duration-200 rounded-none",
-        "dark:text-white/80 dark:hover:bg-gray-800",
+        "",
         "hover:text-gray-700 hover:bg-gray-200",
         {
           "text-gray-700": !context.focused && !context.selected,
-          "bg-gray-300 text-gray-700 dark:text-white/80 dark:bg-gray-800/90":
+          "bg-gray-300 text-gray-700 ":
             context.focused && !context.selected,
-          "bg-blue-400 text-blue-700 dark:bg-blue-400 dark:text-white/80":
+          "bg-blue-400 text-blue-700 ":
             context.focused && context.selected,
-          "bg-blue-50 text-blue-700 dark:bg-blue-300 dark:text-white/80":
+          "bg-blue-50 text-blue-700 ":
             !context.focused && context.selected,
           "opacity-60 select-none pointer-events-none cursor-default":
           context.disabled
@@ -312,9 +312,9 @@ const CustomTailwind: PrimeReactPTOptions = {
     root: ({ props, context }: InputTextPassThroughMethodOptions) => ({
       className: classNames(
         "m-0 w-full",
-        "font-sans text-gray-600 dark:text-white/80 bg-white dark:bg-gray-900 border border-gray-300 dark:border-primary-lighter/40 transition-colors duration-200 appearance-none rounded-lg",
+        "font-sans text-gray-600 bg-white border border-gray-300 transition-colors duration-200 appearance-none rounded-lg",
         {
-          "hover:border-primary focus:outline-none focus:outline-offset-0 focus:shadow-[0_0_0_0.2rem_rgba(191,219,254,1)] dark:focus:shadow-[0_0_0_0.2rem_rgba(147,197,253,0.5)]":
+          "hover:border-primary focus:outline-none focus:outline-offset-0 focus:shadow-[0_0_0_0.2rem_rgba(191,219,254,1)] ":
             !context.disabled,
           "opacity-60 select-none pointer-events-none cursor-default":
           context.disabled
