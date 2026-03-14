@@ -1,9 +1,7 @@
 import React from "react";
 import { Button } from "primereact/button";
 import { Card } from "primereact/card";
-import { Tag } from "primereact/tag";
-import uniqolor from "uniqolor";
-import { TargetModel, TargetPortModel, getTargetTypeDisplayName, getSeverityLabel, getSeverityColor } from "../models/shared";
+import { TargetModel, TargetPortModel, getTargetTypeDisplayName, getSeverityLabel, getSeverityColor, getTargetTypeColor } from "../models/shared";
 import { Panel } from "primereact/panel";
 
 interface DashboardHeaderProps {
@@ -33,7 +31,11 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
     }
 
     if (severityValue === null) {
-      return <Tag severity="secondary" value="Not scanned" className="px-3 font-bold" />;
+      return (
+        <div className="rounded whitespace-nowrap font-bold inline-block text-xs px-2 py-1 bg-surface-100 text-surface-500 border border-surface-200 shadow-sm">
+          Not scanned
+        </div>
+      );
     }
 
     const val = severityValue;
@@ -47,7 +49,6 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
     );
   };
 
-  const targetTypeColor = uniqolor(target.type).color;
 
   return (
     <Panel>
@@ -57,11 +58,12 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
           <div className="flex flex-col gap-2 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
               {renderSeverityBadge()}
-              <Tag 
-                value={getTargetTypeDisplayName(target.type)} 
-                className="font-medium text-white border-0 shadow-sm px-3"
-                style={{ backgroundColor: targetTypeColor }}
-              />
+              <div 
+                className="rounded whitespace-nowrap font-bold inline-block text-xs px-2 py-1 text-white shadow-sm"
+                style={{ backgroundColor: getTargetTypeColor(target.type) }}
+              >
+                {getTargetTypeDisplayName(target.type)}
+              </div>
             </div>
             <div className="flex flex-col">
               <h1 className="text-3xl font-bold tracking-tight text-surface-900 truncate">
@@ -131,7 +133,9 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
             <span className="text-xs uppercase font-bold text-surface-400 tracking-wider">Execution Schedule</span>
             <div className="flex flex-col mt-0.5">
               {target.scheduledForDeletionAt ? (
-                <Tag severity="danger" value={`Deletion: ${new Date(target.scheduledForDeletionAt).toLocaleDateString()}`} className="text-[10px]" />
+                <div className="rounded whitespace-nowrap font-bold inline-block text-[10px] px-2 py-0.5 bg-red-100 text-red-600 border border-red-200 shadow-sm">
+                  Deletion: {new Date(target.scheduledForDeletionAt).toLocaleDateString()}
+                </div>
               ) : (
                 <span className="text-sm font-medium text-surface-600">
                   {target.scannerConfigurations?.some(c => c.nextRun) 
