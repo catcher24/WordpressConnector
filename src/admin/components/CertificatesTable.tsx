@@ -9,7 +9,7 @@ interface CertificatesTableProps {
 
 export const CertificatesTable: React.FC<CertificatesTableProps> = ({ certificates, formatDate }) => {
   if (!certificates || certificates.length === 0) {
-    return <div className="text-center py-8 text-surface-400 border border-dashed rounded-lg">No certificates found</div>;
+    return <div className="text-center py-8 text-secondary border border-dashed rounded-lg">No certificates found</div>;
   }
 
   const getGradeColor = (grade: string | undefined) => {
@@ -27,13 +27,13 @@ export const CertificatesTable: React.FC<CertificatesTableProps> = ({ certificat
         const grade = cert.lowestScore?.overallGrade || primaryImpl?.score?.overallGrade;
         
         return (
-          <div key={cert.id} className="border border-surface-200 rounded-lg bg-surface-0 p-4">
+          <div key={cert.id} className="border border-secondary-light rounded-lg bg-white p-4">
             <div className="flex justify-between items-start mb-4">
               <div className="flex flex-col gap-1 min-w-0">
-                <h3 className="text-lg font-bold text-surface-900 truncate" title={cert.commonName}>
+                <h3 className="text-lg font-bold text-secondary-darker truncate" title={cert.commonName}>
                   {cert.commonName}
                 </h3>
-                <span className="text-xs text-surface-500 truncate" title={cert.issuer}>
+                <span className="text-xs text-secondary truncate" title={cert.issuer}>
                   Signer: {cert.issuer}
                 </span>
               </div>
@@ -46,31 +46,31 @@ export const CertificatesTable: React.FC<CertificatesTableProps> = ({ certificat
 
             <div className="grid grid-cols-2 gap-4 mb-4">
               <div className="flex flex-col">
-                <span className="text-[10px] uppercase font-bold text-surface-400">Valid From</span>
-                <span className="text-xs text-surface-700">{formatDate(cert, "validFrom")}</span>
+                <span className="text-[10px] uppercase font-bold text-secondary">Valid From</span>
+                <span className="text-xs text-secondary-dark">{formatDate(cert, "validFrom")}</span>
               </div>
               <div className="flex flex-col">
-                <span className="text-[10px] uppercase font-bold text-surface-400">Valid To</span>
-                <span className="text-xs text-surface-700">{formatDate(cert, "validTo")}</span>
+                <span className="text-[10px] uppercase font-bold text-secondary">Valid To</span>
+                <span className="text-xs text-secondary-dark">{formatDate(cert, "validTo")}</span>
               </div>
             </div>
 
             {primaryImpl && (
-              <div className="pt-3 border-t border-surface-100 flex flex-col gap-2">
+              <div className="pt-3 border-t border-tertiary-light flex flex-col gap-2">
                 <div className="flex items-center gap-2">
-                   <span className="text-[10px] uppercase font-bold text-surface-400">Implementation:</span>
+                   <span className="text-[10px] uppercase font-bold text-secondary">Implementation:</span>
                    <Tag value={`${primaryImpl.port.value}/${primaryImpl.port.type === 0 ? "TCP" : "UDP"}`} severity="info" className="text-[10px]" />
                 </div>
                 
                 {Object.keys(primaryImpl.ciphers || {}).length > 0 && (
                   <div className="flex flex-wrap gap-1">
                     {Object.keys(primaryImpl.ciphers).slice(0, 2).map((cipher, idx) => (
-                      <span key={idx} className="bg-surface-50 text-surface-600 border border-surface-200 rounded px-1.5 py-0.5 text-[10px] truncate max-w-[150px]">
+                      <span key={idx} className="bg-tertiary-lighter text-secondary-dark border border-secondary-light rounded px-1.5 py-0.5 text-[10px] truncate max-w-[150px]">
                         {cipher}
                       </span>
                     ))}
                     {Object.keys(primaryImpl.ciphers).length > 2 && (
-                      <span className="text-[10px] text-surface-400 self-center">+{Object.keys(primaryImpl.ciphers).length - 2} more</span>
+                      <span className="text-[10px] text-secondary self-center">+{Object.keys(primaryImpl.ciphers).length - 2} more</span>
                     )}
                   </div>
                 )}

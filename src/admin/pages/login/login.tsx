@@ -6,7 +6,7 @@ export default function LoginPage() {
 
   return (
     <div className="flex h-screen w-full items-center justify-center bg-gray-50 ">
-      <Card className="w-full max-w-md shadow-lg border border-surface-200 text-center">
+      <Card className="w-full max-w-md shadow-lg border border-secondary-light text-center">
         <div className="mb-6">
           <h2 className="text-3xl font-bold tracking-tight">Welcome</h2>
           <p className="text-muted-foreground mt-2">Sign in to access your dashboard</p>

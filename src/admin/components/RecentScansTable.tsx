@@ -35,7 +35,7 @@ export const RecentScansTable: React.FC<RecentScansTableProps> = ({
   );
 
   const renderCollectors = (scan: ScanModel) => {
-    if (!scan.runners || scan.runners.length === 0) return <span className="text-surface-400 italic text-xs">None</span>;
+    if (!scan.runners || scan.runners.length === 0) return <span className="text-secondary italic text-xs">None</span>;
     return (
       <div className="flex flex-col gap-1 w-full min-w-[200px]">
         {scan.runners.map((runner, idx) => {
@@ -45,12 +45,12 @@ export const RecentScansTable: React.FC<RecentScansTableProps> = ({
           return (
             <div
               key={idx}
-              className={`flex justify-between items-center text-xs py-1 ${!isLast ? "border-b border-surface-200" : ""}`}
+              className={`flex justify-between items-center text-xs py-1 ${!isLast ? "border-b border-secondary-light" : ""}`}
             >
               <span className="truncate mr-2 max-w-[150px]" title={name}>
                 {name}
               </span>
-              <span className="bg-surface-100 text-surface-600 px-1.5 py-0.5 rounded text-[10px] font-medium border border-surface-200 uppercase">
+              <span className="bg-tertiary-light text-secondary-dark px-1.5 py-0.5 rounded text-[10px] font-medium border border-secondary-light uppercase">
                 {runner.collectorStatus}
               </span>
             </div>

@@ -77,7 +77,7 @@ export const DnsRecordsTable: React.FC<DnsRecordsTableProps> = ({
                     <Column field="value" header="Value" className="text-wrap break-all" />
                   </DataTable>
                   {group.records.some((r: any) => r.advice?.length > 0) && (
-                    <div className="p-3 border-t border-surface-100">
+                    <div className="p-3 border-t border-tertiary-light">
                       <h5 className="font-semibold text-xs mb-2">Advice</h5>
                       <DnsAdviceList advices={group.records.flatMap((r: any) => r.advice || [])} />
                     </div>
@@ -101,14 +101,14 @@ export const DnsRecordsTable: React.FC<DnsRecordsTableProps> = ({
   return (
     <div className="flex flex-col gap-4">
       {isSubdomain && (
-        <div className="mb-4 bg-surface-0 border border-surface-200 rounded-lg p-4">
+        <div className="mb-4 bg-white border border-secondary-light rounded-lg p-4">
           <div className="flex justify-between items-center text-sm">
             <div>
-              <p className="font-bold text-surface-900">You scanned a subdomain.</p>
-              <p className="text-surface-500">Toggle to view all discovered records for the root domain.</p>
+              <p className="font-bold text-secondary-darker">You scanned a subdomain.</p>
+              <p className="text-secondary">Toggle to view all discovered records for the root domain.</p>
             </div>
             <div className="flex items-center gap-4">
-              <span className="text-xs font-semibold text-surface-400 uppercase tracking-wider">
+              <span className="text-xs font-semibold text-secondary uppercase tracking-wider">
                 {showFullDns ? 'Root Domain' : 'Subdomain Only'}
               </span>
               <InputSwitch checked={showFullDns} onChange={(e) => setShowFullDns(e.value || false)} />
@@ -150,7 +150,7 @@ export const DnsRecordsTable: React.FC<DnsRecordsTableProps> = ({
                 <Column field="exchange" header="Exchange" />
               </DataTable>
               {mxAdvices.length > 0 && (
-                <div className="mt-4 px-2 border-t pt-2 border-surface-100">
+                <div className="mt-4 px-2 border-t pt-2 border-tertiary-light">
                   <h5 className="font-semibold text-xs mb-2">Advice</h5>
                   <DnsAdviceList advices={mxAdvices} />
                 </div>
@@ -200,7 +200,7 @@ export const DnsRecordsTable: React.FC<DnsRecordsTableProps> = ({
         ], "lg:col-span-2")}
 
         {Object.values(groupedRecords).every(v => Array.isArray(v) && v.length === 0) && (
-          <div className="text-center py-8 text-surface-400 border border-dashed rounded-lg lg:col-span-2">
+          <div className="text-center py-8 text-secondary border border-dashed rounded-lg lg:col-span-2">
              No DNS records found for this {showFullDns ? 'domain' : 'subdomain'}
           </div>
         )}

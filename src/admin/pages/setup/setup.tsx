@@ -191,7 +191,7 @@ export default function SetupWizard() {
 
   return (
     <div className="flex items-center justify-center min-h-screen p-4 bg-gray-50 ">
-      <Card className="w-full max-w-lg shadow-xl border-surface-200">
+      <Card className="w-full max-w-lg shadow-xl border-secondary-light">
         {/* Header */}
         <div className="text-center mb-6">
           <h1 className="text-3xl font-bold ">Catcher24 Setup</h1>
@@ -262,12 +262,12 @@ export default function SetupWizard() {
               />
             )}
 
-            <div className="max-h-60 overflow-y-auto border border-surface-200 rounded-md">
+            <div className="max-h-60 overflow-y-auto border border-secondary-light rounded-md">
               {targets.map((t) => (
                 <div
                   key={t.id}
                   onClick={() => handleTargetSelect(t.id)}
-                  className={`flex justify-between items-center p-4 cursor-pointer border-b last:border-0 hover:bg-surface-50 transition-colors ${
+                  className={`flex justify-between items-center p-4 cursor-pointer border-b last:border-0 hover:bg-tertiary-lighter transition-colors ${
                     matchedTarget?.id === t.id ? "bg-primary-50 border-primary-200" : ""
                   }`}
                 >

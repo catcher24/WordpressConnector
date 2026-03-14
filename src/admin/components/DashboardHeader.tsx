@@ -31,7 +31,7 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
 
     if (severityValue === null) {
       return (
-        <div className="rounded whitespace-nowrap font-bold inline-block text-xs px-2 py-1 bg-surface-100 text-surface-500 border border-surface-200 shadow-sm">
+        <div className="rounded whitespace-nowrap font-bold inline-block text-xs px-2 py-1 bg-tertiary-light text-secondary border border-secondary-light shadow-sm">
           Not scanned
         </div>
       );
@@ -62,10 +62,10 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
           </div>
         </div>
         <div className="flex flex-col">
-          <h1 className="text-3xl font-bold tracking-tight text-surface-900 truncate">
+          <h1 className="text-3xl font-bold tracking-tight text-secondary-darker truncate">
             {target.preferredDisplayName}
           </h1>
-          <div className="flex items-center gap-2 text-surface-500 mt-1">
+          <div className="flex items-center gap-2 text-secondary mt-1">
             <span className="text-sm font-medium">{target.ip || target.hostname}</span>
           </div>
         </div>
@@ -96,15 +96,15 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {/* Ports */}
         <div className="flex flex-col gap-2">
-          <span className="text-xs uppercase font-bold text-surface-400 tracking-wider">Ports</span>
+          <span className="text-xs uppercase font-bold text-secondary-dark tracking-wider">Ports</span>
           <div className="flex flex-wrap gap-1.5 mt-1">
             {targetPorts.length === 0 ? (
-              <span className="text-xs text-surface-400 italic">No ports detected</span>
+              <span className="text-xs text-secondary italic">No ports detected</span>
             ) : (
               targetPorts.map((port, idx) => (
                 <span 
                   key={idx} 
-                  className="inline-flex items-center px-2 py-0.5 rounded bg-surface-50 border border-surface-200 text-xs font-medium text-surface-700"
+                  className="inline-flex items-center px-2 py-0.5 rounded bg-tertiary-lighter border border-secondary-light text-xs font-medium text-secondary-dark"
                 >
                   {port.value}/{port.type === 0 ? "TCP" : "UDP"}
                 </span>
@@ -115,7 +115,7 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
 
         {/* Vulnerabilities Summary */}
         <div className="flex flex-col gap-2">
-          <span className="text-xs uppercase font-bold text-surface-400 tracking-wider">Vulnerabilities</span>
+          <span className="text-xs uppercase font-bold text-secondary-dark tracking-wider">Vulnerabilities</span>
           <div className="flex gap-1.5 mt-1">
             <div className="flex flex-col items-center justify-center min-w-[40px] px-2 py-1 rounded bg-severity-critical-light border border-severity-critical-dark/20" title="Critical">
               <span className="text-xs font-bold text-severity-critical-dark">{target.severity.critical}</span>
@@ -134,14 +134,14 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
 
         {/* Execution Schedule / Next Run */}
         <div className="flex flex-col gap-2">
-          <span className="text-xs uppercase font-bold text-surface-400 tracking-wider">Execution Schedule</span>
+          <span className="text-xs uppercase font-bold text-secondary-dark tracking-wider">Execution Schedule</span>
           <div className="flex flex-col mt-0.5">
             {target.scheduledForDeletionAt ? (
               <div className="rounded whitespace-nowrap font-bold inline-block text-[10px] px-2 py-0.5 bg-red-100 text-red-600 border border-red-200 shadow-sm">
                 Deletion: {new Date(target.scheduledForDeletionAt).toLocaleDateString()}
               </div>
             ) : (
-              <span className="text-sm font-medium text-surface-600">
+              <span className="text-sm font-medium text-secondary-dark">
                 {target.scannerConfigurations?.some(c => c.nextRun) 
                   ? `Next: ${formatDate(target.scannerConfigurations.find(c => c.nextRun).nextRun)}` 
                   : "No scheduled scans"}

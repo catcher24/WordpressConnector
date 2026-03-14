@@ -51,7 +51,7 @@ export const CustomTailwind: PrimeReactPTOptions = {
   button: {
     root: ({ props, context }: ButtonPassThroughMethodOptions) => ({
       className: classNames(
-        "items-center cursor-pointer inline-flex overflow-hidden relative select-none text-center align-bottom",
+        "items-center cursor-pointer inline-flex overflow-hidden relative select-none text-center align-bottom flex gap-2",
         "transition duration-200 ease-in-out",
         "focus:outline-none focus:outline-offset-0",
         {
@@ -376,15 +376,15 @@ export const CustomTailwind: PrimeReactPTOptions = {
     toggler: {
       className: classNames(
         "inline-flex items-center justify-center overflow-hidden relative no-underline",
-        "w-8 h-8 text-surface-600 border-0 bg-transparent rounded-full transition duration-200 ease-in-out",
-        "hover:text-surface-900 hover:bg-surface-100 dark:hover:text-surface-0 dark:hover:bg-surface-800",
+        "w-8 h-8 text-secondary border-0 bg-transparent rounded-full transition duration-200 ease-in-out",
+        "hover:text-secondary-darker hover:bg-tertiary-light dark:hover:text-white dark:hover:bg-tertiary-dark",
         "focus:outline-none focus:outline-offset-0 focus:shadow-[0_0_0_0.2rem_rgba(191,219,254,1)] dark:focus:shadow-[0_0_0_0.2rem_rgba(147,197,253,0.5)]"
       )
     },
     content: {
       className: classNames(
-        "p-5 border border-t-0 border-surface-200 bg-surface-0 text-surface-700 rounded-b-lg",
-        "dark:bg-surface-900 dark:border-surface-700 dark:text-surface-0"
+        "p-5 border border-t-0 border-secondary-light bg-white text-secondary-dark rounded-b-lg",
+        "dark:bg-secondary-darker dark:border-secondary-dark dark:text-white"
       )
     }
   }
