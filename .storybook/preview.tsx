@@ -2,7 +2,7 @@ import type { Preview } from "@storybook/react";
 import React from "react";
 import { BrowserRouter } from "react-router-dom";
 import { PrimeReactProvider } from "primereact/api";
-import { CustomTailwind } from "../src/admin/main";
+import { CustomTailwind } from "../src/admin/prime-config";
 import "../src/admin/index.css"; // Tailwind 
 
 (window as any).catcher24WordpressConnector = {

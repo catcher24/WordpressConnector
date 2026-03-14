@@ -32,8 +32,18 @@ export const DnsRecordsTable: React.FC<DnsRecordsTableProps> = ({
     const showTableHeaders = columns.length > 1 && !columns.every(c => c.hideHeader);
 
     return (
-      <Panel header={`${header} Records`} className={classNames("mb-4 flex-1", colSpan)} toggleable>
-        <DataTable value={items} size="small" stripedRows className="text-sm" showHeaders={showTableHeaders}>
+      <Panel 
+        header={`${header} Records`} 
+        className={classNames("flex-1 h-full", colSpan)} 
+        pt={{ 
+          root: { className: "flex flex-col h-full" },
+          toggleableContent: { className: "flex-1 flex flex-col min-h-0" },
+          content: { className: "flex flex-col flex-1 min-h-0" } 
+        }}
+        ptOptions={{ mergeProps: true }}
+        toggleable
+      >
+        <DataTable value={items} size="small" stripedRows className="text-sm flex-1" showHeaders={showTableHeaders}>
           {columns.map((col, idx) => (
             <Column key={idx} field={col.field} header={col.header} body={col.body} className={col.hideHeader ? "p-0" : ""} />
           ))}
@@ -46,8 +56,18 @@ export const DnsRecordsTable: React.FC<DnsRecordsTableProps> = ({
     if (!txtGroups || txtGroups.length === 0) return null;
 
     return (
-      <Panel header="TXT Records" className="lg:col-span-2 mb-4 flex-1" toggleable>
-        <div className="flex flex-col gap-4">
+      <Panel 
+        header="TXT Records" 
+        className="lg:col-span-2 flex-1 h-full" 
+        pt={{ 
+          root: { className: "flex flex-col h-full" },
+          toggleableContent: { className: "flex-1 flex flex-col min-h-0" },
+          content: { className: "flex flex-col flex-1 min-h-0" } 
+        }}
+        ptOptions={{ mergeProps: true }}
+        toggleable
+      >
+        <div className="flex flex-col gap-4 flex-1">
           {txtGroups.map((group, idx) => (
             <div key={idx} className="flex flex-col gap-2">
               {group.type ? (
@@ -114,9 +134,19 @@ export const DnsRecordsTable: React.FC<DnsRecordsTableProps> = ({
         ])}
         
         {groupedRecords.mxRecords?.length > 0 && (
-          <Panel header="MX Records" className="mb-4" toggleable>
-            <div className="flex flex-col gap-4">
-              <DataTable value={groupedRecords.mxRecords} size="small" stripedRows className="text-sm" showHeaders={false}>
+          <Panel 
+            header="MX Records" 
+            className="h-full" 
+            pt={{ 
+              root: { className: "flex flex-col h-full" },
+              toggleableContent: { className: "flex-1 flex flex-col min-h-0" },
+              content: { className: "flex flex-col flex-1 min-h-0" } 
+            }}
+            ptOptions={{ mergeProps: true }}
+            toggleable
+          >
+            <div className="flex flex-col gap-4 flex-1">
+              <DataTable value={groupedRecords.mxRecords} size="small" stripedRows className="text-sm flex-1" showHeaders={false}>
                 <Column field="exchange" header="Exchange" />
               </DataTable>
               {mxAdvices.length > 0 && (

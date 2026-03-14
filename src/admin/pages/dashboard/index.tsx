@@ -21,6 +21,7 @@ import { CertificatesTable } from "../../components/CertificatesTable";
 import { RecentScansTable } from "../../components/RecentScansTable";
 import { DashboardHeader } from "../../components/DashboardHeader";
 import { formatDate, formatDuration } from "../../utils/formatters";
+import { Panel } from "primereact/panel";
 
 export default function DashboardPage() {
   const toast = useRef<Toast>(null);
@@ -245,7 +246,7 @@ export default function DashboardPage() {
 
           {/* Active Scans Banner */}
           {activeScans.length > 0 && (
-            <Card title="Active Scans" className="shadow-sm border border-blue-200 bg-blue-50">
+            <Panel header="Active Scans">
               {activeScans.map((scan) => (
                 <div key={scan.id} className="mb-6 last:mb-0">
                   <div className="flex justify-between items-center text-sm mb-2 text-blue-900 font-medium pb-2 border-b border-blue-100">
@@ -260,31 +261,31 @@ export default function DashboardPage() {
                   </div>
                 </div>
               ))}
-            </Card>
+            </Panel>
           )}
 
           {/* Top Vulnerabilities */}
-          <Card title="Top Vulnerabilities" className="shadow-sm border border-surface-200 h-full">
+          <Panel header="Top Vulnerabilities">
             <TopVulnerabilitiesTable vulnerabilities={vulnerabilities} />
-          </Card>
+          </Panel>
 
           {/* Certificates */}
-          <Card title="Certificates" className="shadow-sm border border-surface-200">
+          <Panel header="Certificates">
             <CertificatesTable certificates={certificates} formatDate={formatDate} />
-          </Card>
+          </Panel>
 
           {/* DNS Records */}
-          <Card title="DNS Records" className="shadow-sm border border-surface-200">
+          <Panel header="DNS Records">
             <DnsRecordsTable
               groupedRecords={groupedDnsRecords}
               showFullDns={showFullDns}
               setShowFullDns={setShowFullDns}
               isSubdomain={rootDomains.some((rd) => rd.value !== target?.hostname)}
             />
-          </Card>
+          </Panel>
 
           {/* Recent Scans */}
-          <Card title="Recent Scans" className="shadow-sm border border-surface-200 h-full">
+          <Panel header="Recent Scans">
             <RecentScansTable
               recentScans={recentScans}
               scannerMap={scannerMap}
@@ -293,7 +294,7 @@ export default function DashboardPage() {
               formatDate={formatDate}
               formatDuration={formatDuration}
             />
-          </Card>
+          </Panel>
         </div>
       </div>
     </>
