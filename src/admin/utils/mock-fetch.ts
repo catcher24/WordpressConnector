@@ -89,6 +89,14 @@ export const setupStorybookMocks = (customMocks: any = {}) => {
 
     if (url.includes("/hub/public/negotiate")) return respondWith({ url: "mock", accessToken: "mock" }); // Prevent SignalR crash
 
+    if (url.includes("/start") && init?.method === "POST") {
+      return respondWith(generateMockScans(1, true)[0]);
+    }
+
+    if (url.includes("/cancel") && init?.method === "POST") {
+      return respondWith(generateMockScans(1, false)[0]);
+    }
+
     // Catch-all for POST/PUT /select or /targets creations
     if (url.includes("/select") || init?.method === "POST" || init?.method === "PUT") {
       return respondWith({ message: "Success", id: "new-target" });

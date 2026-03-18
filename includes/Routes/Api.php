@@ -34,6 +34,8 @@ Route::prefix(
 		$route->get( '/targets/{targetId}/certificates', '\Catcher24\WordPress_Connector\Controllers\Targets\Actions@get_certificates' );
 		$route->get( '/targets/{targetId}/rootDomains', '\Catcher24\WordPress_Connector\Controllers\Targets\Actions@get_root_domains' );
 		$route->get( '/targets/{targetId}/ports', '\Catcher24\WordPress_Connector\Controllers\Targets\Actions@get_ports' );
+		$route->post( '/targets/{targetId}/scanners/{scannerId}/start', '\Catcher24\WordPress_Connector\Controllers\Targets\Actions@start_scan' );
+		$route->post( '/targets/{targetId}/scans/{scanId}/cancel', '\Catcher24\WordPress_Connector\Controllers\Targets\Actions@cancel_scan' );
 
 		$route->get( '/scanners', '\Catcher24\WordPress_Connector\Controllers\Organizations\Actions@get_scanners' );
 		$route->get( '/collectors', '\Catcher24\WordPress_Connector\Controllers\Collectors\Actions@get_collectors' );

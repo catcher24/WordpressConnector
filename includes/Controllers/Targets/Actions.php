@@ -120,4 +120,22 @@ class Actions {
 		if ( ! $target_id ) return new \WP_REST_Response( array( 'message' => 'Missing target context' ), 400 );
 		return Catcher24Client::proxy_request( 'GET', 'ports', $request->get_query_params(), [], true, true, $target_id );
 	}
+
+	public function start_scan( \WP_REST_Request $request ) {
+		$target_id  = $request->get_param( 'targetId' );
+		$scanner_id = $request->get_param( 'scannerId' );
+		if ( ! $target_id || ! $scanner_id ) return new \WP_REST_Response( array( 'message' => 'Missing target or scanner context' ), 400 );
+		
+		$body = json_decode( $request->get_body(), true ) ?? [];
+		return Catcher24Client::proxy_request( 'POST', "scanners/{$scanner_id}/start", $request->get_query_params(), $body, true, true, $target_id );
+	}
+
+	public function cancel_scan( \WP_REST_Request $request ) {
+		$target_id = $request->get_param( 'targetId' );
+		$scan_id   = $request->get_param( 'scanId' );
+		if ( ! $target_id || ! $scan_id ) return new \WP_REST_Response( array( 'message' => 'Missing target or scan context' ), 400 );
+		
+		$body = json_decode( $request->get_body(), true ) ?? [];
+		return Catcher24Client::proxy_request( 'POST', "scans/{$scan_id}/cancel", $request->get_query_params(), $body, true, true, $target_id );
+	}
 }

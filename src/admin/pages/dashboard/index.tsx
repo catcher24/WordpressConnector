@@ -39,6 +39,8 @@ export default function DashboardPage() {
   const [targetPorts, setTargetPorts] = useState<TargetPortModel[]>([]);
   const [rootDomains, setRootDomains] = useState<DnsRootDomainModel[]>([]);
   const [showFullDns, setShowFullDns] = useState(false);
+  const [isStartingScan, setIsStartingScan] = useState(false);
+  const [isCancelingScan, setIsCancelingScan] = useState(false);
 
   // Scanner / collector lookup tables
   const [scanners, setScanners] = useState<ScannerModel[]>([]);
@@ -135,6 +137,46 @@ export default function DashboardPage() {
       setLoading(false);
     }
   }, [apiUrl, targetId]);
+
+  const onStartScan = async () => {
+    if (!targetId || scanners.length === 0) return;
+    setIsStartingScan(true);
+    try {
+      const configuredScannerId = target?.scannerConfigurations?.[0]?.scannerId || target?.scannerConfigurations?.[0]?.id;
+      const scannerId = configuredScannerId || scanners[0].id;
+      
+      const res = await fetch(getApiUrl(`/targets/${targetId}/scanners/${scannerId}/start`), { method: "POST" });
+      if (res.ok) {
+        toast.current?.show({ severity: "success", summary: "Success", detail: "Scan started." });
+        fetchDashboardData();
+      } else {
+        toast.current?.show({ severity: "error", summary: "Error", detail: "Failed to start scan." });
+      }
+    } catch (e) {
+      toast.current?.show({ severity: "error", summary: "Error", detail: "Failed to start scan." });
+    } finally {
+      setIsStartingScan(false);
+    }
+  };
+
+  const onCancelScan = async () => {
+    if (!targetId || activeScans.length === 0) return;
+    setIsCancelingScan(true);
+    try {
+      const scanId = activeScans[0].id;
+      const res = await fetch(getApiUrl(`/targets/${targetId}/scans/${scanId}/cancel`), { method: "POST" });
+      if (res.ok) {
+        toast.current?.show({ severity: "success", summary: "Success", detail: "Scan canceled." });
+        fetchDashboardData();
+      } else {
+        toast.current?.show({ severity: "error", summary: "Error", detail: "Failed to cancel scan." });
+      }
+    } catch (e) {
+      toast.current?.show({ severity: "error", summary: "Error", detail: "Failed to cancel scan." });
+    } finally {
+      setIsCancelingScan(false);
+    }
+  };
 
   useEffect(() => {
     fetchDashboardData();
@@ -242,6 +284,11 @@ export default function DashboardPage() {
               const baseUrl = dashboardUrl.replace(/\/$/, "");
               window.open(`${baseUrl}/org/${organization.identifier}/targets/${target.id}`, "_blank");
             }}
+            isScanRunning={activeScans.length > 0}
+            onStartScan={onStartScan}
+            onCancelScan={onCancelScan}
+            isStartingScan={isStartingScan}
+            isCancelingScan={isCancelingScan}
           />
 
           {/* Active Scans Banner */}

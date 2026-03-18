@@ -143,7 +143,9 @@ export const generateMockTarget = (overrides: Partial<TargetModel> = {}): Target
     preferredDisplayName: "www.example.com",
     assetCount: faker.number.int({ min: 1, max: 10 }),
     detectionCount: faker.number.int({ min: 1, max: 100 }),
-    scannerConfigurations: [],
+    scannerConfigurations: [
+      { id: faker.string.uuid(), scannerId: SCANNER_IDS.fullWebScan, nextRun: faker.date.future().toISOString() }
+    ],
     severity: {
       critical: faker.number.int({ min: 0, max: 5 }),
       high: faker.number.int({ min: 0, max: 15 }),

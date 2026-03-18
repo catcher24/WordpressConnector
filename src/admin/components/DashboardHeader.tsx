@@ -8,6 +8,11 @@ interface DashboardHeaderProps {
   targetPorts: TargetPortModel[];
   formatDate: (dateString?: string) => string;
   onViewFullInsights: () => void;
+  isScanRunning?: boolean;
+  onStartScan?: () => void;
+  onCancelScan?: () => void;
+  isStartingScan?: boolean;
+  isCancelingScan?: boolean;
 }
 
 export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
@@ -15,6 +20,11 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
   targetPorts,
   formatDate,
   onViewFullInsights,
+  isScanRunning,
+  onStartScan,
+  onCancelScan,
+  isStartingScan,
+  isCancelingScan,
 }) => {
   const renderSeverityBadge = () => {
     const mostSevere = target.mostSevereVulnerability;
@@ -71,14 +81,36 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
         </div>
       </div>
 
-      <Button
-        label="View Full Insights"
-        icon="pi pi-external-link"
-        size="small"
-        outlined
-        className="p-button-secondary shrink-0"
-        onClick={onViewFullInsights}
-      />
+      <div className="flex items-center gap-2 shrink-0">
+        {isScanRunning ? (
+          <Button
+            label="Cancel Scan"
+            icon="pi pi-stop-circle"
+            size="small"
+            severity="danger"
+            outlined
+            loading={isCancelingScan}
+            onClick={onCancelScan}
+          />
+        ) : (
+          <Button
+            label="Start Scan"
+            icon="pi pi-play"
+            size="small"
+            severity="success"
+            loading={isStartingScan}
+            onClick={onStartScan}
+          />
+        )}
+        <Button
+          label="View Full Insights"
+          icon="pi pi-external-link"
+          size="small"
+          outlined
+          className="p-button-secondary"
+          onClick={onViewFullInsights}
+        />
+      </div>
     </div>
   );
 
