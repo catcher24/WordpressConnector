@@ -4,6 +4,7 @@ declare const catcher24WordpressConnector: {
   targetId?: string;
   organizationId?: string;
   organization?: any;
+  hasSingleOrganization?: boolean;
   dashboardUrl: string;
   apiUrl: string;
   userInfo: {

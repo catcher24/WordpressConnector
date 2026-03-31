@@ -10,6 +10,8 @@ import { MessagesPassThroughMethodOptions } from "primereact/messages";
 import Tailwind from "primereact/passthrough/tailwind";
 import { classNames } from "primereact/utils";
 import { PanelPassThroughMethodOptions } from "primereact/panel";
+import {SelectButtonPassThroughMethodOptions} from "primereact/selectbutton";
+import {ToastPassThroughMethodOptions} from "primereact/toast";
 
 export const CustomTailwind: PrimeReactPTOptions = {
   ...Tailwind,
@@ -387,5 +389,61 @@ export const CustomTailwind: PrimeReactPTOptions = {
         "dark:bg-secondary-darker dark:border-secondary-dark dark:text-white"
       )
     }
+  },
+  selectbutton: {
+    root: ({ props }: SelectButtonPassThroughMethodOptions) => ({
+      className: classNames({ 'opacity-60 select-none pointer-events-none cursor-default': props.disabled })
+    }),
+    button: ({ context }: SelectButtonPassThroughMethodOptions) => ({
+      className: classNames(
+        'inline-flex cursor-pointer select-none items-center align-bottom text-center overflow-hidden relative',
+        'px-3 py-1.5 text-sm',
+        'transition duration-200 border border-r-0',
+        'first:rounded-l-md first:rounded-tr-none first:rounded-br-none last:border-r last:rounded-tl-none last:rounded-bl-none last:rounded-r-md',
+        'focus:outline-none focus:outline-offset-0 focus:ring-2 focus:ring-primary-light dark:focus:ring-primary-dark',
+        {
+          'bg-white dark:bg-gray-darker text-secondary-darker dark:text-white/80 border-secondary-light dark:border-secondary-dark hover:bg-gray-50 dark:hover:bg-gray-dark': !context.selected,
+          'bg-primary border-primary text-white hover:bg-primary-dark': context.selected,
+          'opacity-60 select-none pointer-events-none cursor-default': context.disabled
+        }
+      )
+    }),
+    label: () => ({
+      className: classNames('font-bold')
+    }),
+  },
+  toast: {
+    root: () => ({
+      className: classNames('w-96')
+    }),
+    message: ({state, index}: ToastPassThroughMethodOptions & { index: number }) => ({
+      className: classNames('mb-4 rounded-md shadow-card', {
+        'bg-info-light border-0 text-info-dark': state.messages[index] && state.messages[index].message.severity === 'info',
+        'bg-success-lighter border-0 text-success-dark': state.messages[index] && state.messages[index].message.severity === 'success',
+        'bg-warning-lighter border-0 text-warning-dark': state.messages[index] && state.messages[index].message.severity === 'warn',
+        'bg-danger-light border-0 text-danger-dark': state.messages[index] && state.messages[index].message.severity === 'error'
+      })
+    }),
+    content: () => ({
+      className: classNames('flex items-start p-4')
+    }),
+    icon: () => ({
+      className: classNames('text-2xl mr-4')
+    }),
+    text: () => ({
+      className: classNames('flex flex-col flex-1')
+    }),
+    summary: () => ({
+      className: classNames('font-bold mb-1')
+    }),
+    detail: () => ({
+      className: classNames('m-0 text-sm')
+    }),
+    closeButton: () => ({
+      className: classNames(
+        'inline-flex items-center justify-center w-8 h-8 rounded-full',
+        'bg-transparent transition duration-200 ease-in-out hover:bg-black/5 overflow-hidden ml-auto'
+      )
+    })
   }
 };

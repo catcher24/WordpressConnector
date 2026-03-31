@@ -16,18 +16,36 @@ class Actions {
 	}
 
 	public function callback( WP_REST_Request $request ) {
-		$code  = $request->get_param( 'code' );
-		$state = $request->get_param( 'state' );
-		$error = $request->get_param( 'error' );
+		$code  = $request->get_param( 'code' ) ?: ( $_GET['code'] ?? null );
+		$state = $request->get_param( 'state' ) ?: ( $_GET['state'] ?? null );
+		$error = $request->get_param( 'error' ) ?: ( $_GET['error'] ?? null );
 
-		if ( $error === 'login_required' || $error === 'interaction_required' ) {
+		if ( empty( $code ) && empty( $error ) ) {
+			parse_str( $_SERVER['QUERY_STRING'], $manual_params );
+
+			$code  = $manual_params['code']  ?? null;
+			$state = $manual_params['state'] ?? null;
+			$error = $manual_params['error'] ?? null;
+		}
+
+		if ( $error === 'temporarily_unavailable' ) {
+			$login_page_url = admin_url( 'admin.php?page=catcher24-wordpress-connector#/dashboard' );
+			wp_redirect( $login_page_url );
+			exit;
+		}
+
+		if ( $error === 'temporarily_unavailable' || $error === 'login_required' || $error === 'interaction_required' ) {
 			$login_page_url = admin_url( 'admin.php?page=catcher24-wordpress-connector#/login' );
 			wp_redirect( $login_page_url );
 			exit;
 		}
 
+		if ( ! empty( $error ) ) {
+			return Messages::error_auth_failed( (string) $error );
+		}
+
 		if ( empty( $code ) ) {
-			return Messages::error_auth_failed( 'Authorization code missing. Your server might be stripping query parameters.' );
+			return Messages::error_auth_failed( $error .  'Authorization code missing. Your server might be stripping query parameters.' );
 		}
 
 		try {
@@ -48,7 +66,12 @@ class Actions {
 	}
 
 	public function disconnect() {
+		$logout_url = Catcher24Client::get_logout_url();
+
+		// Clear local session first
 		Catcher24Client::disconnect();
-		return Messages::success_signout();
+
+		wp_redirect( $logout_url );
+		exit;
 	}
 }

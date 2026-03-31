@@ -376,6 +376,7 @@ class Route {
 					'methods'             => $route->method,
 					'permission_callback' => $auth,
 					'callback'            => $callback,
+					'args'                => array(),
 				);
 
 				if ( false === $route->auth ) {

@@ -187,7 +187,7 @@ export function SettingsForm() {
 
   return (
     <>
-      <Toast ref={toast} position="top-center" />
+      <Toast ref={toast} position="top-right" />
 
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
 

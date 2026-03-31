@@ -2,9 +2,9 @@ import React from "react";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 import { Panel } from "primereact/panel";
-import { InputSwitch } from "primereact/inputswitch";
 import { DnsAdviceList } from "./DnsAdviceList";
 import { classNames } from "primereact/utils";
+import { SelectButton } from "primereact/selectbutton";
 
 interface DnsRecordsTableProps {
   groupedRecords: any;
@@ -13,17 +13,17 @@ interface DnsRecordsTableProps {
   isSubdomain: boolean;
 }
 
-export const DnsRecordsTable: React.FC<DnsRecordsTableProps> = ({ 
-  groupedRecords, 
-  showFullDns, 
+export const DnsRecordsTable: React.FC<DnsRecordsTableProps> = ({
+  groupedRecords,
+  showFullDns,
   setShowFullDns,
   isSubdomain
 }) => {
   if (!groupedRecords) return <div>No DNS data available</div>;
 
   const renderSimpleTable = (
-    items: any[], 
-    header: string, 
+    items: any[],
+    header: string,
     columns: { field: string, header: string, body?: (r: any) => React.ReactNode, hideHeader?: boolean }[],
     colSpan: string = ""
   ) => {
@@ -32,13 +32,13 @@ export const DnsRecordsTable: React.FC<DnsRecordsTableProps> = ({
     const showTableHeaders = columns.length > 1 && !columns.every(c => c.hideHeader);
 
     return (
-      <Panel 
-        header={`${header} Records`} 
-        className={classNames("flex-1 h-full", colSpan)} 
-        pt={{ 
+      <Panel
+        header={`${header} Records`}
+        className={classNames("flex-1 h-full", colSpan)}
+        pt={{
           root: { className: "flex flex-col h-full" },
           toggleableContent: { className: "flex-1 flex flex-col min-h-0" },
-          content: { className: "flex flex-col flex-1 min-h-0" } 
+          content: { className: "flex flex-col flex-1 min-h-0" }
         }}
         ptOptions={{ mergeProps: true }}
         toggleable
@@ -56,13 +56,13 @@ export const DnsRecordsTable: React.FC<DnsRecordsTableProps> = ({
     if (!txtGroups || txtGroups.length === 0) return null;
 
     return (
-      <Panel 
-        header="TXT Records" 
-        className="lg:col-span-2 flex-1 h-full" 
-        pt={{ 
+      <Panel
+        header="TXT Records"
+        className="lg:col-span-2 flex-1 h-full"
+        pt={{
           root: { className: "flex flex-col h-full" },
           toggleableContent: { className: "flex-1 flex flex-col min-h-0" },
-          content: { className: "flex flex-col flex-1 min-h-0" } 
+          content: { className: "flex flex-col flex-1 min-h-0" }
         }}
         ptOptions={{ mergeProps: true }}
         toggleable
@@ -98,6 +98,11 @@ export const DnsRecordsTable: React.FC<DnsRecordsTableProps> = ({
 
   const mxAdvices = groupedRecords.mxRecords?.flatMap((r: any) => r.advice || []) || [];
 
+  const dnsOptions = [
+    { label: 'Subdomain Only', value: false },
+    { label: 'All records', value: true }
+  ];
+
   return (
     <div className="flex flex-col gap-4">
       {isSubdomain && (
@@ -107,11 +112,13 @@ export const DnsRecordsTable: React.FC<DnsRecordsTableProps> = ({
               <p className="font-bold text-secondary-darker">You scanned a subdomain.</p>
               <p className="text-secondary">Toggle to view all discovered records for the root domain.</p>
             </div>
-            <div className="flex items-center gap-4">
-              <span className="text-xs font-semibold text-secondary uppercase tracking-wider">
-                {showFullDns ? 'Root Domain' : 'Subdomain Only'}
-              </span>
-              <InputSwitch checked={showFullDns} onChange={(e) => setShowFullDns(e.value || false)} />
+            <div className="flex items-center">
+              <SelectButton
+                value={showFullDns}
+                onChange={(e) => e.value !== null && setShowFullDns(e.value)}
+                options={dnsOptions}
+                allowEmpty={false}
+              />
             </div>
           </div>
         </div>
@@ -132,15 +139,15 @@ export const DnsRecordsTable: React.FC<DnsRecordsTableProps> = ({
           { field: "name", header: "Name" },
           { field: "target", header: "Target" }
         ])}
-        
+
         {groupedRecords.mxRecords?.length > 0 && (
-          <Panel 
-            header="MX Records" 
-            className="h-full" 
-            pt={{ 
+          <Panel
+            header="MX Records"
+            className="h-full"
+            pt={{
               root: { className: "flex flex-col h-full" },
               toggleableContent: { className: "flex-1 flex flex-col min-h-0" },
-              content: { className: "flex flex-col flex-1 min-h-0" } 
+              content: { className: "flex flex-col flex-1 min-h-0" }
             }}
             ptOptions={{ mergeProps: true }}
             toggleable

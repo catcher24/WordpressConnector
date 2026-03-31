@@ -1,7 +1,6 @@
 import { useEffect, useState, useRef, useCallback, useMemo } from "react";
 import { Toast } from "primereact/toast";
-import { Card } from "primereact/card";
-import { HubConnection, HubConnectionBuilder, LogLevel } from "@microsoft/signalr";
+import {HttpTransportType, HubConnection, HubConnectionBuilder, LogLevel} from "@microsoft/signalr";
 
 import {
   TargetModel,
@@ -110,7 +109,7 @@ export default function DashboardPage() {
         collectorsRes,
       ] = await Promise.all([
         fetch(getApiUrl(`/targets/${targetId}`)).then((r) => r.json()),
-        fetch(getApiUrl(`/targets/${targetId}/vulnerabilities`, { pageSize: 500 })).then((r) => r.json()),
+        fetch(getApiUrl(`/targets/${targetId}/vulnerabilities`, { pageSize: 500, orderBy: "severity desc, occurrences desc, name" })).then((r) => r.json()),
         fetch(getApiUrl(`/targets/${targetId}/scans`, { orderBy: "startedAt desc", pageSize: 5 })).then((r) => r.json()),
         fetch(getApiUrl(`/targets/${targetId}/scans`, { filter: "endedAt=" })).then((r) => r.json()),
         fetch(getApiUrl(`/targets/${targetId}/certificates`, { pageSize: 5 })).then((r) => r.json()),
@@ -126,7 +125,7 @@ export default function DashboardPage() {
       setRecentScans(scansRes.items || []);
       setActiveScans(activeScansRes.items || []);
       setCertificates(certsRes.items || []);
-      setTargetPorts(portsRes.items || []);
+      setTargetPorts(portsRes || []);
       setRootDomains(domainsRes.items || []);
       setScanners(scannersRes.items || []);
       setCollectorGroups(collectorGroupsRes.items || []);
@@ -144,7 +143,7 @@ export default function DashboardPage() {
     try {
       const configuredScannerId = target?.scannerConfigurations?.[0]?.scannerId || target?.scannerConfigurations?.[0]?.id;
       const scannerId = configuredScannerId || scanners[0].id;
-      
+
       const res = await fetch(getApiUrl(`/targets/${targetId}/scanners/${scannerId}/start`), { method: "POST" });
       if (res.ok) {
         toast.current?.show({ severity: "success", summary: "Success", detail: "Scan started." });
@@ -193,13 +192,17 @@ export default function DashboardPage() {
 
     const setupSignalR = async () => {
       try {
-        const res = await fetch(`${apiUrl}/hub/public/negotiate`, { method: "POST" });
+        const res = await fetch(`${apiUrl}/hub/public`, { method: "POST" });
         if (!res.ok) return;
         const data = await res.json();
         if (isCancelled) return;
 
         newConnection = new HubConnectionBuilder()
-          .withUrl(data.url, { accessTokenFactory: () => data.accessToken })
+          .withUrl(data.url,{
+            skipNegotiation: true,
+            transport: HttpTransportType.WebSockets,
+            withCredentials: true,
+          })
           .configureLogging(LogLevel.Warning)
           .withAutomaticReconnect()
           .build();
@@ -231,34 +234,13 @@ export default function DashboardPage() {
   const groupedDnsRecords = useMemo(() => {
     if (!rootDomains || rootDomains.length === 0) return null;
 
-    const combined: any = {
-      aRecords: [], aaaaRecords: [], txtRecords: [], cnameRecords: [],
-      mxRecords: [], srvRecords: [], nameServers: [], soaRecords: [],
-      dnskeyRecords: [], dsRecords: [], nsecRecords: [], nsec3Records: [],
-    };
+    const targetRootDomain = rootDomains[0];
 
-    rootDomains.forEach((rd) => {
-      const flat = DnsFlattener.flattenRecords(rd, showFullDns ? undefined : target?.hostname);
-      combined.aRecords.push(...flat.aRecords);
-      combined.aaaaRecords.push(...flat.aaaaRecords);
-      combined.cnameRecords.push(...flat.cnameRecords);
-      combined.mxRecords.push(...flat.mxRecords);
-      combined.srvRecords.push(...flat.srvRecords);
-      combined.nameServers.push(...flat.nameServers);
-      combined.soaRecords.push(...flat.soaRecords);
-      combined.dnskeyRecords.push(...flat.dnskeyRecords);
-      combined.dsRecords.push(...flat.dsRecords);
-      combined.nsecRecords.push(...flat.nsecRecords);
-      combined.nsec3Records.push(...flat.nsec3Records);
-      flat.txtRecords.forEach((grp: any) => {
-        const existing = combined.txtRecords.find((t: any) => t.type === grp.type);
-        if (existing) existing.records.push(...grp.records);
-        else combined.txtRecords.push({ ...grp });
-      });
-    });
-
-    return combined;
-  }, [rootDomains, showFullDns, target]);
+    return DnsFlattener.flattenRecords(
+      targetRootDomain,
+      showFullDns ? undefined : target?.hostname
+    );
+  }, [rootDomains, showFullDns, target?.hostname]);
 
   // -------------------------------------------------------------------------
   // Render
@@ -275,7 +257,7 @@ export default function DashboardPage() {
     <>
       <Toast ref={toast} position="bottom-right" />
       <div className="flex-col md:flex min-h-screen">
-        <div className="flex-1 space-y-6 pt-6 mb-12">
+        <div className="flex-1 space-y-6">
           <DashboardHeader
             target={target}
             targetPorts={targetPorts}

@@ -19,6 +19,7 @@ Route::prefix(
 		$route->get( '/accounts/signin', '\Catcher24\WordPress_Connector\Controllers\Accounts\Actions@signin' );
 		$route->get( '/accounts/callback', '\Catcher24\WordPress_Connector\Controllers\Accounts\Actions@callback' );
 		$route->get( '/accounts/status', '\Catcher24\WordPress_Connector\Controllers\Accounts\Actions@status' );
+		$route->get( '/accounts/disconnect', '\Catcher24\WordPress_Connector\Controllers\Accounts\Actions@disconnect' );
 		$route->post( '/accounts/disconnect', '\Catcher24\WordPress_Connector\Controllers\Accounts\Actions@disconnect' );
 
 		$route->get( '/organizations', '\Catcher24\WordPress_Connector\Controllers\Organizations\Actions@get_organizations' );
@@ -41,7 +42,7 @@ Route::prefix(
 		$route->get( '/collectors', '\Catcher24\WordPress_Connector\Controllers\Collectors\Actions@get_collectors' );
 		$route->get( '/collectorGroups', '\Catcher24\WordPress_Connector\Controllers\CollectorGroups\Actions@get_collector_groups' );
 
-		$route->post( '/hub/public/negotiate', '\Catcher24\WordPress_Connector\Controllers\Hub\Actions@public_negotiate' );
+		$route->post( '/hub/public', '\Catcher24\WordPress_Connector\Controllers\Hub\Actions@public_negotiate' );
 
 		// Allow hooks to add more custom API routes.
 		do_action( 'c24_api', $route );

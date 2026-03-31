@@ -8,14 +8,19 @@ use Exception;
 
 class Catcher24Client {
 
-	private static function get_provider() {
-		$provider = new KeycloakPKCEProvider([
+	private static function get_keycloak_config(): array {
+		return [
 			'authServerUrl' => 'https://auth.dev.catcher24.net',
 			'realm'         => '3efa9fb5-41e4-4695-85c1-44d9dc256c0a',
 			'clientId'      => 'wordpress-connector',
 			'redirectUri'   => rest_url( CATCHER24_ROUTE_PREFIX . '/accounts/callback' ),
 			'pkceMethod'    => AbstractProvider::PKCE_METHOD_S256,
-		]);
+		];
+	}
+
+	private static function get_provider() {
+		$config = self::get_keycloak_config();
+		$provider = new KeycloakPKCEProvider( $config );
 
 		$httpClient = new Client([
 			'verify' => ABSPATH . WPINC . '/certificates/ca-bundle.crt',
@@ -229,5 +234,15 @@ class Catcher24Client {
 		} catch ( Exception $e ) {
 			return new \WP_REST_Response( array( 'message' => $e->getMessage() ), 500 );
 		}
+	}
+
+	public static function get_logout_url(): string {
+		$config = self::get_keycloak_config();
+		$redirect_uri = admin_url( 'admin.php?page=catcher24-wordpress-connector' );
+
+		return add_query_arg( [
+			'client_id'                => $config['clientId'],
+			'post_logout_redirect_uri' => $redirect_uri,
+		], sprintf('%s/realms/%s/protocol/openid-connect/logout', rtrim($config['authServerUrl'], '/'), $config['realm']) );
 	}
 }

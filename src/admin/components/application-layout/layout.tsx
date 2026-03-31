@@ -24,8 +24,10 @@ const navigation: NavigationItem[] = [
 export default function ApplicationLayout({ children }: { children?: React.ReactNode }) {
   const location = useLocation();
   const menuRight = useRef<Menu>(null);
-  
-  const { userInfo, organization } = catcher24WordpressConnector;
+
+  const { userInfo, organization, dashboardUrl, apiUrl } = catcher24WordpressConnector;
+
+  const baseUrl = dashboardUrl.replace(/\/$/, "");
 
   const userMenuItems: MenuItem[] = [
     {
@@ -34,7 +36,10 @@ export default function ApplicationLayout({ children }: { children?: React.React
         {
           label: 'Logout',
           icon: 'pi pi-power-off',
-          command: () => window.location.href = '/wp-login.php?action=logout'
+          command: async () => {
+            const cleanApiUrl = apiUrl ? apiUrl.replace(/\/+$/, "") : "";
+            window.location.href = `${cleanApiUrl}/accounts/disconnect`;
+          }
         }
       ]
     }
@@ -83,9 +88,9 @@ export default function ApplicationLayout({ children }: { children?: React.React
           {organization && (
             <div className="flex gap-2">
               <span className="tracking-wider text-muted-foreground font-bold">Organization:</span>
-              <span className="font-medium text-foreground">
+              <a href={`${baseUrl}/org/${organization.identifier}`} className="font-medium text-foreground">
                  {organization.displayName || organization.name}
-               </span>
+               </a>
             </div>
           )}
 
@@ -101,7 +106,7 @@ export default function ApplicationLayout({ children }: { children?: React.React
             outlined={true}
             severity={"secondary"}
             size={"small"}
-            className={'px-2'}
+            className={'px-1'}
             onClick={(event) => menuRight.current?.toggle(event)}
           >
                 <span className="font-bold uppercase">
@@ -111,7 +116,7 @@ export default function ApplicationLayout({ children }: { children?: React.React
         </div>
       </header>
 
-      <main className="flex-1 p-8 bg-muted/10">
+      <main className="container mx-auto flex-1 p-8 bg-muted/10">
         {children || <Outlet />}
       </main>
     </div>

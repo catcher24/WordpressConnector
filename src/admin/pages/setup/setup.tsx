@@ -23,7 +23,7 @@ const isLocalhost = (hostname: string) => {
 export default function SetupWizard() {
   const navigate = useNavigate();
   // Data from WordPress PHP (catcher24WordpressConnector)
-  const { siteHostname, siteName, organizationId, targetId, apiUrl } = catcher24WordpressConnector;
+  const { siteHostname, siteName, organizationId, hasSingleOrganization, targetId, apiUrl } = catcher24WordpressConnector;
 
   const [step, setStep] = useState<WizardStep>(WizardStep.ORGANIZATION);
   const [loading, setLoading] = useState(true);
@@ -159,11 +159,11 @@ export default function SetupWizard() {
 
   const isSubscriptionLimitReached = useMemo(() => {
     if (!selectedOrg) return false;
-    
+
     // Check usage metric map (API might return TargetType.Web as "0" or "Web" depending on formatter, handling both)
     const usageObj = selectedOrg.usageMetrics?.targetTypeCounts;
     const webAppUsage = usageObj ? (usageObj["0"] || usageObj["Web"] || 0) : 0;
-    
+
     let webAppLimit = 0;
     const packageMap = selectedOrg.subscription?.tenantOrganizationPackages;
     const packages = packageMap ? (packageMap["0"] || packageMap["Web"]) : null;
@@ -171,7 +171,7 @@ export default function SetupWizard() {
     if (packages) {
       webAppLimit = Object.values(packages).reduce((acc: number, current: any) => acc + (current.unitCount || 0), 0);
     }
-  
+
     // If there is a limit set and usage meets or exceeds it, prevent creation
     return webAppLimit > 0 && webAppUsage >= webAppLimit;
   }, [selectedOrg]);
@@ -190,7 +190,7 @@ export default function SetupWizard() {
   }
 
   return (
-    <div className="flex items-center justify-center min-h-screen p-4 bg-gray-50 ">
+    <div className="flex items-center justify-center min-h-screen p-4">
       <Card className="w-full max-w-lg shadow-xl border-secondary-light">
         {/* Header */}
         <div className="text-center mb-6">
@@ -283,7 +283,7 @@ export default function SetupWizard() {
             <Divider align="center">
               <span className="text-gray-400 text-xs">OR</span>
             </Divider>
-            
+
             <Button
               label="Create New Target"
               icon="pi pi-plus"
@@ -298,12 +298,14 @@ export default function SetupWizard() {
           <div className="flex flex-col gap-4">
             <div className="flex justify-between items-center">
               <h2 className="text-xl font-semibold">Create New Target</h2>
-              <Button
-                label="Back"
-                icon="pi pi-arrow-left"
-                className="p-button-link p-0 text-xs"
-                onClick={() => setStep(targets.length > 0 ? WizardStep.TARGET : WizardStep.ORGANIZATION)}
-              />
+              {!hasSingleOrganization && (
+                <Button
+                  label="Back"
+                  icon="pi pi-arrow-left"
+                  className="p-button-link p-0 text-xs"
+                  onClick={() => setStep(targets.length > 0 ? WizardStep.TARGET : WizardStep.ORGANIZATION)}
+                />
+              )}
             </div>
 
             {isSubscriptionLimitReached && (

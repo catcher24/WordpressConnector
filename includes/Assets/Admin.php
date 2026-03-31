@@ -50,7 +50,27 @@ class Admin {
 	 * @return void
 	 */
 	public function bootstrap() {
+		add_action( 'admin_init', array( $this, 'handle_silent_auth_redirect' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_script' ) );
+	}
+
+	/**
+	 * Handles the redirect logic before any HTML is sent.
+	 */
+	public function handle_silent_auth_redirect() {
+		// Only run this logic on your specific plugin page
+		$page = isset($_GET['page']) ? $_GET['page'] : '';
+		if ( $page !== self::HANDLE ) {
+			return;
+		}
+
+		if ( ! Catcher24Client::get_valid_token() && get_transient('catcher24_retry_silent_auth') ) {
+			delete_transient('catcher24_retry_silent_auth');
+
+			$auth_url = Catcher24Client::generate_login_flow( true );
+			wp_redirect( $auth_url );
+			exit;
+		}
 	}
 
 	/**
@@ -104,27 +124,38 @@ class Admin {
 	public function get_data() {
 		$token = Catcher24Client::get_valid_token();
 
-		if ( ! $token && get_transient('catcher24_retry_silent_auth') ) {
-			// Clean up the flag immediately so we don't loop
-			delete_transient('catcher24_retry_silent_auth');
-
-			// Trigger silent re-auth
-			$auth_url = Catcher24Client::generate_login_flow( true );
-			wp_redirect( $auth_url );
-			exit;
-		}
-
 		$organization_id = get_option( CATCHER24_SETTING_SELECTED_ORGANIZATION, null );
 		$current_org = null;
+		$has_single_org = false;
 
 		// Validate organizationId and fetch full data
-		if ( $token && $organization_id ) {
-			if ( ! $this->is_organization_valid( $token, $organization_id ) ) {
-				delete_option( CATCHER24_SETTING_SELECTED_ORGANIZATION );
-				$organization_id = null;
-			} else {
-				// Fetch the actual organization object for the frontend
-				$current_org = $this->get_current_organization_details( $token, $organization_id );
+		if ( $token ) {
+			// Parse the organizations available in the token
+			$available_orgs = $this->get_organizations_from_token( $token );
+			$org_count = count( $available_orgs );
+
+			// Set the flag if exactly one organization is found
+			$has_single_org = ( $org_count === 1 );
+
+			// AUTO-SELECTION LOGIC:
+			// If no organization is saved, but the user only has access to exactly one
+			if ( ! $organization_id && count( $available_orgs ) === 1 ) {
+				$first_org = reset( $available_orgs );
+
+				if ( is_array( $first_org ) && isset( $first_org['name'] ) ) {
+					$organization_id = $first_org['name'];
+					update_option( CATCHER24_SETTING_SELECTED_ORGANIZATION, $organization_id );
+				}
+			}
+
+			// Validate existing selection
+			if ( $organization_id ) {
+				if ( ! $this->is_organization_valid_in_list( $organization_id, $available_orgs ) ) {
+					delete_option( CATCHER24_SETTING_SELECTED_ORGANIZATION );
+					$organization_id = null;
+				} else {
+					$current_org = $this->get_current_organization_details( $token, $organization_id );
+				}
 			}
 		}
 
@@ -155,6 +186,7 @@ class Admin {
 			'userInfo'  => Catcher24Client::get_user_info(),
 			'organizationId' => $organization_id,
 			'organization' => $current_org,
+			'hasSingleOrganization' => $has_single_org,
 			'targetId' => $target_id,
 			'siteName'       => get_bloginfo( 'name' ),
 			'siteHostname'   => wp_parse_url( home_url(), PHP_URL_HOST ),
@@ -188,36 +220,73 @@ class Admin {
 	}
 
 	/**
+	 * Extracts the organization array from the JWT.
+	 */
+	private function get_organizations_from_token( string $token ): array {
+		$token_parts = explode( '.', $token );
+		if ( count( $token_parts ) !== 3 ) {
+			return [];
+		}
+
+		$payload = json_decode( base64_decode( $token_parts[1] ), true );
+		$organizations_claim = $payload['organizations'] ?? [];
+
+		if ( is_string( $organizations_claim ) ) {
+			$organizations_claim = json_decode( $organizations_claim, true );
+		}
+
+		return is_array( $organizations_claim ) ? $organizations_claim : [];
+	}
+
+	/**
+	 * Validates the ID against a pre-parsed list of organizations.
+	 */
+	private function is_organization_valid_in_list( string $org_id, array $available_orgs ): bool {
+		$valid_ids = array_column( $available_orgs, 'name' );
+		return in_array( $org_id, $valid_ids, true );
+	}
+
+	/**
 	 * Validates if the selected target belongs to the selected organization.
 	 */
 	private function is_target_valid( string $token, string $org_id, string $target_id ): bool {
 		$transient_key = 'catcher24_target_valid_' . $target_id;
-		$cached = get_transient( $transient_key );
+/*		$cached = get_transient( $transient_key );
 
 		if ( false !== $cached ) {
 			return $cached === 'valid';
-		}
+		}*/
 
 		$token_parts = explode( '.', $token );
 		if ( count( $token_parts ) !== 3 ) {
 			return false;
 		}
 
-		$payload = json_decode( base64_decode( $token_parts[1] ), true );
+		$payload   = json_decode( base64_decode( $token_parts[1] ), true );
 		$tenant_id = $payload['__tenant__'] ?? null;
 
 		if ( ! $tenant_id ) {
 			return false;
 		}
 
-		$endpoint = rtrim( CATCHER24_API_GATEWAY_URL, '/' ) . "/api/tenants/{$tenant_id}/organizations/{$org_id}/targets/{$target_id}";
+		$endpoint = "/api/tenants/{$tenant_id}/organizations/{$org_id}/targets/{$target_id}";
 
 		try {
-			Catcher24Client::request( 'GET', $endpoint );
-			set_transient( $transient_key, 'valid', 12 * HOUR_IN_SECONDS );
+			$response = Catcher24Client::request( 'GET', $endpoint );
+
+			// Handle cases where the API returns an error object instead of the target
+			if ( $response['status'] === 404 ) {
+				set_transient( $transient_key, 'invalid', 1 * MINUTE_IN_SECONDS );
+				return false;
+			}
+
+			// If we reached here, the target is considered valid
+			set_transient( $transient_key, 'valid', 2 * MINUTE_IN_SECONDS );
 			return true;
+
 		} catch ( \Exception $e ) {
-			set_transient( $transient_key, 'invalid', 1 * HOUR_IN_SECONDS );
+			// Handle hard failures (401s, connection timeouts, etc.)
+			set_transient( $transient_key, 'invalid', 1 * MINUTE_IN_SECONDS );
 			return false;
 		}
 	}

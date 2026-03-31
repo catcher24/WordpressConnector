@@ -54,7 +54,7 @@ export default function OrganizationSelectionPage() {
   };
 
   return (
-    <div className="flex h-screen w-full items-center justify-center bg-gray-50 ">
+    <div className="flex h-screen w-full items-center justify-center">
       <Card className="w-full max-w-md shadow-lg border border-secondary-light text-center">
         <div className="mb-6">
           <h2 className="text-3xl font-bold tracking-tight">Select Organization</h2>
