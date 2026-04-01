@@ -236,6 +236,18 @@ class Catcher24Client {
 		}
 	}
 
+	public static function resolve_proxy_response( $response, $success_status = 200 ) {
+		if ( is_wp_error( $response ) || $response instanceof \WP_REST_Response ) {
+			return $response;
+		}
+
+		if ( is_array( $response ) && isset( $response['status'] ) && is_numeric( $response['status'] ) && $response['status'] >= 400 ) {
+			return new \WP_REST_Response( $response, (int) $response['status'] );
+		}
+
+		return new \WP_REST_Response( $response, $success_status );
+	}
+
 	public static function get_logout_url(): string {
 		$config = self::get_keycloak_config();
 		$redirect_uri = admin_url( 'admin.php?page=catcher24-wordpress-connector' );

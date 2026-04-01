@@ -8,10 +8,10 @@ interface DashboardSeverityMetricsProps {
 
 export const DashboardSeverityMetrics: React.FC<DashboardSeverityMetricsProps> = ({ severity }) => {
   const metrics = severity ? [
-    { label: "Critical", value: severity.critical || 0, color: "text-red-500" },
-    { label: "High", value: severity.high || 0, color: "text-orange-500" },
-    { label: "Medium", value: severity.medium || 0, color: "text-yellow-500" },
-    { label: "Low", value: severity.low || 0, color: "text-blue-500" },
+    { label: "Critical", value: severity.critical || 0, color: "text-severity-critical" },
+    { label: "High", value: severity.high || 0, color: "text-severity-high" },
+    { label: "Medium", value: severity.medium || 0, color: "text-severity-medium" },
+    { label: "Low", value: severity.low || 0, color: "text-severity-low" },
   ] : [
     { label: "Critical", value: 0, color: "text-secondary" },
     { label: "High", value: 0, color: "text-secondary" },

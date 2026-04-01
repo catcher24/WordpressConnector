@@ -15,39 +15,37 @@ enum WizardStep {
   CREATE_TARGET = "CREATE_TARGET",
 }
 
-const isLocalhost = (hostname: string) => {
-  const normalized = hostname.toLowerCase();
+const isLocalhost = (address: string) => {
+  const normalized = address.toLowerCase();
   return normalized === "localhost" || normalized === "127.0.0.1" || normalized.endsWith(".local");
 };
 
 export default function SetupWizard() {
   const navigate = useNavigate();
-  // Data from WordPress PHP (catcher24WordpressConnector)
   const { siteHostname, siteName, organizationId, hasSingleOrganization, targetId, apiUrl } = catcher24WordpressConnector;
 
   const [step, setStep] = useState<WizardStep>(WizardStep.ORGANIZATION);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
 
-  // Lists
   const [organizations, setOrganizations] = useState<any[]>([]);
+  // Assuming TargetModel includes both `hostname?: string` and `ipAddress?: string`
   const [targets, setTargets] = useState<TargetModel[]>([]);
 
-  // Current Selections
   const [selectedOrg, setSelectedOrg] = useState<any>(null);
 
-  // Create Target Form
-  const [newTargetHostname, setNewTargetHostname] = useState(siteHostname || "");
+  const [newTargetAddress, setNewTargetAddress] = useState(siteHostname || "");
   const [newTargetName, setNewTargetName] = useState(siteName || "");
 
+  const [apiErrors, setApiErrors] = useState<Record<string, string[]>>({});
+  const [globalError, setGlobalError] = useState<string | null>(null);
+
   useEffect(() => {
-    // If we already have a target ID, redirect to dashboard
     if (organizationId && targetId) {
       navigate("/");
       return;
     }
 
-    // If we already have an Org ID, skip to target fetching
     if (organizationId) {
       fetchTargets();
     } else {
@@ -81,7 +79,6 @@ export default function SetupWizard() {
       const items = data.items || [];
       setTargets(items);
 
-      // Fetch org details if we skipped fetchOrganizations
       if (!selectedOrg) {
         const orgRes = await fetch(`${apiUrl}/organizations`);
         const orgData = await orgRes.json();
@@ -133,34 +130,49 @@ export default function SetupWizard() {
 
   const handleCreateTarget = async () => {
     setActionLoading(true);
+    setApiErrors({});
+    setGlobalError(null);
+
     try {
       const res = await fetch(`${apiUrl}/targets`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        // Here we pass the unified targetAddress for creation
         body: JSON.stringify({
-          hostname: newTargetHostname,
+          targetAddress: newTargetAddress,
           displayName: newTargetName,
-          type: 0, // TargetType.Web
+          type: 1,
         }),
       });
+      if (!res.ok) {
+        const errorData = await res.json();
+        if (errorData.errors) setApiErrors(errorData.errors);
+        setGlobalError(errorData.title || "An unexpected error occurred.");
+        return;
+      }
+
       const data = await res.json();
       if (data.id) {
         window.location.hash = "#/";
         window.location.reload();
       }
+    } catch (error) {
+      setGlobalError("Network error or server is unreachable.");
     } finally {
       setActionLoading(false);
     }
   };
 
+  // Helper to resolve the existing target's address, whether it was saved as a hostname or IP
+  const getExistingTargetAddress = (t: any) => t.hostname || t.ipAddress || t.ip || "";
+
   const matchedTarget = useMemo(() => {
-    return targets.find((t) => t.hostname === siteHostname);
+    return targets.find((t) => getExistingTargetAddress(t) === siteHostname);
   }, [targets, siteHostname]);
 
   const isSubscriptionLimitReached = useMemo(() => {
     if (!selectedOrg) return false;
 
-    // Check usage metric map (API might return TargetType.Web as "0" or "Web" depending on formatter, handling both)
     const usageObj = selectedOrg.usageMetrics?.targetTypeCounts;
     const webAppUsage = usageObj ? (usageObj["0"] || usageObj["Web"] || 0) : 0;
 
@@ -172,13 +184,31 @@ export default function SetupWizard() {
       webAppLimit = Object.values(packages).reduce((acc: number, current: any) => acc + (current.unitCount || 0), 0);
     }
 
-    // If there is a limit set and usage meets or exceeds it, prevent creation
     return webAppLimit > 0 && webAppUsage >= webAppLimit;
   }, [selectedOrg]);
 
-  const isInvalidHostname = useMemo(() => {
-    return isLocalhost(newTargetHostname);
-  }, [newTargetHostname]);
+  const isInvalidTargetAddress = useMemo(() => {
+    return isLocalhost(newTargetAddress);
+  }, [newTargetAddress]);
+
+  const getFieldErrors = (...fields: string[]) => {
+    const lowerFields = fields.map((f) => f.toLowerCase());
+    const errors = Object.entries(apiErrors)
+      .filter(([key]) => lowerFields.includes(key.toLowerCase()))
+      .flatMap(([, msgs]) => msgs);
+    return errors.length > 0 ? errors : null;
+  };
+
+  const clearFieldError = (...fields: string[]) => {
+    const lowerFields = fields.map((f) => f.toLowerCase());
+    setApiErrors((prev) => {
+      const updated = { ...prev };
+      Object.keys(updated).forEach((key) => {
+        if (lowerFields.includes(key.toLowerCase())) delete updated[key];
+      });
+      return updated;
+    });
+  };
 
   if (loading) {
     return (
@@ -189,16 +219,22 @@ export default function SetupWizard() {
     );
   }
 
+  const targetAddressErrors = getFieldErrors("targetaddress");
+  const displayNameErrors = getFieldErrors("displayname");
+
+  const mappedFields = ["targetaddress", "displayname"];
+  const unmappedErrors = Object.entries(apiErrors)
+    .filter(([key]) => !mappedFields.includes(key.toLowerCase()))
+    .flatMap(([, msgs]) => msgs);
+
   return (
     <div className="flex items-center justify-center min-h-screen p-4">
       <Card className="w-full max-w-lg shadow-xl border-secondary-light">
-        {/* Header */}
         <div className="text-center mb-6">
           <h1 className="text-3xl font-bold ">Catcher24 Setup</h1>
           <p className="text-gray-500 mt-2">Connect your WordPress site to the SaaS platform.</p>
         </div>
 
-        {/* Step 1: Organizations */}
         {step === WizardStep.ORGANIZATION && (
           <div className="flex flex-col gap-4">
             <label className="font-semibold">Select Organization</label>
@@ -221,7 +257,6 @@ export default function SetupWizard() {
           </div>
         )}
 
-        {/* Step 2: Targets Selection */}
         {step === WizardStep.TARGET && (
           <div className="flex flex-col gap-4">
             <div className="flex justify-between items-end">
@@ -253,7 +288,7 @@ export default function SetupWizard() {
                   <div className="flex flex-col">
                     <span>This site (<b>{siteHostname}</b>) isn't registered yet.</span>
                     <Button
-                      label="Create target for this hostname"
+                      label="Create target for this address"
                       className="p-button-link p-0 text-xs text-left"
                       onClick={() => setStep(WizardStep.CREATE_TARGET)}
                     />
@@ -263,21 +298,24 @@ export default function SetupWizard() {
             )}
 
             <div className="max-h-60 overflow-y-auto border border-secondary-light rounded-md">
-              {targets.map((t) => (
-                <div
-                  key={t.id}
-                  onClick={() => handleTargetSelect(t.id)}
-                  className={`flex justify-between items-center p-4 cursor-pointer border-b last:border-0 hover:bg-tertiary-lighter transition-colors ${
-                    matchedTarget?.id === t.id ? "bg-primary-50 border-primary-200" : ""
-                  }`}
-                >
-                  <div className="flex flex-col">
-                    <span className="font-medium">{t.preferredDisplayName || t.displayName || t.hostname}</span>
-                    <span className="text-xs text-gray-500">{t.hostname}</span>
+              {targets.map((t) => {
+                const existingAddress = getExistingTargetAddress(t);
+                return (
+                  <div
+                    key={t.id}
+                    onClick={() => handleTargetSelect(t.id)}
+                    className={`flex justify-between items-center p-4 cursor-pointer border-b last:border-0 hover:bg-tertiary-lighter transition-colors ${
+                      matchedTarget?.id === t.id ? "bg-primary-50 border-primary-200" : ""
+                    }`}
+                  >
+                    <div className="flex flex-col">
+                      <span className="font-medium">{t.preferredDisplayName || t.displayName || existingAddress}</span>
+                      <span className="text-xs text-gray-500">{existingAddress}</span>
+                    </div>
+                    <i className={`pi ${matchedTarget?.id === t.id ? "pi-star-fill text-warning" : "pi-chevron-right text-gray-300"}`} />
                   </div>
-                  <i className={`pi ${matchedTarget?.id === t.id ? "pi-star-fill text-yellow-500" : "pi-chevron-right text-gray-300"}`} />
-                </div>
-              ))}
+                );
+              })}
             </div>
 
             <Divider align="center">
@@ -293,7 +331,6 @@ export default function SetupWizard() {
           </div>
         )}
 
-        {/* Step 3: Create Target */}
         {step === WizardStep.CREATE_TARGET && (
           <div className="flex flex-col gap-4">
             <div className="flex justify-between items-center">
@@ -303,7 +340,11 @@ export default function SetupWizard() {
                   label="Back"
                   icon="pi pi-arrow-left"
                   className="p-button-link p-0 text-xs"
-                  onClick={() => setStep(targets.length > 0 ? WizardStep.TARGET : WizardStep.ORGANIZATION)}
+                  onClick={() => {
+                    setGlobalError(null);
+                    setApiErrors({});
+                    setStep(targets.length > 0 ? WizardStep.TARGET : WizardStep.ORGANIZATION);
+                  }}
                 />
               )}
             </div>
@@ -316,7 +357,7 @@ export default function SetupWizard() {
                   <div className="flex flex-col gap-1">
                     <span><b>Subscription Limit Reached.</b></span>
                     <span className="text-sm">Your organization has reached the maximum number of Web Application targets allowed by its subscription.</span>
-                    <a href="https://catcher24.com/dashboard/organization/settings/billing" target="_blank" rel="noreferrer" className="text-blue-500 hover:text-blue-600 hover:underline text-sm font-medium">
+                    <a href="https://catcher24.com/dashboard/organization/settings/billing" target="_blank" rel="noreferrer" className="text-primary hover:text-primary-dark hover:underline text-sm font-medium">
                       Upgrade your subscription on Catcher24
                     </a>
                   </div>
@@ -324,19 +365,40 @@ export default function SetupWizard() {
               />
             )}
 
-            <div className="flex flex-col gap-2">
-              <label htmlFor="hostname" className="text-sm">Hostname</label>
-              <InputText
-                id="hostname"
-                value={newTargetHostname}
-                onChange={(e) => setNewTargetHostname(e.target.value)}
-                placeholder="e.g. example.com"
-                disabled={isSubscriptionLimitReached}
-                className={isInvalidHostname ? "p-invalid" : ""}
+            {(globalError || unmappedErrors.length > 0) && (
+              <Message
+                severity="error"
+                className="w-full justify-start"
+                content={
+                  <div className="flex flex-col gap-1">
+                    {globalError && <span className="font-bold">{globalError}</span>}
+                    {unmappedErrors.map((err, idx) => (
+                      <span key={idx} className="text-sm">{err}</span>
+                    ))}
+                  </div>
+                }
               />
-              {isInvalidHostname && (
-                <small className="text-red-500">Local URLs (e.g. localhost, 127.0.0.1) are not supported.</small>
+            )}
+
+            <div className="flex flex-col gap-2">
+              <label htmlFor="targetaddress" className="text-sm">Target Address</label>
+              <InputText
+                id="targetaddress"
+                value={newTargetAddress}
+                onChange={(e) => {
+                  setNewTargetAddress(e.target.value);
+                  clearFieldError("targetaddress");
+                }}
+                placeholder="e.g. example.com or 192.168.1.1"
+                disabled={isSubscriptionLimitReached}
+                className={isInvalidTargetAddress || targetAddressErrors ? "p-invalid" : ""}
+              />
+              {isInvalidTargetAddress && (
+                <small className="text-secondary">Local URLs (e.g. localhost, 127.0.0.1) are not supported.</small>
               )}
+              {targetAddressErrors && targetAddressErrors.map((err, i) => (
+                <small key={`address-err-${i}`} className="text-danger">{err}</small>
+              ))}
             </div>
 
             <div className="flex flex-col gap-2">
@@ -344,10 +406,17 @@ export default function SetupWizard() {
               <InputText
                 id="displayname"
                 value={newTargetName}
-                onChange={(e) => setNewTargetName(e.target.value)}
+                onChange={(e) => {
+                  setNewTargetName(e.target.value);
+                  clearFieldError("displayname");
+                }}
                 placeholder="e.g. My Production Site"
                 disabled={isSubscriptionLimitReached}
+                className={displayNameErrors ? "p-invalid" : ""}
               />
+              {displayNameErrors && displayNameErrors.map((err, i) => (
+                <small key={`display-err-${i}`} className="text-danger">{err}</small>
+              ))}
             </div>
 
             <div className="flex flex-col gap-2 mt-2">
@@ -356,7 +425,7 @@ export default function SetupWizard() {
                 icon="pi pi-plus-circle"
                 loading={actionLoading}
                 onClick={handleCreateTarget}
-                disabled={!newTargetHostname || !newTargetName || isSubscriptionLimitReached || isInvalidHostname}
+                disabled={!newTargetAddress || !newTargetName || isSubscriptionLimitReached || isInvalidTargetAddress}
               />
             </div>
           </div>

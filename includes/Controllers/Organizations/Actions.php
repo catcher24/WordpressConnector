@@ -18,6 +18,8 @@ class Actions {
 			return [];
 		}
 
+		// Note: If you ever encounter JWT decoding issues, using strtr() for base64url decoding is safer:
+		// base64_decode( strtr( $token_parts[1], '-_', '+/' ) )
 		$payload = json_decode( base64_decode( $token_parts[1] ), true );
 		$tenant_id = $payload['__tenant__'] ?? null;
 		$organizations_claim = $payload['organizations'] ?? null;
@@ -96,6 +98,8 @@ class Actions {
 	}
 
 	public function get_scanners( \WP_REST_Request $request ) {
-		return Catcher24Client::proxy_request( 'GET', 'scanners', $request->get_query_params(), [], true, true );
+		$response = Catcher24Client::proxy_request( 'GET', 'scanners', $request->get_query_params(), [], true, true );
+
+		return Catcher24Client::resolve_proxy_response( $response );
 	}
 }

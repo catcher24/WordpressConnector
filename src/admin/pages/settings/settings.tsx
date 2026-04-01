@@ -214,7 +214,7 @@ export function SettingsForm() {
                     : "Switching organizations will reload the integration context."}
                 </small>
                 {fieldState.error && (
-                  <small className="text-red-500 font-medium">{fieldState.error.message}</small>
+                  <small className="text-danger font-medium">{fieldState.error.message}</small>
                 )}
               </>
             )}
@@ -252,7 +252,7 @@ export function SettingsForm() {
                     : "Select which site target this WordPress installation maps to."}
                 </small>
                 {fieldState.error && (
-                  <small className="text-red-500 font-medium">{fieldState.error.message}</small>
+                  <small className="text-danger font-medium">{fieldState.error.message}</small>
                 )}
               </>
             )}
@@ -277,7 +277,7 @@ export function SettingsForm() {
                   How this target appears in the SaaS dashboard.
                 </small>
                 {fieldState.error && (
-                  <small className="text-red-500 font-medium">{fieldState.error.message}</small>
+                  <small className="text-danger font-medium">{fieldState.error.message}</small>
                 )}
               </>
             )}
@@ -302,7 +302,7 @@ export function SettingsForm() {
                   The hostname or IP address mapping to this site.
                 </small>
                 {fieldState.error && (
-                  <small className="text-red-500 font-medium">{fieldState.error.message}</small>
+                  <small className="text-danger font-medium">{fieldState.error.message}</small>
                 )}
               </>
             )}

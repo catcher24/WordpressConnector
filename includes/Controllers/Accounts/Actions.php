@@ -19,6 +19,7 @@ class Actions {
 		$code  = $request->get_param( 'code' ) ?: ( $_GET['code'] ?? null );
 		$state = $request->get_param( 'state' ) ?: ( $_GET['state'] ?? null );
 		$error = $request->get_param( 'error' ) ?: ( $_GET['error'] ?? null );
+		$is_retry = ($request->get_param( 'retry' ) ?: ( $_GET['retry'] ?? null )) === '1';
 
 		if ( empty( $code ) && empty( $error ) ) {
 			parse_str( $_SERVER['QUERY_STRING'], $manual_params );
@@ -56,6 +57,21 @@ class Actions {
 			exit;
 
 		} catch ( Exception $e ) {
+			// If state is missing/expired and we haven't already tried to recover
+			if ( $e->getMessage() === 'Invalid state or expired session.' && ! $is_retry ) {
+
+				// Generate a fresh login URL (this saves a new transient internally)
+				$retry_auth_url = Catcher24Client::generate_login_flow();
+
+				// Append retry flag to the redirect_uri inside the Keycloak URL
+				// so we can detect it when the user comes back
+				$retry_auth_url = add_query_arg( 'retry', '1', $retry_auth_url );
+
+				wp_redirect( $retry_auth_url );
+				exit;
+			}
+
+			// If it still fails or it's a different error, show the message
 			return Messages::error_auth_failed( $e->getMessage() );
 		}
 	}
