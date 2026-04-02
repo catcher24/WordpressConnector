@@ -56,7 +56,7 @@ export default function ApplicationLayout({ children }: { children?: React.React
   if (!userInfo) return <main>{children || <Outlet />}</main>;
 
   return (
-    <div className="min-h-screen w-full flex flex-col">
+    <div className="w-full flex flex-col">
       <header className="flex h-16 items-center gap-4 border-b bg-background px-8 shrink-0">
         <div className="flex items-center gap-2 pr-4 border-r">
           <Link to="/dashboard" className="flex items-center gap-2 font-semibold">

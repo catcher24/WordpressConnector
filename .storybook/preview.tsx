@@ -3,7 +3,7 @@ import React from "react";
 import { BrowserRouter } from "react-router-dom";
 import { PrimeReactProvider } from "primereact/api";
 import { CustomTailwind } from "../src/admin/prime-config";
-import "../src/admin/index.css"; // Tailwind 
+import "../src/admin/index.css"; // Tailwind
 
 (window as any).catcher24WordpressConnector = {
   siteHostname: "example.com",
@@ -29,7 +29,7 @@ const preview: Preview = {
   decorators: [
     (Story) => (
       <PrimeReactProvider value={{ unstyled: true, pt: CustomTailwind, ptOptions: { mergeSections: true } }}>
-        <div className="bg-white min-h-screen text-slate-800">
+        <div className="bg-white text-slate-800">
           <BrowserRouter>
             <Story />
           </BrowserRouter>

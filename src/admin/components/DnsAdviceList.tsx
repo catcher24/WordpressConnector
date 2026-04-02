@@ -1,5 +1,5 @@
 import React from "react";
-import { DnsAdviceModel } from "../models/shared";
+import { DnsAdviceModel } from "../models";
 
 interface DnsAdviceListProps {
   advices: DnsAdviceModel[];
@@ -35,8 +35,8 @@ export const DnsAdviceList: React.FC<DnsAdviceListProps> = ({ advices }) => {
   return (
     <div className="flex flex-col gap-4">
       {advices.map((advice, i) => (
-        <div 
-          key={i} 
+        <div
+          key={i}
           className={`block rounded-md border p-4 ${getSeverityClasses(advice.severity, advice.isVulnerability || false)}`}
         >
           <div className="size-full flex flex-col gap-2">

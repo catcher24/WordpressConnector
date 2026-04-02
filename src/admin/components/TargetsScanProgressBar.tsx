@@ -1,7 +1,8 @@
 import { useMemo } from "react";
 import uniqolor from "uniqolor";
-import { topologicalSortRunners } from "../utils/formatters";
-import { ScanModel, ScanRunnerModel, CollectorStatus, CollectorModel } from "../models/shared";
+import { topologicalSortRunners } from "../helpers";
+import { ScanModel, ScanRunnerModel, CollectorModel } from "../models";
+import {CollectorStatus} from "../enums";
 
 interface MeterItem {
   label: string;
@@ -56,7 +57,7 @@ export const TargetsScanProgressBar = ({ scan, collectorMap }: TargetsScanProgre
         collector?.displayName ??
         (scanRunner.configuration as any)?.displayName ??
         `Collector ${scanRunner.collectorId.slice(0, 8)}`;
-      
+
       const statusLabel = typeof scanRunner.collectorStatus === 'string'
         ? scanRunner.collectorStatus.charAt(0).toUpperCase() + scanRunner.collectorStatus.slice(1)
         : scanRunner.collectorStatus;

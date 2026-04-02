@@ -156,7 +156,7 @@ class Catcher24Client {
 		);
 	}
 
-	public static function request( string $method, string $endpoint, array $body = [] ) {
+	public static function request( string $method, string $endpoint, array|object $body = [] ) {
 		$token = self::get_valid_token();
 
 		if ( ! $token ) {
@@ -172,12 +172,12 @@ class Catcher24Client {
 			'headers' => [
 				'Authorization' => 'Bearer ' . $token,
 				'Accept'        => 'application/json',
+				'Content-Type'        => 'application/json',
 			],
 			'timeout' => 15,
 		];
 
 		if ( ! empty( $body ) ) {
-			$args['headers']['Content-Type'] = 'application/json';
 			$args['body']                    = wp_json_encode( $body );
 		}
 
@@ -189,19 +189,20 @@ class Catcher24Client {
 
 		$status_code = wp_remote_retrieve_response_code( $response );
 
-		// Handle 401 Unauthorized explicitly from the API
 		if ( $status_code === 401 ) {
 			self::disconnect();
 			throw new Exception( 'Session expired. Please re-authenticate.' );
 		}
 
 		$response_body = wp_remote_retrieve_body( $response );
-		$decoded       = json_decode( $response_body, true );
+
+		// 2. Remove 'true' to decode as objects
+		$decoded = json_decode( $response_body );
 
 		return $decoded;
 	}
 
-	public static function proxy_request( string $method, string $sub_path, array $query_params = [], array $body = [], bool $include_tenant = false, bool $include_org = false, ?string $target_id = null ) {		$tenant_id = get_option( CATCHER24_SETTING_SELECTED_TENANT );
+	public static function proxy_request( string $method, string $sub_path, array $query_params = [], array|object $body = [], bool $include_tenant = false, bool $include_org = false, ?string $target_id = null ) {		$tenant_id = get_option( CATCHER24_SETTING_SELECTED_TENANT );
 		$organization_id = get_option( CATCHER24_SETTING_SELECTED_ORGANIZATION );
 
 		if ( $include_tenant && ! $tenant_id ) {
@@ -227,7 +228,9 @@ class Catcher24Client {
 		$full_path = implode( '/', $pathSegments );
 		$endpoint = rtrim( CATCHER24_API_GATEWAY_URL, '/' ) .  "/api/{$full_path}";
 
-		$url = add_query_arg( array_filter( $query_params ), $endpoint );
+		$query_string = http_build_query($query_params);
+
+		$url = $endpoint . (str_contains($endpoint, '?') ? '&' : '?') . $query_string;
 
 		try {
 			return self::request( $method, $url, $body );
@@ -241,8 +244,16 @@ class Catcher24Client {
 			return $response;
 		}
 
-		if ( is_array( $response ) && isset( $response['status'] ) && is_numeric( $response['status'] ) && $response['status'] >= 400 ) {
-			return new \WP_REST_Response( $response, (int) $response['status'] );
+		$status_code = null;
+
+		if ( is_object( $response ) && isset( $response->status ) ) {
+			$status_code = $response->status;
+		} elseif ( is_array( $response ) && isset( $response['status'] ) ) {
+			$status_code = $response['status'];
+		}
+
+		if ( $status_code !== null && is_numeric( $status_code ) && $status_code >= 400 ) {
+			return new \WP_REST_Response( $response, (int) $status_code );
 		}
 
 		return new \WP_REST_Response( $response, $success_status );

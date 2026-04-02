@@ -1,15 +1,14 @@
 import React from "react";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
-import { ScanModel, ScannerModel, CollectorGroupModel, CollectorModel } from "../models/shared";
+import { ScanModel, ScannerModel, CollectorGroupModel, CollectorModel } from "../models";
+import {formatDate, formatDuration} from "../helpers";
 
 interface RecentScansTableProps {
   recentScans: ScanModel[];
   scannerMap: Map<string, ScannerModel>;
   collectorGroupMap: Map<string, CollectorGroupModel>;
   collectorMap: Map<string, CollectorModel>;
-  formatDate: (rowData: any, field: string) => string;
-  formatDuration: (startedAt: string, endedAt?: string) => string;
 }
 
 const getScanName = (
@@ -27,8 +26,6 @@ export const RecentScansTable: React.FC<RecentScansTableProps> = ({
   scannerMap,
   collectorGroupMap,
   collectorMap,
-  formatDate,
-  formatDuration,
 }) => {
   const renderScannerName = (scan: ScanModel) => (
     <span>{getScanName(scan, scannerMap, collectorGroupMap)}</span>

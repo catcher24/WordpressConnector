@@ -1,23 +1,24 @@
 import React from "react";
 import { Tag } from "primereact/tag";
-import { CertificateModel } from "../models/shared";
+import { CertificateModel } from "../models";
+import {PortType} from "../enums";
+import {formatDate} from "../helpers";
 
 interface CertificatesTableProps {
   certificates: CertificateModel[];
-  formatDate: (rowData: any, field: string) => string;
 }
 
-export const CertificatesTable: React.FC<CertificatesTableProps> = ({ certificates, formatDate }) => {
+export const CertificatesTable: React.FC<CertificatesTableProps> = ({ certificates }) => {
   if (!certificates || certificates.length === 0) {
     return <div className="text-center py-8 text-secondary border border-dashed rounded-lg">No certificates found</div>;
   }
 
   const getGradeColor = (grade: string | undefined) => {
     if (!grade) return "bg-gray-500";
-    if (grade.startsWith("A")) return "bg-green-500";
-    if (grade.startsWith("B")) return "bg-yellow-500";
-    if (grade.startsWith("C")) return "bg-orange-500";
-    return "bg-red-500";
+    if (grade.startsWith("A")) return "bg-severity-low";
+    if (grade.startsWith("B")) return "bg-severity-medium";
+    if (grade.startsWith("C")) return "bg-severity-high";
+    return "bg-severity-critical";
   };
 
   return (
@@ -25,7 +26,7 @@ export const CertificatesTable: React.FC<CertificatesTableProps> = ({ certificat
       {certificates.map((cert) => {
         const primaryImpl = cert.certificateImplementations?.[0];
         const grade = cert.lowestScore?.overallGrade || primaryImpl?.score?.overallGrade;
-        
+
         return (
           <div key={cert.id} className="border border-secondary-light rounded-lg bg-white p-4">
             <div className="flex justify-between items-start mb-4">
@@ -59,9 +60,9 @@ export const CertificatesTable: React.FC<CertificatesTableProps> = ({ certificat
               <div className="pt-3 border-t border-tertiary-light flex flex-col gap-2">
                 <div className="flex items-center gap-2">
                    <span className="text-[10px] uppercase font-bold text-secondary">Implementation:</span>
-                   <Tag value={`${primaryImpl.port.value}/${primaryImpl.port.type === 0 ? "TCP" : "UDP"}`} severity="info" className="text-[10px]" />
+                   <Tag value={`${primaryImpl.port.value}/${primaryImpl.port.type === PortType.TCP ? "TCP" : "UDP"}`} severity="info" className="text-[10px]" />
                 </div>
-                
+
                 {Object.keys(primaryImpl.ciphers || {}).length > 0 && (
                   <div className="flex flex-wrap gap-1">
                     {Object.keys(primaryImpl.ciphers).slice(0, 2).map((cipher, idx) => (

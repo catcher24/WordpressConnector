@@ -5,6 +5,9 @@ import colors from "tailwindcss/colors.js";
 export default {
   darkMode: 'selector',
   content: ["./src/admin/**/*.{js,ts,jsx,tsx}", "./src/components/**/*.{js,ts,jsx,tsx}"],
+  plugins: [
+    require('@tailwindcss/typography'),
+  ],
   theme: {
     screens: {
       xs: "380px",

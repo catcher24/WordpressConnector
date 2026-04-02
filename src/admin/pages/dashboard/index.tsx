@@ -11,16 +11,15 @@ import {
   ScannerModel,
   CollectorGroupModel,
   CollectorModel,
-} from "../../models/shared";
-import { DnsFlattener } from "../../utils/dns-flattener";
+} from "../../models";
 import { TargetsScanProgressBar } from "../../components/TargetsScanProgressBar";
 import { TopVulnerabilitiesTable } from "../../components/TopVulnerabilitiesTable";
 import { DnsRecordsTable } from "../../components/DnsRecordsTable";
 import { CertificatesTable } from "../../components/CertificatesTable";
 import { RecentScansTable } from "../../components/RecentScansTable";
 import { DashboardHeader } from "../../components/DashboardHeader";
-import { formatDate, formatDuration } from "../../utils/formatters";
 import { Panel } from "primereact/panel";
+import {DnsFlattener, formatDate, getApiUrl} from "../../helpers";
 
 export default function DashboardPage() {
   const toast = useRef<Toast>(null);
@@ -78,19 +77,6 @@ export default function DashboardPage() {
   );
 
   // -------------------------------------------------------------------------
-  // URL builder
-  // -------------------------------------------------------------------------
-  const getApiUrl = (endpoint: string, params: Record<any, any> = {}) => {
-    const url = new URL(`${apiUrl}${endpoint}`);
-    Object.keys(params).forEach((key) => {
-      if (params[key] !== undefined && params[key] !== null) {
-        url.searchParams.set(key, params[key]);
-      }
-    });
-    return url.toString();
-  };
-
-  // -------------------------------------------------------------------------
   // Data fetching
   // -------------------------------------------------------------------------
   const fetchDashboardData = useCallback(async () => {
@@ -108,16 +94,16 @@ export default function DashboardPage() {
         collectorGroupsRes,
         collectorsRes,
       ] = await Promise.all([
-        fetch(getApiUrl(`/targets/${targetId}`)).then((r) => r.json()),
-        fetch(getApiUrl(`/targets/${targetId}/vulnerabilities`, { pageSize: 500, orderBy: "severity desc, occurrences desc, name" })).then((r) => r.json()),
-        fetch(getApiUrl(`/targets/${targetId}/scans`, { orderBy: "startedAt desc", pageSize: 5 })).then((r) => r.json()),
-        fetch(getApiUrl(`/targets/${targetId}/scans`, { filter: "endedAt=" })).then((r) => r.json()),
-        fetch(getApiUrl(`/targets/${targetId}/certificates`, { pageSize: 5 })).then((r) => r.json()),
-        fetch(getApiUrl(`/targets/${targetId}/rootDomains`, { pageSize: 5 })).then((r) => r.json()),
-        fetch(getApiUrl(`/targets/${targetId}/ports`, { pageSize: 50 })).then((r) => r.json()),
-        fetch(getApiUrl("/scanners")).then((r) => r.json()),
-        fetch(getApiUrl("/collectorGroups")).then((r) => r.json()),
-        fetch(getApiUrl("/collectors")).then((r) => r.json()),
+        fetch(getApiUrl(apiUrl, `/targets/${targetId}`)).then((r) => r.json()),
+        fetch(getApiUrl(apiUrl, `/targets/${targetId}/vulnerabilities`, { pageSize: 500, orderBy: "severity desc, occurrences desc, name" })).then((r) => r.json()),
+        fetch(getApiUrl(apiUrl, `/targets/${targetId}/scans`, { orderBy: "startedAt desc", pageSize: 5 })).then((r) => r.json()),
+        fetch(getApiUrl(apiUrl, `/targets/${targetId}/scans`, { filter: "endedAt=" })).then((r) => r.json()),
+        fetch(getApiUrl(apiUrl, `/targets/${targetId}/certificates`, { pageSize: 5 })).then((r) => r.json()),
+        fetch(getApiUrl(apiUrl, `/targets/${targetId}/rootDomains`, { pageSize: 5 })).then((r) => r.json()),
+        fetch(getApiUrl(apiUrl, `/targets/${targetId}/ports`, { pageSize: 50 })).then((r) => r.json()),
+        fetch(getApiUrl(apiUrl, "/scanners")).then((r) => r.json()),
+        fetch(getApiUrl(apiUrl, "/collectorGroups")).then((r) => r.json()),
+        fetch(getApiUrl(apiUrl, "/collectors")).then((r) => r.json()),
       ]);
 
       setTarget(targetRes);
@@ -144,7 +130,7 @@ export default function DashboardPage() {
       const configuredScannerId = target?.scannerConfigurations?.[0]?.scannerId || target?.scannerConfigurations?.[0]?.id;
       const scannerId = configuredScannerId || scanners[0].id;
 
-      const res = await fetch(getApiUrl(`/targets/${targetId}/scanners/${scannerId}/start`), { method: "POST" });
+      const res = await fetch(getApiUrl(apiUrl, `/targets/${targetId}/scanners/${scannerId}/start`), { method: "POST" });
       if (res.ok) {
         toast.current?.show({ severity: "success", summary: "Success", detail: "Scan started." });
         fetchDashboardData();
@@ -163,7 +149,7 @@ export default function DashboardPage() {
     setIsCancelingScan(true);
     try {
       const scanId = activeScans[0].id;
-      const res = await fetch(getApiUrl(`/targets/${targetId}/scans/${scanId}/cancel`), { method: "POST" });
+      const res = await fetch(getApiUrl(apiUrl, `/targets/${targetId}/scans/${scanId}/cancel`), { method: "POST" });
       if (res.ok) {
         toast.current?.show({ severity: "success", summary: "Success", detail: "Scan canceled." });
         fetchDashboardData();
@@ -256,12 +242,11 @@ export default function DashboardPage() {
   return (
     <>
       <Toast ref={toast} position="bottom-right" />
-      <div className="flex-col md:flex min-h-screen">
+      <div className="flex-col md:flex">
         <div className="flex-1 space-y-6">
           <DashboardHeader
             target={target}
             targetPorts={targetPorts}
-            formatDate={formatDate}
             onViewFullInsights={() => {
               const baseUrl = dashboardUrl.replace(/\/$/, "");
               window.open(`${baseUrl}/org/${organization.identifier}/targets/${target.id}`, "_blank");
@@ -300,7 +285,7 @@ export default function DashboardPage() {
 
           {/* Certificates */}
           <Panel header="Certificates">
-            <CertificatesTable certificates={certificates} formatDate={formatDate} />
+            <CertificatesTable certificates={certificates} />
           </Panel>
 
           {/* DNS Records */}
@@ -320,8 +305,6 @@ export default function DashboardPage() {
               scannerMap={scannerMap}
               collectorGroupMap={collectorGroupMap}
               collectorMap={collectorMap}
-              formatDate={formatDate}
-              formatDuration={formatDuration}
             />
           </Panel>
         </div>

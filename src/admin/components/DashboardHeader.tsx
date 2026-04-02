@@ -1,12 +1,13 @@
 import React from "react";
-import { Button } from "primereact/button";
-import { TargetModel, TargetPortModel, getTargetTypeDisplayName, getSeverityLabel, getSeverityColor, getTargetTypeColor } from "../models/shared";
-import { Panel } from "primereact/panel";
+import {Button} from "primereact/button";
+import {TargetModel, TargetPortModel} from "../models";
+import {formatDate, getSeverityColor, getSeverityLabel, getTargetTypeColor, getTargetTypeDisplayName} from "../helpers";
+import {Panel} from "primereact/panel";
+import {CollectorCollectionMethod, PortType} from "../enums";
 
 interface DashboardHeaderProps {
   target: TargetModel;
   targetPorts: TargetPortModel[];
-  formatDate: (dateString?: string) => string;
   onViewFullInsights: () => void;
   isScanRunning?: boolean;
   onStartScan?: () => void;
@@ -18,7 +19,6 @@ interface DashboardHeaderProps {
 export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
   target,
   targetPorts,
-  formatDate,
   onViewFullInsights,
   isScanRunning,
   onStartScan,
@@ -29,7 +29,7 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
   const renderSeverityBadge = () => {
     const mostSevere = target.mostSevereVulnerability;
     let severityValue: number | null = typeof mostSevere?.severity === 'number' ? mostSevere.severity : null;
-    
+
     // If no numeric severity on the most severe vuln, check target-level counts
     if (severityValue === null) {
       if (target.severity.critical > 0) severityValue = 9.0;
@@ -64,7 +64,7 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
       <div className="flex flex-col gap-2 min-w-0">
         <div className="flex items-center gap-2 flex-wrap">
           {renderSeverityBadge()}
-          <div 
+          <div
             className="rounded whitespace-nowrap font-bold inline-block text-xs px-2 py-1 text-white shadow-sm"
             style={{ backgroundColor: getTargetTypeColor(target.type) }}
           >
@@ -115,11 +115,11 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
   );
 
   return (
-    <Panel 
+    <Panel
       header={headerTemplate}
       pt={{
-        title: { 
-          className: "flex-1" 
+        title: {
+          className: "flex-1"
         }
       }}
       ptOptions={{ mergeProps: true }}
@@ -134,11 +134,11 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
               <span className="text-xs text-secondary italic">No ports detected</span>
             ) : (
               targetPorts.map((port, idx) => (
-                <span 
-                  key={idx} 
+                <span
+                  key={idx}
                   className="inline-flex items-center px-2 py-0.5 rounded bg-tertiary-lighter border border-secondary-light text-xs font-medium text-secondary-dark"
                 >
-                  {port.value}/{port.type === 0 ? "TCP" : "UDP"}
+                  {port.value}/{port.type === PortType.TCP ? "TCP" : "UDP"}
                 </span>
               ))
             )}
@@ -174,8 +174,8 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
               </div>
             ) : (
               <span className="text-sm font-medium text-secondary-dark">
-                {target.scannerConfigurations?.some(c => c.nextRun) 
-                  ? `Next: ${formatDate(target.scannerConfigurations.find(c => c.nextRun).nextRun)}` 
+                {target.scannerConfigurations?.some(c => c.collectionMethod === CollectorCollectionMethod.OnSchedule && c.nextRun)
+                  ? `Next: ${formatDate(target.scannerConfigurations?.find(c => c.nextRun)?.nextRun)}`
                   : "No scheduled scans"}
               </span>
             )}

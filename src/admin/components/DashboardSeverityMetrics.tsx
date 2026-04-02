@@ -1,6 +1,6 @@
 import React from "react";
 import { Card } from "primereact/card";
-import { SeverityModel } from "../models/shared";
+import { SeverityModel } from "../models";
 
 interface DashboardSeverityMetricsProps {
   severity: SeverityModel | null | undefined;

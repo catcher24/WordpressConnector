@@ -274,19 +274,26 @@ class Admin {
 		try {
 			$response = Catcher24Client::request( 'GET', $endpoint );
 
-			// Handle cases where the API returns an error object instead of the target
-			if ( $response['status'] === 404 ) {
-				set_transient( $transient_key, 'invalid', 1 * MINUTE_IN_SECONDS );
+			$status = null;
+			if ( is_array( $response ) && isset( $response['status'] ) ) {
+				$status = (int) $response['status'];
+			} elseif ( is_object( $response ) && isset( $response->status ) ) {
+				$status = (int) $response->status;
+			}
+
+			if ( $status === 404 ) {
+				set_transient( $transient_key, 'invalid', MINUTE_IN_SECONDS );
 				return false;
 			}
 
-			// If we reached here, the target is considered valid
 			set_transient( $transient_key, 'valid', 2 * MINUTE_IN_SECONDS );
 			return true;
 
 		} catch ( \Exception $e ) {
-			// Handle hard failures (401s, connection timeouts, etc.)
-			set_transient( $transient_key, 'invalid', 1 * MINUTE_IN_SECONDS );
+			$code = $e->getCode();
+			if ( $code >= 400 && $code < 500 ) {
+				set_transient( $transient_key, 'invalid', MINUTE_IN_SECONDS );
+			}
 			return false;
 		}
 	}
