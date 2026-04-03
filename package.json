@@ -20,7 +20,6 @@
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
     "release": "npm run build && grunt release",
-    "rename": "grunt rename --force && npm run change-text-domain && composer dump-autoload",
     "change-text-domain": "grunt change-text-domain --force",
     "i18n": "wp i18n make-pot catcher24-wordpress-connector languages/catcher24-wordpress-connector.pot --domain=catcher24-wordpress-connector --exclude='*/js/*,build'",
     "block:start": "wp-scripts start --webpack-src-dir=src/blocks/block-1 --output-path=assets/blocks/block-1",
