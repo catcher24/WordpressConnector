@@ -47,16 +47,21 @@ export const TargetsScanProgressBar = ({ scan, collectorMap }: TargetsScanProgre
 
     return sortedRunners.map((scanRunner: ScanRunnerModel) => {
       const collector = collectorMap?.get(scanRunner.collectorId);
+      const specializationId = scanRunner.collectorSpecializationId;
+
+      const specialization = collector?.collectorSpecializations?.find(
+        (s: any) => s.id === specializationId
+      );
+
+      const name =
+        specialization?.displayName ??
+        collector?.displayName ??
+        `Collector ${scanRunner.collectorId.slice(0, 8)}`;
+
       const isRunning =
         scanRunner.collectorStatus === CollectorStatus.Starting ||
         scanRunner.collectorStatus === CollectorStatus.Running;
       const baseProgression = isRunning && scanRunner.progression === 0 ? 1 : 0;
-
-      // Resolve name: collectorMap → configuration.displayName → fallback
-      const name =
-        collector?.displayName ??
-        (scanRunner.configuration as any)?.displayName ??
-        `Collector ${scanRunner.collectorId.slice(0, 8)}`;
 
       const statusLabel = typeof scanRunner.collectorStatus === 'string'
         ? scanRunner.collectorStatus.charAt(0).toUpperCase() + scanRunner.collectorStatus.slice(1)

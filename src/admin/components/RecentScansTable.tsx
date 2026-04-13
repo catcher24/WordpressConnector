@@ -36,8 +36,17 @@ export const RecentScansTable: React.FC<RecentScansTableProps> = ({
     return (
       <div className="flex flex-col gap-1 w-full min-w-[200px]">
         {scan.runners.map((runner, idx) => {
-          const collector = collectorMap.get(runner.collectorId);
-          const name = collector?.displayName ?? `Collector ${runner.collectorId.slice(0, 8)}`;
+          const collector = collectorMap?.get(runner.collectorId);
+          const specializationId = runner.collectorSpecializationId;
+
+          const specialization = collector?.collectorSpecializations?.find(
+            (s: any) => s.id === specializationId
+          );
+
+          const name =
+            specialization?.displayName ??
+            collector?.displayName ??
+            `Collector ${runner.collectorId.slice(0, 8)}`;
           const isLast = idx === scan.runners.length - 1;
           return (
             <div
