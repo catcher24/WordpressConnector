@@ -85,7 +85,7 @@ jobs:
         with:
           # This appends '-dev' or '-stg' only if the environment is NOT prod
           name: catcher24-wordpress-connector${{ github.event.inputs.environment != 'prod' && format('-{0}', github.event.inputs.environment) || '' }}
-          path: release/catcher24-wordpress-connector.zip
+          path: release/catcher24-wordpress-connector
           retention-days: 14
 
       # ---------------------------------------------------------
