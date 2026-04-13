@@ -50,7 +50,7 @@ jobs:
 
           # Set the URLs based on the selected environment
           if [ "$ENV" = "prod" ]; then
-            DASH_URL="https://dashbord.catcher24.net/"
+            DASH_URL="https://dashboard.catcher24.net/"
             AUTH_URL="https://auth.catcher24.net/"
             API_URL="https://wordpress-connector-api-gateway.prod.catcher24.net/"
           elif [ "$ENV" = "stg" ]; then
