@@ -1,0 +1,106 @@
+name: Build and Release Plugin
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to build'
+        required: true
+        default: 'dev'
+        type: choice
+        options:
+          - dev
+          - stg
+          - prod
+
+jobs:
+  build:
+    name: Build for ${{ github.event.inputs.environment }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          tools: composer
+
+      - name: Install PHP Dependencies
+        run: composer install --no-dev --optimize-autoloader
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 10.30.0
+
+      - name: Install Node Dependencies
+        run: pnpm install
+
+      - name: Configure Environment Constants
+        run: |
+          ENV="${{ github.event.inputs.environment }}"
+
+          # Set the URLs based on the selected environment
+          if [ "$ENV" = "prod" ]; then
+            DASH_URL="https://catcher24.net/"
+            API_URL="https://wordpress-connector-api-gateway.catcher24.net/"
+          elif [ "$ENV" = "stg" ]; then
+            DASH_URL="https://stg.catcher24.net/"
+            API_URL="https://wordpress-connector-api-gateway.stg.catcher24.net/"
+          else
+            # Default to dev
+            DASH_URL="https://dev.catcher24.net/"
+            API_URL="https://wordpress-connector-api-gateway.dev.catcher24.net/"
+          fi
+
+          echo "Building for $ENV"
+          echo "Dashboard URL: $DASH_URL"
+          echo "API Gateway URL: $API_URL"
+
+          # Replace the constants in plugin.php
+          sed -i "s|define( 'CATCHER24_DASHBOARD_URL', '.*' );|define( 'CATCHER24_DASHBOARD_URL', '$DASH_URL' );|g" plugin.php
+          sed -i "s|define( 'CATCHER24_API_GATEWAY_URL', '.*' );|define( 'CATCHER24_API_GATEWAY_URL', '$API_URL' );|g" plugin.php
+
+      - name: Build and Package (Grunt Release)
+        run: pnpm run release
+
+      # ---------------------------------------------------------
+      # ARTIFACT UPLOAD (For all environments)
+      # ---------------------------------------------------------
+      - name: Upload Build Artifact (Private)
+        uses: actions/upload-artifact@v4
+        with:
+          # This appends '-dev' or '-stg' only if the environment is NOT prod
+          name: catcher24-wordpress-connector${{ github.event.inputs.environment != 'prod' && format('-{0}', github.event.inputs.environment) || '' }}
+          path: release/catcher24-wordpress-connector.zip
+          retention-days: 14
+
+      # ---------------------------------------------------------
+      # GITHUB RELEASE (Production Only - Public)
+      # ---------------------------------------------------------
+      - name: Get Plugin Version
+        if: github.event.inputs.environment == 'prod'
+        id: pkg
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Create Public GitHub Release
+        if: github.event.inputs.environment == 'prod'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ steps.pkg.outputs.version }}
+          name: Release v${{ steps.pkg.outputs.version }}
+          draft: false
+          prerelease: false
+          files: |
+            release/catcher24-wordpress-connector.zip
+            release/catcher24-wordpress-connector-${{ steps.pkg.outputs.version }}.zip
