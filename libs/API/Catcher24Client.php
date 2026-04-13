@@ -10,7 +10,7 @@ class Catcher24Client {
 
 	private static function get_keycloak_config(): array {
 		return [
-			'authServerUrl' => 'https://auth.dev.catcher24.net',
+			'authServerUrl' => CATCHER24_AUTH_URL,
 			'realm'         => '3efa9fb5-41e4-4695-85c1-44d9dc256c0a',
 			'clientId'      => 'wordpress-connector',
 			'redirectUri'   => rest_url( CATCHER24_ROUTE_PREFIX . '/accounts/callback' ),
