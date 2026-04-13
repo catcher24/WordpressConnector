@@ -1,5 +1,4 @@
 <?php
-
 namespace Catcher24\WordPress_Connector\Libs\API;
 
 use GuzzleHttp\Client;
@@ -8,15 +7,15 @@ use Exception;
 
 class Catcher24Client {
 
-	private static function get_keycloak_config(): array {
-		return [
-			'authServerUrl' => CATCHER24_AUTH_URL,
-			'realm'         => '3efa9fb5-41e4-4695-85c1-44d9dc256c0a',
-			'clientId'      => 'wordpress-connector',
-			'redirectUri'   => rest_url( CATCHER24_ROUTE_PREFIX . '/accounts/callback' ),
-			'pkceMethod'    => AbstractProvider::PKCE_METHOD_S256,
-		];
-	}
+  private static function get_keycloak_config(): array {
+    return [
+      'authServerUrl' => rtrim( CATCHER24_AUTH_URL, '/' ),
+      'realm'         => '3efa9fb5-41e4-4695-85c1-44d9dc256c0a',
+      'clientId'      => 'wordpress-connector',
+      'redirectUri'   => rest_url( rtrim( CATCHER24_ROUTE_PREFIX, '/' ) . '/accounts/callback' ),
+      'pkceMethod'    => AbstractProvider::PKCE_METHOD_S256,
+    ];
+  }
 
 	private static function get_provider() {
 		$config = self::get_keycloak_config();
