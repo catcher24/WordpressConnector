@@ -201,7 +201,8 @@ class Catcher24Client {
 		return $decoded;
 	}
 
-	public static function proxy_request( string $method, string $sub_path, array $query_params = [], array|object $body = [], bool $include_tenant = false, bool $include_org = false, ?string $target_id = null ) {		$tenant_id = get_option( CATCHER24_SETTING_SELECTED_TENANT );
+	public static function proxy_request( string $method, string $sub_path, array $query_params = [], array|object $body = [], bool $include_tenant = false, bool $include_org = false, ?string $target_id = null ) {
+    $tenant_id = get_option( CATCHER24_SETTING_SELECTED_TENANT );
 		$organization_id = get_option( CATCHER24_SETTING_SELECTED_ORGANIZATION );
 
 		if ( $include_tenant && ! $tenant_id ) {
