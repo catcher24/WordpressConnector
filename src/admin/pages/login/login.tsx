@@ -1,8 +1,27 @@
 import { Button } from "primereact/button";
 import { Card } from "primereact/card";
+import { useState } from "react";
 
 export default function LoginPage() {
-  const signInUrl = `${catcher24WordpressConnector.apiUrl}/accounts/signin`;
+  const [loading, setLoading] = useState(false);
+
+  const handleSignIn = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch(`${catcher24WordpressConnector.apiUrl}/accounts/signin`);
+      const data = await response.json();
+
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        console.error("No redirect URL received");
+        setLoading(false);
+      }
+    } catch (error) {
+      console.error("Sign-in request failed", error);
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="flex h-screen w-full items-center justify-center">
@@ -12,14 +31,13 @@ export default function LoginPage() {
           <p className="text-muted-foreground mt-2">Sign in to access your dashboard</p>
         </div>
 
-        <form action={signInUrl} method="GET">
-          <Button
-            type="submit"
-            label="Sign In with OpenID"
-            icon="pi pi-external-link"
-            className="w-full mt-2"
-          />
-        </form>
+        <Button
+          label="Sign In"
+          icon="pi pi-external-link"
+          className="w-full mt-2"
+          onClick={handleSignIn}
+          loading={loading}
+        />
       </Card>
     </div>
   );

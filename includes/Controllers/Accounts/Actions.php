@@ -5,15 +5,17 @@ namespace Catcher24\WordPress_Connector\Controllers\Accounts;
 use Catcher24\WordPress_Connector\Libs\API\Catcher24Client;
 use Exception;
 use WP_REST_Request;
+use WP_REST_Response;
 
 class Actions {
 
-	public function signin( WP_REST_Request $request ) {
-		$authUrl = Catcher24Client::generate_login_flow();
+  public function signin(WP_REST_Request $request) {
+    $authUrl = Catcher24Client::generate_login_flow();
 
-		wp_redirect( $authUrl );
-		exit;
-	}
+    return new WP_REST_Response([
+      'redirect_url' => $authUrl
+    ], 200);
+  }
 
 	public function callback( WP_REST_Request $request ) {
 		$code  = $request->get_param( 'code' ) ?: ( $_GET['code'] ?? null );
