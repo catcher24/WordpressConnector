@@ -11,8 +11,8 @@ export default function LoginPage() {
       const response = await fetch(`${catcher24WordpressConnector.apiUrl}/accounts/signin`);
       const data = await response.json();
 
-      if (data.url) {
-        window.location.href = data.url;
+      if (data.redirect_url) {
+        window.location.href = data.redirect_url;
       } else {
         console.error("No redirect URL received");
         setLoading(false);
