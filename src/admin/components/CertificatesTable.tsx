@@ -3,14 +3,35 @@ import { Tag } from "primereact/tag";
 import { CertificateModel } from "../models";
 import {PortType} from "../enums";
 import {formatDate} from "../helpers";
+import { EmptyState } from "./EmptyState";
 
 interface CertificatesTableProps {
   certificates: CertificateModel[];
+  isExcluded?: boolean;
+  onUpgrade?: () => void;
 }
 
-export const CertificatesTable: React.FC<CertificatesTableProps> = ({ certificates }) => {
+export const CertificatesTable: React.FC<CertificatesTableProps> = ({ certificates, isExcluded, onUpgrade }) => {
+  if (isExcluded) {
+    return (
+      <EmptyState
+        icon="pi pi-lock"
+        title="Certificate Insights"
+        description="Get detailed insights into your SSL/TLS certificates, including expiration tracking and configuration scores. Upgrade your plan to enable this feature."
+        actionLabel="Upgrade Now"
+        onAction={onUpgrade}
+      />
+    );
+  }
+
   if (!certificates || certificates.length === 0) {
-    return <div className="text-center py-8 text-secondary border border-dashed rounded-lg">No certificates found</div>;
+    return (
+      <EmptyState 
+        icon="pi pi-shield" 
+        title="No certificates found" 
+        description="We haven't discovered any SSL/TLS certificates for this target. Run a scan to perform certificate discovery." 
+      />
+    );
   }
 
   const getGradeColor = (grade: string | undefined) => {

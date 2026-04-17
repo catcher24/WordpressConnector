@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef, useCallback, useMemo } from "react";
 import { Toast } from "primereact/toast";
-import {HttpTransportType, HubConnection, HubConnectionBuilder, LogLevel} from "@microsoft/signalr";
+import { HttpTransportType, HubConnection, HubConnectionBuilder, LogLevel } from "@microsoft/signalr";
 
 import {
   TargetModel,
@@ -11,6 +11,7 @@ import {
   ScannerModel,
   CollectorGroupModel,
   CollectorModel,
+  OrganizationModel,
 } from "../../models";
 import { TargetsScanProgressBar } from "../../components/TargetsScanProgressBar";
 import { TopVulnerabilitiesTable } from "../../components/TopVulnerabilitiesTable";
@@ -19,7 +20,9 @@ import { CertificatesTable } from "../../components/CertificatesTable";
 import { RecentScansTable } from "../../components/RecentScansTable";
 import { DashboardHeader } from "../../components/DashboardHeader";
 import { Panel } from "primereact/panel";
-import {DnsFlattener, formatDate, getApiUrl} from "../../helpers";
+import { DnsFlattener, formatDate, getApiUrl } from "../../helpers";
+import { useOrganizationCapabilities } from "../../hooks/useOrganizationCapabilities";
+import { TargetType } from "../../enums";
 
 export default function DashboardPage() {
   const toast = useRef<Toast>(null);
@@ -45,9 +48,22 @@ export default function DashboardPage() {
   const [collectorGroups, setCollectorGroups] = useState<CollectorGroupModel[]>([]);
   const [collectors, setCollectors] = useState<CollectorModel[]>([]);
 
-  // -------------------------------------------------------------------------
-  // Lookup maps derived from the fetched lists
-  // -------------------------------------------------------------------------
+  const orgModel = useMemo(() => OrganizationModel.asOrganizationModel(organization), [organization]);
+  const capabilities = useOrganizationCapabilities(orgModel);
+
+  const isDnsExcluded = capabilities.isCollectorExcluded(
+    "38A8DF2C-0993-425F-AC80-90C0C6FF4EE9",
+    target?.type || TargetType.WebApplication
+  );
+  const isCertificatesExcluded = capabilities.isCollectorExcluded(
+    "3BE982B9-D0CA-4D0E-96D2-FBD012B4CA10",
+    target?.type || TargetType.WebApplication
+  );
+
+  const onUpgrade = () => {
+    const baseUrl = dashboardUrl.replace(/\/$/, "");
+    window.open(`${baseUrl}/org/${organization.identifier}/subscription`, "_blank");
+  };
   const scannerMap = useMemo<Map<string, ScannerModel>>(
     () => new Map(scanners.map((s) => [s.id, s])),
     [scanners]
@@ -184,7 +200,7 @@ export default function DashboardPage() {
         if (isCancelled) return;
 
         newConnection = new HubConnectionBuilder()
-          .withUrl(data.url,{
+          .withUrl(data.url, {
             skipNegotiation: true,
             transport: HttpTransportType.WebSockets,
             withCredentials: true,
@@ -285,7 +301,11 @@ export default function DashboardPage() {
 
           {/* Certificates */}
           <Panel header="Certificates">
-            <CertificatesTable certificates={certificates} />
+            <CertificatesTable
+              certificates={certificates}
+              isExcluded={isCertificatesExcluded}
+              onUpgrade={onUpgrade}
+            />
           </Panel>
 
           {/* DNS Records */}
@@ -295,6 +315,8 @@ export default function DashboardPage() {
               showFullDns={showFullDns}
               setShowFullDns={setShowFullDns}
               isSubdomain={rootDomains.some((rd) => rd.value !== target?.hostname)}
+              isExcluded={isDnsExcluded}
+              onUpgrade={onUpgrade}
             />
           </Panel>
 

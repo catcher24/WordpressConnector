@@ -15,16 +15,28 @@ const originalFetch = window.fetch;
 
 export const setupStorybookMocks = (customMocks: any = {}) => {
   // 1. Setup the global WordPress connector object
+  const connectorDefaults = {
+    siteHostname: "example.com",
+    siteName: "My WordPress Site",
+    organizationId: "org-123",
+    targetId: "target-123",
+    apiUrl: "http://localhost/wp-json/catcher24/v1",
+    dashboardUrl: "https://catcher24.com/dashboard",
+    organization: generateMockOrganization("org-123"),
+  };
+
   (window as any).catcher24WordpressConnector = {
-    siteHostname: customMocks.connector?.siteHostname || "example.com",
-    siteName: customMocks.connector?.siteName || "My WordPress Site",
-    organizationId: customMocks.connector?.organizationId || "org-123",
-    targetId: customMocks.connector?.targetId || "target-123",
-    apiUrl: customMocks.connector?.apiUrl || "http://localhost/wp-json/catcher24/v1",
-    dashboardUrl: customMocks.connector?.dashboardUrl || "https://catcher24.com/dashboard",
-    organization: customMocks.connector?.organization || generateMockOrganization("org-123"),
+    ...connectorDefaults,
     ...customMocks.connector,
   };
+
+  // If these were passed at the top level of customMocks, ensure they are applied
+  const connectorKeys = Object.keys(connectorDefaults);
+  connectorKeys.forEach(key => {
+    if (customMocks[key] !== undefined) {
+      (window as any).catcher24WordpressConnector[key] = customMocks[key];
+    }
+  });
 
   // 2. Setup the global fetch interceptor
   window.fetch = async (input: RequestInfo | URL, init?: RequestInit) => {
@@ -80,7 +92,7 @@ export const setupStorybookMocks = (customMocks: any = {}) => {
 
     if (url.includes("/certificates")) return respondWith({ items: customMocks.certificates || generateMockCertificates(2) });
     if (url.includes("/rootDomains")) return respondWith({ items: customMocks.rootDomains || generateMockRootDomains(1) });
-    if (url.includes("/ports")) return respondWith({ items: customMocks.ports || generateMockPorts(4) });
+    if (url.includes("/ports")) return respondWith(customMocks.ports || generateMockPorts(4));
 
     // Scanner / collector group endpoints
     if (url.includes("/scanners")) return respondWith({ items: customMocks.scanners || generateMockScanners() });

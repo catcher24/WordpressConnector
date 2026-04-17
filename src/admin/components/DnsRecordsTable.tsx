@@ -5,21 +5,46 @@ import { Panel } from "primereact/panel";
 import { DnsAdviceList } from "./DnsAdviceList";
 import { classNames } from "primereact/utils";
 import { SelectButton } from "primereact/selectbutton";
+import { EmptyState } from "./EmptyState";
 
 interface DnsRecordsTableProps {
   groupedRecords: any;
   showFullDns: boolean;
   setShowFullDns: (val: boolean) => void;
   isSubdomain: boolean;
+  isExcluded?: boolean;
+  onUpgrade?: () => void;
 }
 
 export const DnsRecordsTable: React.FC<DnsRecordsTableProps> = ({
   groupedRecords,
   showFullDns,
   setShowFullDns,
-  isSubdomain
+  isSubdomain,
+  isExcluded,
+  onUpgrade
 }) => {
-  if (!groupedRecords) return <div>No DNS data available</div>;
+  if (isExcluded) {
+    return (
+      <EmptyState
+        icon="pi pi-lock"
+        title="Advanced DNS Discovery"
+        description="Unlock deep DNS discovery to find hidden records and identify potential misconfigurations. This feature is available in our advanced plans."
+        actionLabel="Upgrade Now"
+        onAction={onUpgrade}
+      />
+    );
+  }
+
+  if (!groupedRecords) {
+    return (
+      <EmptyState
+        icon="pi pi-globe"
+        title="No DNS records discovered"
+        description="We haven't found any DNS records for this target yet. Start a scan to begin discovery."
+      />
+    );
+  }
 
   const renderSimpleTable = (
     items: any[],
@@ -207,9 +232,12 @@ export const DnsRecordsTable: React.FC<DnsRecordsTableProps> = ({
         ], "lg:col-span-2")}
 
         {Object.values(groupedRecords).every(v => Array.isArray(v) && v.length === 0) && (
-          <div className="text-center py-8 text-secondary border border-dashed rounded-lg lg:col-span-2">
-             No DNS records found for this {showFullDns ? 'domain' : 'subdomain'}
-          </div>
+          <EmptyState
+            icon="pi pi-search"
+            title="No records found"
+            description={`No DNS records were found for this ${showFullDns ? 'domain' : 'subdomain'}.`}
+            className="lg:col-span-2"
+          />
         )}
       </div>
     </div>

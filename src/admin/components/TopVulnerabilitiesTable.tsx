@@ -1,6 +1,7 @@
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 import { getSeverityColor, getSeverityLabel } from "../helpers";
+import { EmptyState } from "./EmptyState";
 
 interface TopVulnerabilitiesTableProps {
   vulnerabilities: any[];
@@ -19,6 +20,16 @@ const renderSeverity = (rowData: any) => {
 };
 
 export const TopVulnerabilitiesTable: React.FC<TopVulnerabilitiesTableProps> = ({ vulnerabilities }) => {
+  if (!vulnerabilities || vulnerabilities.length === 0) {
+    return (
+      <EmptyState 
+        icon="pi pi-check-circle" 
+        title="No vulnerabilities found" 
+        description="Great news! No recent vulnerabilities have been detected for this target." 
+      />
+    );
+  }
+
   const renderNameWithSeverity = (rowData: any) => (
     <div className="flex items-center gap-3">
       {renderSeverity(rowData)}

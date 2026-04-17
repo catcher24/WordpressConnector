@@ -24,17 +24,21 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex h-screen w-full items-center justify-center">
-      <Card className="w-full max-w-md shadow-lg border border-secondary-light text-center">
-        <div className="mb-6">
-          <h2 className="text-3xl font-bold tracking-tight">Welcome</h2>
-          <p className="text-muted-foreground mt-2">Sign in to access your dashboard</p>
+    <div className="flex min-h-[500px] py-12 w-full items-center justify-center bg-gray-50 border border-gray-200 rounded-xl">
+      <Card className="w-full max-w-md shadow-sm border border-gray-200 text-center rounded-xl p-2 bg-white">
+        <div className="mb-8 flex flex-col items-center">
+          <div className="bg-primary-50 text-primary-500 rounded-full w-16 h-16 flex items-center justify-center mb-4 border border-primary-100">
+            <i className="pi pi-lock text-2xl"></i>
+          </div>
+          <h2 className="text-2xl font-bold tracking-tight text-gray-900">Welcome to Catcher24</h2>
+          <p className="text-gray-500 mt-2 text-sm">Securely connect your WordPress site to the platform.</p>
         </div>
 
         <Button
-          label="Sign In"
-          icon="pi pi-external-link"
-          className="w-full mt-2"
+          label="Sign In to Dashboard"
+          icon="pi pi-arrow-right"
+          iconPos="right"
+          className="w-full p-button-lg"
           onClick={handleSignIn}
           loading={loading}
         />

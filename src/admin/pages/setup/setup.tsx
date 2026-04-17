@@ -134,11 +134,14 @@ export default function SetupWizard() {
   }
 
   return (
-    <div className="flex items-center justify-center p-4">
-      <Card className="w-full max-w-lg shadow-xl border-secondary-light">
-        <div className="text-center mb-6">
-          <h1 className="text-3xl font-bold">Catcher24 Setup</h1>
-          <p className="text-gray-500 mt-2">Connect your WordPress site to the SaaS platform.</p>
+    <div className="flex min-h-[500px] py-12 px-4 w-full items-center justify-center bg-gray-50 border border-gray-200 rounded-xl">
+      <Card className="w-full max-w-lg shadow-sm border border-gray-200 rounded-xl p-2 bg-white">
+        <div className="text-center mb-8 flex flex-col items-center">
+          <div className="bg-primary-50 text-primary-500 rounded-full w-16 h-16 flex items-center justify-center mb-4 border border-primary-100">
+            <i className="pi pi-cog text-2xl"></i>
+          </div>
+          <h1 className="text-2xl font-bold tracking-tight text-gray-900">Catcher24 Setup</h1>
+          <p className="text-gray-500 mt-2 text-sm">Connect your WordPress site to the platform.</p>
         </div>
 
         {step === WizardStep.ORGANIZATION && (
