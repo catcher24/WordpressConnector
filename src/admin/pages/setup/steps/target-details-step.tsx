@@ -17,14 +17,14 @@ interface Props {
 }
 
 export default function TargetDetailsStep({
-                                            formData,
-                                            updateForm,
-                                            disabled,
-                                            allowedCollectionMethods,
-                                            allowedScheduleIntervals,
-                                            selectedOrganization,
-                                            errors = {}
-                                          }: Props) {
+  formData,
+  updateForm,
+  disabled,
+  allowedCollectionMethods,
+  allowedScheduleIntervals,
+  selectedOrganization,
+  errors = {}
+}: Props) {
   const { dashboardUrl } = catcher24WordpressConnector;
 
   const isLocalhost = (address: string) =>
@@ -142,7 +142,7 @@ export default function TargetDetailsStep({
 
       {formData.collectionMethod === CollectorCollectionMethod.OnSchedule && (
         <div className="flex flex-col gap-3 mt-2 p-3 bg-blue-50/50 rounded-lg border border-blue-100">
-          <label className="text-sm font-bold text-blue-900">
+          <label className="text-xs font-bold text-blue-900 tracking-wide uppercase">
             <i className="pi pi-clock mr-2"></i>
             Schedule Configuration
           </label>
@@ -160,16 +160,38 @@ export default function TargetDetailsStep({
         </div>
       )}
 
-      <div className="flex items-center gap-3 mt-2 p-2 bg-gray-50 rounded-md border border-gray-200">
-        <Checkbox
-          inputId="startOnCreate"
-          checked={formData.startOnCreate}
-          onChange={(e) => updateForm({ startOnCreate: e.checked ?? false })}
-          disabled={disabled}
-        />
-        <label htmlFor="startOnCreate" className="text-sm font-medium cursor-pointer select-none text-gray-700">
-          Start scan immediately after creating target
-        </label>
+      <div className="flex flex-col gap-4 mt-2">
+        <div className="flex items-center gap-3 p-2 bg-gray-50 rounded-md border border-gray-200">
+          <Checkbox
+            inputId="startOnCreate"
+            checked={formData.startOnCreate}
+            onChange={(e) => updateForm({ startOnCreate: e.checked ?? false })}
+            disabled={disabled}
+          />
+          <label htmlFor="startOnCreate" className="text-sm font-medium cursor-pointer select-none text-gray-700">
+            Start scan immediately after creating target
+          </label>
+        </div>
+
+        <div className="bg-warning-lighter border border-warning-light rounded-xl p-4 flex gap-4 text-left shadow-sm">
+          <i className="pi pi-exclamation-triangle text-warning-dark mt-0.5 text-xl flex-shrink-0" />
+          <div className="flex flex-col gap-3">
+            <p className="text-[11px] text-warning-darker leading-normal font-medium">
+              <strong>Warning:</strong> Active scanning involves automated interactions designed to identify security flaws. While safe for secure systems, these probes can cause unintended database write operations on vulnerable sites, resulting in the generation of automated posts, metadata, or comments.
+            </p>
+            <div className="flex items-center gap-2 pt-1 border-t border-warning-light/50">
+              <Checkbox
+                inputId="acknowledged"
+                checked={formData.acknowledged}
+                onChange={e => updateForm({ acknowledged: e.checked ?? false })}
+                disabled={disabled}
+              />
+              <label htmlFor="acknowledged" className="text-xs font-bold text-warning-darker cursor-pointer select-none">
+                I understand and acknowledge these risks
+              </label>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

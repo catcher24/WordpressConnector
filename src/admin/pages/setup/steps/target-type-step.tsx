@@ -19,7 +19,8 @@ export default function TargetTypeStep({ formData, updateForm, selectedOrganizat
   const [groups, setGroups] = useState<CollectorGroupModel[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const { isCollectorGroupAllowed } = useOrganizationCapabilities(selectedOrganization || null);
+  const orgModel = useMemo(() => OrganizationModel.asOrganizationModel(selectedOrganization || null), [selectedOrganization]);
+  const { isCollectorGroupAllowed } = useOrganizationCapabilities(orgModel);
 
   useEffect(() => {
     const fetchGroups = async () => {

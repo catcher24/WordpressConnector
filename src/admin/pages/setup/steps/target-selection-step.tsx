@@ -3,6 +3,7 @@ import { Button } from "primereact/button";
 import { Message } from "primereact/message";
 import { Divider } from "primereact/divider";
 import { InputText } from "primereact/inputtext";
+import { Checkbox } from "primereact/checkbox";
 import { TargetModel } from "../../../models";
 
 interface Props {
@@ -19,6 +20,7 @@ const getExistingTargetAddress = (t: any) => t.hostname || t.ip || "";
 export default function TargetSelectionStep({ targets, siteHostname, onSelectTarget, onCreateNew, onChangeOrg, isLoading }: Props) {
   const [viewAll, setViewAll] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [acknowledged, setAcknowledged] = useState(false);
 
   const matchedTarget = useMemo(() => {
     return targets.find((t) => getExistingTargetAddress(t) === siteHostname);
@@ -62,12 +64,32 @@ export default function TargetSelectionStep({ targets, siteHostname, onSelectTar
             <p className="text-gray-400 text-sm font-medium tracking-tight">{address}</p>
           </div>
 
+          <div className="bg-warning-lighter border border-warning-light rounded-xl p-4 flex gap-4 text-left shadow-sm">
+            <i className="pi pi-exclamation-triangle text-warning-dark mt-0.5 text-xl flex-shrink-0" />
+            <div className="flex flex-col gap-3">
+              <p className="text-[11px] text-warning-darker leading-normal font-medium">
+                <strong>Warning:</strong> Active security scanning involves automated probes that can trigger <strong>severe side effects</strong> if your site has certain vulnerabilities. While these issues should not occur on a secure site, they can involve unintended <strong>database interactions</strong> resulting in the creation of test posts, comments, or other automated content. You must acknowledge the risk of these interactions before proceeding.
+              </p>
+              <div className="flex items-center gap-2 pt-1 border-t border-warning-light/50">
+                <Checkbox 
+                  inputId="acknowledge-scan" 
+                  checked={acknowledged} 
+                  onChange={e => setAcknowledged(e.checked ?? false)} 
+                  disabled={isLoading}
+                />
+                <label htmlFor="acknowledge-scan" className="text-xs font-bold text-warning-darker cursor-pointer select-none">
+                  I understand and acknowledge these risks
+                </label>
+              </div>
+            </div>
+          </div>
+
           <Button
             label="Connect this Target"
             icon="pi pi-link"
             className="w-full h-12 text-base font-bold shadow-md"
             onClick={() => onSelectTarget(matchedTarget.id)}
-            disabled={isLoading}
+            disabled={isLoading || !acknowledged}
           />
         </div>
 

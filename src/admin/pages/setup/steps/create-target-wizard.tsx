@@ -15,6 +15,7 @@ interface Props {
   apiUrl: string;
   hasSingleOrganization: boolean;
   onCancel: () => void;
+  initialStep?: number;
 }
 
 const initialFormState = {
@@ -25,12 +26,13 @@ const initialFormState = {
   collectionMethod: CollectorCollectionMethod.OnRequest,
   scheduleInterval: "",
   startOnCreate: true,
+  acknowledged: false,
 };
 
 export type TargetFormData = typeof initialFormState;
 
-export default function CreateTargetWizard({ selectedOrg, siteHostname, apiUrl, hasSingleOrganization, onCancel }: Props) {
-  const [currentStep, setCurrentStep] = useState(1);
+export default function CreateTargetWizard({ selectedOrg, siteHostname, apiUrl, hasSingleOrganization, onCancel, initialStep = 1 }: Props) {
+  const [currentStep, setCurrentStep] = useState(initialStep);
   const [formData, setFormData] = useState<TargetFormData>(initialFormState);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isAutoselected, setIsAutoselected] = useState(false);
@@ -39,7 +41,8 @@ export default function CreateTargetWizard({ selectedOrg, siteHostname, apiUrl, 
   const [generalError, setGeneralError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string[]>>({});
 
-  const { getTargetCapabilities } = useOrganizationCapabilities(selectedOrg);
+  const orgModel = useMemo(() => OrganizationModel.asOrganizationModel(selectedOrg), [selectedOrg]);
+  const { getTargetCapabilities } = useOrganizationCapabilities(orgModel);
 
   const isLocked = hasSingleOrganization && (currentStep === 1 || isAutoselected);
   const showBackButton = !isLocked;
@@ -170,7 +173,7 @@ export default function CreateTargetWizard({ selectedOrg, siteHostname, apiUrl, 
         {currentStep === 1 ? (
           <Button label="Next" onClick={() => setCurrentStep(2)} disabled={!formData.collectorGroupId} />
         ) : (
-          <Button label="Create" onClick={handleSubmit} loading={isSubmitting} disabled={!formData.targetAddress} />
+          <Button label="Create" onClick={handleSubmit} loading={isSubmitting} disabled={!formData.targetAddress || !formData.acknowledged} />
         )}
       </div>
     </div>

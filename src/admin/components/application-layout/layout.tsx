@@ -119,6 +119,40 @@ export default function ApplicationLayout({ children }: { children?: React.React
       <main className="container mx-auto flex-1 p-8 bg-muted/10">
         {children || <Outlet />}
       </main>
+
+      <footer className="p-8 border-t bg-background">
+        <div className="container mx-auto flex justify-between items-center text-xs">
+          <div className="flex gap-6">
+            <a 
+              href="https://catcher24.com/terms-and-conditions/" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="text-secondary-dark hover:text-primary transition-colors font-medium"
+            >
+              Terms and Conditions
+            </a>
+            <a 
+              href="https://catcher24.com/privacy-policy/" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="text-secondary-dark hover:text-primary transition-colors font-medium"
+            >
+              Privacy Policy
+            </a>
+            <a 
+              href="https://catcher24.com/contact/" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="text-secondary-dark hover:text-primary transition-colors font-medium"
+            >
+              Contact
+            </a>
+          </div>
+          <div className="text-secondary-dark font-medium">
+            &copy; {new RegExp(/\d{4}/).test(new Date().getFullYear().toString()) ? new Date().getFullYear() : "2024"} Catcher24. All rights reserved.
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }

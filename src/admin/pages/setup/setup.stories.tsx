@@ -1,6 +1,8 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import SetupWizard from './setup';
+import CreateTargetWizard from './steps/create-target-wizard';
 import { MockDecorator } from '../../utils/MockDecorator';
+import { generateMockOrganization } from '../../utils/mock-data';
 
 const meta: Meta<typeof SetupWizard> = {
   title: 'Pages/Setup Wizard',
@@ -59,4 +61,48 @@ export const CreateNewTarget: Story = {
     connector: { organizationId: "test-org", targetId: null, siteHostname: "fresh-install.com" },
     targets: []
   })]
+};
+
+// --- Wizard Step Fragments ---
+
+export const CreateTargetStep1: Meta<typeof CreateTargetWizard> = {
+  title: 'Components/Setup/CreateTargetWizard/Step 1',
+  component: CreateTargetWizard,
+  decorators: [MockDecorator({
+    connector: { organizationId: "test-org", targetId: null, siteHostname: "fresh-install.com" },
+    organization: generateMockOrganization("test-org"),
+  })],
+  render: (args) => (
+    <div className="max-w-lg mx-auto p-4 bg-white border rounded-xl shadow-sm">
+      <CreateTargetWizard 
+        {...args} 
+        selectedOrg={generateMockOrganization("test-org") as any} 
+        siteHostname="fresh-install.com"
+        apiUrl="http://localhost"
+        onCancel={() => {}}
+        initialStep={1}
+      />
+    </div>
+  )
+};
+
+export const CreateTargetStep2: Meta<typeof CreateTargetWizard> = {
+  title: 'Components/Setup/CreateTargetWizard/Step 2',
+  component: CreateTargetWizard,
+  decorators: [MockDecorator({
+    connector: { organizationId: "test-org", targetId: null, siteHostname: "fresh-install.com" },
+    organization: generateMockOrganization("test-org"),
+  })],
+  render: (args) => (
+    <div className="max-w-lg mx-auto p-4 bg-white border rounded-xl shadow-sm">
+      <CreateTargetWizard 
+        {...args} 
+        selectedOrg={generateMockOrganization("test-org") as any} 
+        siteHostname="fresh-install.com"
+        apiUrl="http://localhost"
+        onCancel={() => {}}
+        initialStep={2}
+      />
+    </div>
+  )
 };

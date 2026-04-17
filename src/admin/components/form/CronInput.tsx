@@ -97,9 +97,9 @@ export default function CronInput({ value, onChange, allowedInterval }: CronInpu
     }}>
       {enabledTabs.includes('minutely') && (
         <TabPanel header="Minutely">
-          <div className="flex gap-2 items-center">
+          <div className="flex gap-2 items-center text-xs">
             <span>Every</span>
-            <Dropdown value={state.minutesPer} options={options.minutes} onChange={(e) => setState(p => ({ ...p, minutesPer: e.value }))} />
+            <Dropdown className="w-20" value={state.minutesPer} options={options.minutes} onChange={(e) => setState(p => ({ ...p, minutesPer: e.value }))} />
             <span>Minute(s)</span>
           </div>
         </TabPanel>
@@ -107,11 +107,11 @@ export default function CronInput({ value, onChange, allowedInterval }: CronInpu
 
       {enabledTabs.includes('hourly') && (
         <TabPanel header="Hourly">
-          <div className="flex gap-2 items-center">
+          <div className="flex gap-2 items-center text-xs">
             <span>Every</span>
-            <Dropdown value={state.hoursPer} options={rangeToOptions(1, 23)} onChange={(e) => setState(p => ({ ...p, hoursPer: e.value }))} />
+            <Dropdown className="w-20" value={state.hoursPer} options={rangeToOptions(1, 23)} onChange={(e) => setState(p => ({ ...p, hoursPer: e.value }))} />
             <span>Hour(s) at minute</span>
-            <Dropdown value={state.minutes} options={options.minutes} onChange={(e) => setState(p => ({ ...p, minutes: e.value }))} />
+            <Dropdown className="w-20" value={state.minutes} options={options.minutes} onChange={(e) => setState(p => ({ ...p, minutes: e.value }))} />
           </div>
         </TabPanel>
       )}
@@ -119,21 +119,21 @@ export default function CronInput({ value, onChange, allowedInterval }: CronInpu
       {enabledTabs.includes('daily') && (
         <TabPanel header="Daily">
           <div className="flex flex-col gap-3">
-            <div className="flex gap-2 items-center">
+            <div className="flex gap-2 items-center text-xs">
               <RadioButton inputId="everyDay" value={false} onChange={() => setState(p => ({ ...p, weekdaysOnly: false }))} checked={!state.weekdaysOnly} />
               <label htmlFor="everyDay">Every</label>
-              <Dropdown value={state.daysPer} options={options.monthDays} onChange={(e) => setState(p => ({ ...p, daysPer: e.value }))} />
+              <Dropdown className="w-20" value={state.daysPer} options={options.monthDays} onChange={(e) => setState(p => ({ ...p, daysPer: e.value }))} />
               <span>Day(s) at</span>
-              <Dropdown value={state.hours} options={options.hours} onChange={(e) => setState(p => ({ ...p, hours: e.value }))} />
+              <Dropdown className="w-20" value={state.hours} options={options.hours} onChange={(e) => setState(p => ({ ...p, hours: e.value }))} />
               <span>:</span>
-              <Dropdown value={state.minutes} options={options.minutes} onChange={(e) => setState(p => ({ ...p, minutes: e.value }))} />
+              <Dropdown className="w-20" value={state.minutes} options={options.minutes} onChange={(e) => setState(p => ({ ...p, minutes: e.value }))} />
             </div>
-            <div className="flex gap-2 items-center">
+            <div className="flex gap-2 items-center text-xs">
               <RadioButton inputId="weekdays" value={true} onChange={() => setState(p => ({ ...p, weekdaysOnly: true }))} checked={state.weekdaysOnly} />
               <label htmlFor="weekdays">Every working day at</label>
-              <Dropdown value={state.hours} options={options.hours} onChange={(e) => setState(p => ({ ...p, hours: e.value }))} />
+              <Dropdown className="w-20" value={state.hours} options={options.hours} onChange={(e) => setState(p => ({ ...p, hours: e.value }))} />
               <span>:</span>
-              <Dropdown value={state.minutes} options={options.minutes} onChange={(e) => setState(p => ({ ...p, minutes: e.value }))} />
+              <Dropdown className="w-20" value={state.minutes} options={options.minutes} onChange={(e) => setState(p => ({ ...p, minutes: e.value }))} />
             </div>
           </div>
         </TabPanel>
@@ -141,12 +141,12 @@ export default function CronInput({ value, onChange, allowedInterval }: CronInpu
 
       {enabledTabs.includes('weekly') && (
         <TabPanel header="Weekly">
-          <div className="flex gap-2 items-center">
-            <Dropdown value={state.selectedWeekDay} options={options.days} onChange={(e) => setState(p => ({ ...p, selectedWeekDay: e.value }))} />
+          <div className="flex gap-2 items-center text-xs">
+            <Dropdown className="w-32" value={state.selectedWeekDay} options={options.days} onChange={(e) => setState(p => ({ ...p, selectedWeekDay: e.value }))} />
             <span>at</span>
-            <Dropdown value={state.hours} options={options.hours} onChange={(e) => setState(p => ({ ...p, hours: e.value }))} />
+            <Dropdown className="w-20" value={state.hours} options={options.hours} onChange={(e) => setState(p => ({ ...p, hours: e.value }))} />
             <span>:</span>
-            <Dropdown value={state.minutes} options={options.minutes} onChange={(e) => setState(p => ({ ...p, minutes: e.value }))} />
+            <Dropdown className="w-20" value={state.minutes} options={options.minutes} onChange={(e) => setState(p => ({ ...p, minutes: e.value }))} />
           </div>
         </TabPanel>
       )}
@@ -154,21 +154,21 @@ export default function CronInput({ value, onChange, allowedInterval }: CronInpu
       {enabledTabs.includes('monthly') && (
         <TabPanel header="Monthly">
           <div className="flex flex-col gap-3">
-            <div className="flex flex-wrap gap-2 items-center">
+            <div className="flex flex-wrap gap-2 items-center text-xs">
               <RadioButton checked={!state.specificWeekDay} onChange={() => setState(p => ({ ...p, specificWeekDay: false }))} />
               <span>On day</span>
-              <Dropdown value={state.days} options={options.monthDays} onChange={(e) => setState(p => ({ ...p, days: e.value }))} />
+              <Dropdown className="w-20" value={state.days} options={options.monthDays} onChange={(e) => setState(p => ({ ...p, days: e.value }))} />
               <span>of every</span>
-              <Dropdown value={state.monthsInc} options={options.months} onChange={(e) => setState(p => ({ ...p, monthsInc: e.value }))} />
+              <Dropdown className="w-20" value={state.monthsInc} options={options.months} onChange={(e) => setState(p => ({ ...p, monthsInc: e.value }))} />
               <span>month(s)</span>
             </div>
-            <div className="flex flex-wrap gap-2 items-center">
+            <div className="flex flex-wrap gap-2 items-center text-xs">
               <RadioButton checked={state.specificWeekDay} onChange={() => setState(p => ({ ...p, specificWeekDay: true }))} />
               <span>On the</span>
-              <Dropdown value={state.monthsWeek} options={options.weeks} onChange={(e) => setState(p => ({ ...p, monthsWeek: e.value }))} />
-              <Dropdown value={state.day} options={options.days} onChange={(e) => setState(p => ({ ...p, day: e.value }))} />
+              <Dropdown className="w-32" value={state.monthsWeek} options={options.weeks} onChange={(e) => setState(p => ({ ...p, monthsWeek: e.value }))} />
+              <Dropdown className="w-32" value={state.day} options={options.days} onChange={(e) => setState(p => ({ ...p, day: e.value }))} />
               <span>of every</span>
-              <Dropdown value={state.monthsInc} options={options.months} onChange={(e) => setState(p => ({ ...p, monthsInc: e.value }))} />
+              <Dropdown className="w-20" value={state.monthsInc} options={options.months} onChange={(e) => setState(p => ({ ...p, monthsInc: e.value }))} />
               <span>month(s)</span>
             </div>
           </div>
