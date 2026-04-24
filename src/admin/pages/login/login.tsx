@@ -1,6 +1,7 @@
 import { Button } from "primereact/button";
 import { Card } from "primereact/card";
 import { useState } from "react";
+import { apiFetch } from "../../utils/api-fetch";
 
 export default function LoginPage() {
   const [loading, setLoading] = useState(false);
@@ -8,7 +9,7 @@ export default function LoginPage() {
   const handleSignIn = async () => {
     setLoading(true);
     try {
-      const response = await fetch(`${catcher24WordpressConnector.apiUrl}/accounts/signin`);
+      const response = await apiFetch(`${catcher24WordpressConnector.apiUrl}/accounts/signin`);
       const data = await response.json();
 
       if (data.redirect_url) {

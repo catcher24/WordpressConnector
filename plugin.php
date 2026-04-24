@@ -58,12 +58,32 @@ final class Catcher24_Wordpress_Connector {
     Template::get_instance()->init();
 
 		add_action( 'init', array( $this, 'i18n' ) );
-		add_action( 'init', array( $this, 'register_blocks' ) );
+		add_action( 'admin_init', array( $this, 'add_privacy_policy_content' ) );
 	}
 
-	public function register_blocks() {
-		register_block_type(__DIR__ . '/assets/blocks/block-1');
+	/**
+	 * Registers privacy policy content for the plugin.
+	 * 
+	 * @since 1.0.0
+	 */
+	public function add_privacy_policy_content() {
+		if ( ! function_exists( 'wp_add_privacy_policy_content' ) ) {
+			return;
+		}
+
+		$content = sprintf(
+			/* translators: %s: URL to the privacy policy */
+			__( 'When you use the Catcher24 Wordpress Connector, we may collect and transmit telemetry, security configuration, and site status information to the Catcher24 cybersecurity platform. This includes server IP addresses, software versions, and potentially access logs to identify emerging threats. This data is transmitted securely and is governed by the Catcher24 privacy policy. For more information, please see our <a href="%s">Privacy Policy</a>.', 'catcher24-wordpress-connector' ),
+			'https://catcher24.com/privacy'
+		);
+
+		wp_add_privacy_policy_content(
+			__( 'Catcher24 Wordpress Connector', 'catcher24-wordpress-connector' ),
+			$content
+		);
 	}
+
+
 
 
 	/**

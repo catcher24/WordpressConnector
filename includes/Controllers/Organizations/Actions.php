@@ -3,9 +3,11 @@
 namespace Catcher24\WordPress_Connector\Controllers\Organizations;
 
 use Catcher24\WordPress_Connector\Libs\API\Catcher24Client;
+use Catcher24\WordPress_Connector\Traits\Sanitization;
 use Exception;
 
 class Actions {
+	use Sanitization;
 	public function get_organizations() {
 		try {
 			$token = Catcher24Client::get_valid_token();
@@ -59,7 +61,7 @@ class Actions {
 	 * @return array|\WP_REST_Response
 	 */
 	public function get_organization( \WP_REST_Request $request ) {
-		$organization_id = $request->get_param( 'organizationId' );
+		$organization_id = sanitize_text_field( $request->get_param( 'organizationId' ) );
 
 		if ( empty( $organization_id ) ) {
 			return new \WP_REST_Response( [ 'message' => 'Organization ID is missing' ], 400 );
@@ -92,7 +94,7 @@ class Actions {
 			return new \WP_REST_Response( [ 'message' => 'Organization ID is required' ], 400 );
 		}
 
-		update_option( CATCHER24_SETTING_SELECTED_ORGANIZATION, $organization_id );
+		update_option( CATCHER24_SETTING_SELECTED_ORGANIZATION, sanitize_text_field( $organization_id ) );
 
 		return new \WP_REST_Response( [ 'message' => 'Organization selected successfully' ], 200 );
 	}

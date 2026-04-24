@@ -6,6 +6,7 @@ import { CollectorGroupModel, OrganizationModel } from "../../../models";
 import { getApiUrl } from "../../../helpers";
 import { useOrganizationCapabilities } from "../../../hooks/useOrganizationCapabilities";
 import { Message } from "primereact/message";
+import { apiFetch } from "../../../utils/api-fetch";
 
 interface Props {
   formData: any;
@@ -28,7 +29,7 @@ export default function TargetTypeStep({ formData, updateForm, selectedOrganizat
       try {
         setLoading(true);
         setIsInitializing(true);
-        const response = await fetch(getApiUrl(apiUrl, "/collectorGroups"));
+        const response = await apiFetch(getApiUrl(apiUrl, "/collectorGroups"));
         const data = await response.json();
         const mappedGroups = (Array.isArray(data) ? data : data.items || [])
           .map(CollectorGroupModel.asCollectorGroupModel);
@@ -79,17 +80,27 @@ export default function TargetTypeStep({ formData, updateForm, selectedOrganizat
       {isCompletelyOut && (
         <Message
           severity="warn"
-          text={"You have no empty target slots to create new targets. Please upgrade your subscription to add more."}
-          className="w-full justify-start"
+          className="w-full justify-start items-start"
+          content={
+            <div className="flex flex-col gap-2 py-1">
+              <span>You have no empty target slots to create new targets. Please upgrade your subscription to add more.</span>
+              {selectedOrganization?.identifier && (
+                <a
+                  href={`${dashboardUrl}/org/${selectedOrganization.identifier}/subscription`}
+                  className="p-button p-button-sm p-button-outlined w-max mt-1"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  Upgrade to add more
+                </a>
+              )}
+            </div>
+          }
         />
       )}
 
       <div className="grid grid-cols-1 gap-3">
         {groups.map((group) => {
           const isAllowed = isCollectorGroupAllowed(group.id, group.targetType);
-          const hasCapability = orgModel?.capabilities?.targetCapabilities?.has(group.targetType);
-          const hasSlots = canAddTargetType(group.targetType);
-          const outOfSlots = hasCapability && !hasSlots;
 
           return (
             <RadioCard
@@ -99,20 +110,6 @@ export default function TargetTypeStep({ formData, updateForm, selectedOrganizat
               description={
                 <div className="flex flex-col gap-2">
                   <div className="prose prose-sm" dangerouslySetInnerHTML={{ __html: group.description }} />
-                  {!isAllowed && selectedOrganization?.identifier && (
-                    <div className="flex flex-col gap-2 mt-2">
-                      {outOfSlots && (
-                        <span className="text-red-500 text-sm font-medium">No empty target slots available.</span>
-                      )}
-                      <a
-                        href={`${dashboardUrl}/org/${selectedOrganization.identifier}/subscription`}
-                        className="p-button p-button-sm p-button-outlined w-max"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        {outOfSlots ? "Upgrade to add more" : "Upgrade to access"}
-                      </a>
-                    </div>
-                  )}
                 </div>
               }
               icon={group.targetType === TargetType.WebApplication ? "pi pi-globe" : "pi pi-server"}

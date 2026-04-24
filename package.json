@@ -11,9 +11,9 @@
     "preinstall": "npx only-allow pnpm",
     "dev": "npm run dev:admin",
     "dev:admin": "vite -c vite.admin.config.js",
-    "dev:all": "concurrently \"npm run dev\" \"npm run block:start\"",
+    "dev:all": "npm run dev",
     "dev:server": "concurrently \"npm run dev\" \"npx @wp-playground/cli@3.1.0 start --blueprint=blueprint.json --xdebug \"",
-    "build": "vite build -c vite.admin.config.js && npm run block:build",
+    "build": "vite build -c vite.admin.config.js",
     "preview": "vite preview",
     "format:check": "prettier --check catcher24-wordpress-connector",
     "format:fix": "prettier --write catcher24-wordpress-connector",
@@ -22,8 +22,7 @@
     "release": "npm run build && grunt release",
     "change-text-domain": "grunt change-text-domain --force",
     "i18n": "wp i18n make-pot catcher24-wordpress-connector languages/catcher24-wordpress-connector.pot --domain=catcher24-wordpress-connector --exclude='*/js/*,build'",
-    "block:start": "wp-scripts start --webpack-src-dir=src/blocks/block-1 --output-path=assets/blocks/block-1",
-    "block:build": "wp-scripts build --webpack-src-dir=src/blocks/block-1 --output-path=assets/blocks/block-1"
+
   },
   "devDependencies": {
     "@faker-js/faker": "^10.3.0",
@@ -96,8 +95,6 @@
     "@radix-ui/react-tabs": "^1.0.4",
     "@radix-ui/react-toast": "^1.1.5",
     "@radix-ui/react-tooltip": "^1.0.7",
-    "@wordpress/block-editor": "^14.7.0",
-    "@wordpress/blocks": "^14.1.0",
     "@wordpress/i18n": "^5.12.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",

@@ -190,6 +190,7 @@ class Admin {
 			'targetId' => $target_id,
 			'siteName'       => get_bloginfo( 'name' ),
 			'siteHostname'   => wp_parse_url( home_url(), PHP_URL_HOST ),
+			'nonce'          => wp_create_nonce( 'wp_rest' ),
 		);
 	}
 

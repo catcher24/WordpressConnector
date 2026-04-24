@@ -6,8 +6,9 @@ import TargetTypeStep from "./target-type-step";
 import TargetDetailsStep from "./target-details-step";
 import { OrganizationModel } from "../../../models";
 import { useOrganizationCapabilities } from "../../../hooks/useOrganizationCapabilities";
-import { AllowedScheduleIntervals, CollectorCollectionMethod, TargetType } from "../../../enums";
+import { TargetType, AllowedScheduleIntervals, CollectorCollectionMethod } from "../../../enums";
 import { CreateTargetCommand } from "../../../models/commands/create-target.command";
+import { apiFetch } from "../../../utils/api-fetch";
 
 interface Props {
   selectedOrg: OrganizationModel | null;
@@ -92,7 +93,7 @@ export default function CreateTargetWizard({ selectedOrg, siteHostname, apiUrl, 
 
     try {
       const payload = CreateTargetCommand.createTargetCommandValue(formData);
-      const res = await fetch(`${apiUrl}/targets`, {
+      const res = await apiFetch(`${apiUrl}/targets`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),

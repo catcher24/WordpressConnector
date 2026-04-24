@@ -47,5 +47,10 @@ Route::prefix(
 
 		// Allow hooks to add more custom API routes.
 		do_action( 'c24_api', $route );
+
+		// Secure all registered routes with manage_options capability
+		$route->auth( function () {
+			return current_user_can( 'manage_options' );
+		} );
 	}
 );

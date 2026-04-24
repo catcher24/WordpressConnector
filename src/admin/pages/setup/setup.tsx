@@ -2,7 +2,8 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card } from "primereact/card";
 import { ProgressSpinner } from "primereact/progressspinner";
-import {OrganizationModel, TargetModel} from "../../models";
+import { OrganizationModel, TargetModel } from "../../models";
+import { apiFetch } from "../../utils/api-fetch";
 
 import OrganizationStep from "./steps/organization-step";
 import TargetSelectionStep from "./steps/target-selection-step";
@@ -55,7 +56,7 @@ export default function SetupWizard() {
 // Updated fetchOrganizations to return the data for immediate use
   const fetchOrganizations = async () => {
     try {
-      const response = await fetch(`${apiUrl}/organizations`);
+      const response = await apiFetch(`${apiUrl}/organizations`);
       const data = await response.json();
       setOrganizations(data);
 
@@ -78,7 +79,7 @@ export default function SetupWizard() {
 // Updated fetchTargets to use the orgs list if needed
   const fetchTargets = async () => {
     try {
-      const response = await fetch(`${apiUrl}/targets`);
+      const response = await apiFetch(`${apiUrl}/targets`);
       const data = await response.json();
       const items = data.items || [];
       setTargets(items);
@@ -98,7 +99,7 @@ export default function SetupWizard() {
     if (!selectedOrg) return;
     setActionLoading(true);
     try {
-      await fetch(`${apiUrl}/organizations/select`, {
+      await apiFetch(`${apiUrl}/organizations/select`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ organization_id: selectedOrg.id || selectedOrg.name }),
@@ -112,7 +113,7 @@ export default function SetupWizard() {
   const handleTargetSelect = async (selectedTargetId: string) => {
     setActionLoading(true);
     try {
-      await fetch(`${apiUrl}/targets/select`, {
+      await apiFetch(`${apiUrl}/targets/select`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ target_id: selectedTargetId }),

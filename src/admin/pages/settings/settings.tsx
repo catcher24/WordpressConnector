@@ -11,7 +11,8 @@ import { Button } from "primereact/button"
 import { Toast } from "primereact/toast"
 import { Message } from "primereact/message"
 import { ProgressSpinner } from "primereact/progressspinner"
-import {classNames} from "primereact/utils";
+import { classNames } from "primereact/utils";
+import { apiFetch } from "../../utils/api-fetch";
 
 const settingsFormSchema = z.object({
   organizationId: z.string().min(1, { message: "Please select an organization." }),
@@ -52,8 +53,8 @@ export function SettingsForm() {
 
         // Fetch Data
         const [orgsRes, targetsRes] = await Promise.all([
-          fetch(`${apiUrl}/organizations`),
-          fetch(`${apiUrl}/targets`)
+          apiFetch(`${apiUrl}/organizations`),
+          apiFetch(`${apiUrl}/targets`)
         ])
 
         const orgsData = await orgsRes.json()
@@ -107,7 +108,7 @@ export function SettingsForm() {
     try {
       // 1. Switch Organization
       if (data.organizationId !== currentOrgId) {
-        await fetch(`${apiUrl}/organizations/select`, {
+        await apiFetch(`${apiUrl}/organizations/select`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ organization_id: data.organizationId }),
@@ -117,7 +118,7 @@ export function SettingsForm() {
 
       // 2. Switch Target
       if (data.targetId !== currentTargetId) {
-        await fetch(`${apiUrl}/targets/select`, {
+        await apiFetch(`${apiUrl}/targets/select`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ target_id: data.targetId }),
@@ -133,7 +134,7 @@ export function SettingsForm() {
          originalTarget.hostname !== data.targetHostname)
 
       if (hasEditedTarget) {
-        await fetch(`${apiUrl}/targets/${data.targetId}`, {
+        await apiFetch(`${apiUrl}/targets/${data.targetId}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({

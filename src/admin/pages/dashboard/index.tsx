@@ -23,6 +23,7 @@ import { Panel } from "primereact/panel";
 import { DnsFlattener, formatDate, getApiUrl } from "../../helpers";
 import { useOrganizationCapabilities } from "../../hooks/useOrganizationCapabilities";
 import { TargetType } from "../../enums";
+import { apiFetch } from "../../utils/api-fetch";
 
 export default function DashboardPage() {
   const toast = useRef<Toast>(null);
@@ -110,16 +111,16 @@ export default function DashboardPage() {
         collectorGroupsRes,
         collectorsRes,
       ] = await Promise.all([
-        fetch(getApiUrl(apiUrl, `/targets/${targetId}`)).then((r) => r.json()),
-        fetch(getApiUrl(apiUrl, `/targets/${targetId}/vulnerabilities`, { pageSize: 500, orderBy: "severity desc, occurrences desc, name" })).then((r) => r.json()),
-        fetch(getApiUrl(apiUrl, `/targets/${targetId}/scans`, { orderBy: "startedAt desc", pageSize: 5 })).then((r) => r.json()),
-        fetch(getApiUrl(apiUrl, `/targets/${targetId}/scans`, { filter: "endedAt=" })).then((r) => r.json()),
-        fetch(getApiUrl(apiUrl, `/targets/${targetId}/certificates`, { pageSize: 5 })).then((r) => r.json()),
-        fetch(getApiUrl(apiUrl, `/targets/${targetId}/rootDomains`, { pageSize: 5 })).then((r) => r.json()),
-        fetch(getApiUrl(apiUrl, `/targets/${targetId}/ports`, { pageSize: 50 })).then((r) => r.json()),
-        fetch(getApiUrl(apiUrl, "/scanners")).then((r) => r.json()),
-        fetch(getApiUrl(apiUrl, "/collectorGroups")).then((r) => r.json()),
-        fetch(getApiUrl(apiUrl, "/collectors")).then((r) => r.json()),
+        apiFetch(getApiUrl(apiUrl, `/targets/${targetId}`)).then((r) => r.json()),
+        apiFetch(getApiUrl(apiUrl, `/targets/${targetId}/vulnerabilities`, { pageSize: 500, orderBy: "severity desc, occurrences desc, name" })).then((r) => r.json()),
+        apiFetch(getApiUrl(apiUrl, `/targets/${targetId}/scans`, { orderBy: "startedAt desc", pageSize: 5 })).then((r) => r.json()),
+        apiFetch(getApiUrl(apiUrl, `/targets/${targetId}/scans`, { filter: "endedAt=" })).then((r) => r.json()),
+        apiFetch(getApiUrl(apiUrl, `/targets/${targetId}/certificates`, { pageSize: 5 })).then((r) => r.json()),
+        apiFetch(getApiUrl(apiUrl, `/targets/${targetId}/rootDomains`, { pageSize: 5 })).then((r) => r.json()),
+        apiFetch(getApiUrl(apiUrl, `/targets/${targetId}/ports`, { pageSize: 50 })).then((r) => r.json()),
+        apiFetch(getApiUrl(apiUrl, "/scanners")).then((r) => r.json()),
+        apiFetch(getApiUrl(apiUrl, "/collectorGroups")).then((r) => r.json()),
+        apiFetch(getApiUrl(apiUrl, "/collectors")).then((r) => r.json()),
       ]);
 
       setTarget(targetRes);
@@ -146,7 +147,7 @@ export default function DashboardPage() {
       const configuredScannerId = target?.scannerConfigurations?.[0]?.scannerId || target?.scannerConfigurations?.[0]?.id;
       const scannerId = configuredScannerId || scanners[0].id;
 
-      const res = await fetch(getApiUrl(apiUrl, `/targets/${targetId}/scanners/${scannerId}/start`), { method: "POST" });
+      const res = await apiFetch(getApiUrl(apiUrl, `/targets/${targetId}/scanners/${scannerId}/start`), { method: "POST" });
       if (res.ok) {
         toast.current?.show({ severity: "success", summary: "Success", detail: "Scan started." });
         fetchDashboardData();
@@ -165,7 +166,7 @@ export default function DashboardPage() {
     setIsCancelingScan(true);
     try {
       const scanId = activeScans[0].id;
-      const res = await fetch(getApiUrl(apiUrl, `/targets/${targetId}/scans/${scanId}/cancel`), { method: "POST" });
+      const res = await apiFetch(getApiUrl(apiUrl, `/targets/${targetId}/scans/${scanId}/cancel`), { method: "POST" });
       if (res.ok) {
         toast.current?.show({ severity: "success", summary: "Success", detail: "Scan canceled." });
         fetchDashboardData();
@@ -194,7 +195,7 @@ export default function DashboardPage() {
 
     const setupSignalR = async () => {
       try {
-        const res = await fetch(`${apiUrl}/hub/public`, { method: "POST" });
+        const res = await apiFetch(`${apiUrl}/hub/public`, { method: "POST" });
         if (!res.ok) return;
         const data = await res.json();
         if (isCancelled) return;

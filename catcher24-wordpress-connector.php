@@ -7,6 +7,8 @@
  * Author URI: https://catcher24.com
  * License: GPLv2
  * Version: 1.0.0
+ * Requires at least: 6.5
+ * Requires PHP: 7.4
  * Text Domain: catcher24-wordpress-connector
  * Domain Path: /languages
  *

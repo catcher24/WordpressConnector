@@ -6,8 +6,10 @@ use Catcher24\WordPress_Connector\Libs\API\Catcher24Client;
 use Exception;
 use WP_REST_Request;
 use WP_REST_Response;
+use Catcher24\WordPress_Connector\Traits\Sanitization;
 
 class Actions {
+	use Sanitization;
 
 	/**
 	 * Get available targets for the selected organization.
@@ -38,7 +40,7 @@ class Actions {
 			return new WP_REST_Response( array( 'message' => 'Target ID is required' ), 400 );
 		}
 
-		update_option( 'catcher24_selected_target', $target_id );
+		update_option( 'catcher24_selected_target', sanitize_text_field( $target_id ) );
 
 		return new WP_REST_Response( array( 'message' => 'Target selected successfully' ), 200 );
 	}
@@ -57,7 +59,13 @@ class Actions {
 	 * Create a new target via the SaaS API.
 	 */
 	public function create_target( \WP_REST_Request $request ) {
-		$body = json_decode( $request->get_body() );
+		$body = json_decode( $request->get_body(), true );
+		if ( is_array( $body ) ) {
+			$body = $this->sanitize_array( $body );
+		} else {
+			$body = [];
+		}
+
 		$response = Catcher24Client::proxy_request( 'POST', 'targets', $request->get_query_params(), $body, true, true );
 
 		$resolved = Catcher24Client::resolve_proxy_response( $response, 201 );
@@ -76,10 +84,16 @@ class Actions {
 	 * Update an existing target via the SaaS API.
 	 */
 	public function update_target( \WP_REST_Request $request ) {
-		$target_id = $request->get_param( 'targetId' );
+		$target_id = sanitize_text_field( $request->get_param( 'targetId' ) );
 		if ( ! $target_id ) return new \WP_REST_Response( array( 'message' => 'Missing target context' ), 400 );
 
-		$body = json_decode( $request->get_body(), true ) ?? [];
+		$body = json_decode( $request->get_body(), true );
+		if ( is_array( $body ) ) {
+			$body = $this->sanitize_array( $body );
+		} else {
+			$body = [];
+		}
+
 		$response = Catcher24Client::proxy_request( 'PUT', "targets/{$target_id}", $request->get_query_params(), $body, true, true );
 
 		return Catcher24Client::resolve_proxy_response( $response );
@@ -126,12 +140,14 @@ class Actions {
 	}
 
 	public function start_scan( \WP_REST_Request $request ) {
-		$target_id  = $request->get_param( 'targetId' );
-		$scanner_id = $request->get_param( 'scannerId' );
+		$target_id  = sanitize_text_field( $request->get_param( 'targetId' ) );
+		$scanner_id = sanitize_text_field( $request->get_param( 'scannerId' ) );
 		if ( ! $target_id || ! $scanner_id ) return new \WP_REST_Response( array( 'message' => 'Missing target or scanner context' ), 400 );
 
-		$body = json_decode( $request->get_body() );
-		if ( empty( $body ) ) {
+		$body = json_decode( $request->get_body(), true );
+		if ( is_array( $body ) ) {
+			$body = $this->sanitize_array( $body );
+		} else {
 			$body = new \stdClass(); // Or [] depending on your client's expectation
 		}
 		$response = Catcher24Client::proxy_request( 'POST', "scanners/{$scanner_id}/start", $request->get_query_params(), $body, true, true, $target_id );
@@ -139,12 +155,14 @@ class Actions {
 	}
 
 	public function cancel_scan( \WP_REST_Request $request ) {
-		$target_id = $request->get_param( 'targetId' );
-		$scan_id   = $request->get_param( 'scanId' );
+		$target_id = sanitize_text_field( $request->get_param( 'targetId' ) );
+		$scan_id   = sanitize_text_field( $request->get_param( 'scanId' ) );
 		if ( ! $target_id || ! $scan_id ) return new \WP_REST_Response( array( 'message' => 'Missing target or scan context' ), 400 );
 
-		$body = json_decode( $request->get_body() );
-		if ( empty( $body ) ) {
+		$body = json_decode( $request->get_body(), true );
+		if ( is_array( $body ) ) {
+			$body = $this->sanitize_array( $body );
+		} else {
 			$body = new \stdClass(); // Or [] depending on your client's expectation
 		}
 		$response = Catcher24Client::proxy_request( 'POST', "scans/{$scan_id}/cancel", $request->get_query_params(), $body, true, true, $target_id );
