@@ -3,6 +3,7 @@ import SetupWizard from './setup';
 import CreateTargetWizard from './steps/create-target-wizard';
 import { MockDecorator } from '../../utils/MockDecorator';
 import { generateMockOrganization } from '../../utils/mock-data';
+import { TargetType } from '../../enums';
 
 const meta: Meta<typeof SetupWizard> = {
   title: 'Pages/Setup Wizard',
@@ -63,6 +64,31 @@ export const CreateNewTarget: Story = {
   })]
 };
 
+const noSlotsOrg = {
+  ...generateMockOrganization("test-org"),
+  usageMetrics: {
+    targetTypeCounts: {
+      [TargetType.WebApplication]: 5,
+    }
+  },
+  capabilities: {
+    targetCapabilities: {
+      [TargetType.WebApplication]: {
+        ...generateMockOrganization("test-org").capabilities.targetCapabilities[TargetType.WebApplication],
+        maxTargets: 5
+      }
+    }
+  }
+};
+
+export const CreateNewTargetNoSlots: Story = {
+  decorators: [MockDecorator({
+    connector: { organizationId: "test-org", targetId: null, siteHostname: "fresh-install.com" },
+    targets: [],
+    organization: noSlotsOrg,
+  })]
+};
+
 // --- Wizard Step Fragments ---
 
 export const CreateTargetStep1: Meta<typeof CreateTargetWizard> = {
@@ -77,6 +103,27 @@ export const CreateTargetStep1: Meta<typeof CreateTargetWizard> = {
       <CreateTargetWizard 
         {...args} 
         selectedOrg={generateMockOrganization("test-org") as any} 
+        siteHostname="fresh-install.com"
+        apiUrl="http://localhost"
+        onCancel={() => {}}
+        initialStep={1}
+      />
+    </div>
+  )
+};
+
+export const CreateTargetStep1NoSlots: Meta<typeof CreateTargetWizard> = {
+  title: 'Components/Setup/CreateTargetWizard/Step 1 (No Slots)',
+  component: CreateTargetWizard,
+  decorators: [MockDecorator({
+    connector: { organizationId: "test-org", targetId: null, siteHostname: "fresh-install.com" },
+    organization: noSlotsOrg,
+  })],
+  render: (args) => (
+    <div className="max-w-lg mx-auto p-4 bg-white border rounded-xl shadow-sm">
+      <CreateTargetWizard 
+        {...args} 
+        selectedOrg={noSlotsOrg as any} 
         siteHostname="fresh-install.com"
         apiUrl="http://localhost"
         onCancel={() => {}}

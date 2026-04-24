@@ -171,6 +171,7 @@ export default function SetupWizard() {
             siteHostname={siteHostname}
             apiUrl={apiUrl}
             hasSingleOrganization={hasSingleOrganization ?? false}
+            canGoBack={targets.length > 0 || (!organizationId && organizations.length > 1)}
             onCancel={() => setStep(targets.length > 0 ? WizardStep.TARGET : WizardStep.ORGANIZATION)}
           />
         )}

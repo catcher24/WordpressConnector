@@ -1,8 +1,8 @@
 import { useMemo, useState } from "react";
 import { Button } from "primereact/button";
-import { Message } from "primereact/message";
-import { Divider } from "primereact/divider";
 import { InputText } from "primereact/inputtext";
+import { IconField } from 'primereact/iconfield';
+import { InputIcon } from 'primereact/inputicon';
 import { Checkbox } from "primereact/checkbox";
 import { TargetModel } from "../../../models";
 
@@ -71,10 +71,10 @@ export default function TargetSelectionStep({ targets, siteHostname, onSelectTar
                 <strong>Warning:</strong> Active security scanning involves automated probes that can trigger <strong>severe side effects</strong> if your site has certain vulnerabilities. While these issues should not occur on a secure site, they can involve unintended <strong>database interactions</strong> resulting in the creation of test posts, comments, or other automated content. You must acknowledge the risk of these interactions before proceeding.
               </p>
               <div className="flex items-center gap-2 pt-1 border-t border-warning-light/50">
-                <Checkbox 
-                  inputId="acknowledge-scan" 
-                  checked={acknowledged} 
-                  onChange={e => setAcknowledged(e.checked ?? false)} 
+                <Checkbox
+                  inputId="acknowledge-scan"
+                  checked={acknowledged}
+                  onChange={e => setAcknowledged(e.checked ?? false)}
                   disabled={isLoading}
                 />
                 <label htmlFor="acknowledge-scan" className="text-xs font-bold text-warning-darker cursor-pointer select-none">
@@ -163,15 +163,12 @@ export default function TargetSelectionStep({ targets, siteHostname, onSelectTar
       )}
 
       {targets.length > 5 && (
-        <span className="p-input-icon-left w-full">
-          <i className="pi pi-search text-gray-400" />
-          <InputText
-            placeholder="Search your targets..."
-            className="w-full bg-gray-50 border-gray-200 focus:bg-white transition-all h-11"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-        </span>
+        <InputText
+          placeholder="Search your targets..."
+          className="bg-gray-50 border-gray-200 focus:bg-white transition-all h-11"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+        />
       )}
 
       <div className="max-h-[320px] overflow-y-auto border border-gray-200 rounded-xl bg-white shadow-inner">

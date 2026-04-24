@@ -14,6 +14,7 @@ interface Props {
   siteHostname: string;
   apiUrl: string;
   hasSingleOrganization: boolean;
+  canGoBack?: boolean;
   onCancel: () => void;
   initialStep?: number;
 }
@@ -31,7 +32,7 @@ const initialFormState = {
 
 export type TargetFormData = typeof initialFormState;
 
-export default function CreateTargetWizard({ selectedOrg, siteHostname, apiUrl, hasSingleOrganization, onCancel, initialStep = 1 }: Props) {
+export default function CreateTargetWizard({ selectedOrg, siteHostname, apiUrl, hasSingleOrganization, canGoBack, onCancel, initialStep = 1 }: Props) {
   const [currentStep, setCurrentStep] = useState(initialStep);
   const [formData, setFormData] = useState<TargetFormData>(initialFormState);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -44,12 +45,15 @@ export default function CreateTargetWizard({ selectedOrg, siteHostname, apiUrl, 
   const orgModel = useMemo(() => OrganizationModel.asOrganizationModel(selectedOrg), [selectedOrg]);
   const { getTargetCapabilities } = useOrganizationCapabilities(orgModel);
 
-  const isLocked = hasSingleOrganization && (currentStep === 1 || isAutoselected);
+  const isLocked = canGoBack !== undefined 
+    ? (!canGoBack && (currentStep === 1 || isAutoselected))
+    : (hasSingleOrganization && (currentStep === 1 || isAutoselected));
+    
   const showBackButton = !isLocked;
   const buttonLabel = isAutoselected ? "Cancel" : "Back";
 
   const handleBackAction = () => {
-    if (isAutoselected) {
+    if (isAutoselected || currentStep === 1) {
       onCancel();
     } else {
       setCurrentStep(1);

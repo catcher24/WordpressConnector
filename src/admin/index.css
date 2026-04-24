@@ -3,6 +3,8 @@
 @tailwind components;
 @tailwind utilities;
 
+@source "../node_modules/primereact/**/*.{js,ts,jsx,tsx}";
+
 @layer base {
   body {
     @apply bg-white text-black;

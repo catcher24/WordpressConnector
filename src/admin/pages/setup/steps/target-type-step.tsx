@@ -5,6 +5,7 @@ import { TargetType } from "../../../enums";
 import { CollectorGroupModel, OrganizationModel } from "../../../models";
 import { getApiUrl } from "../../../helpers";
 import { useOrganizationCapabilities } from "../../../hooks/useOrganizationCapabilities";
+import { Message } from "primereact/message";
 
 interface Props {
   formData: any;
@@ -20,7 +21,7 @@ export default function TargetTypeStep({ formData, updateForm, selectedOrganizat
   const [loading, setLoading] = useState(true);
 
   const orgModel = useMemo(() => OrganizationModel.asOrganizationModel(selectedOrganization || null), [selectedOrganization]);
-  const { isCollectorGroupAllowed } = useOrganizationCapabilities(orgModel);
+  const { isCollectorGroupAllowed, canAddTargetType } = useOrganizationCapabilities(orgModel);
 
   useEffect(() => {
     const fetchGroups = async () => {
@@ -43,7 +44,7 @@ export default function TargetTypeStep({ formData, updateForm, selectedOrganizat
 
   // Handle Logic for skipping step
   const allowedGroups = useMemo(() =>
-      groups.filter(g => isCollectorGroupAllowed(g.id, g.targetType)),
+    groups.filter(g => isCollectorGroupAllowed(g.id, g.targetType)),
     [groups, isCollectorGroupAllowed]);
 
   useEffect(() => {
@@ -69,12 +70,27 @@ export default function TargetTypeStep({ formData, updateForm, selectedOrganizat
   // Prevent UI flash if we are about to skip
   if (allowedGroups.length === 1 && !formData.collectorGroupId) return null;
 
+  const isCompletelyOut = !loading && groups.length > 0 && allowedGroups.length === 0;
+
   return (
     <div className="flex flex-col gap-4">
       <label className="text-sm font-semibold text-gray-700">Select Target Type</label>
+
+      {isCompletelyOut && (
+        <Message
+          severity="warn"
+          text={"You have no empty target slots to create new targets. Please upgrade your subscription to add more."}
+          className="w-full justify-start"
+        />
+      )}
+
       <div className="grid grid-cols-1 gap-3">
         {groups.map((group) => {
           const isAllowed = isCollectorGroupAllowed(group.id, group.targetType);
+          const hasCapability = orgModel?.capabilities?.targetCapabilities?.has(group.targetType);
+          const hasSlots = canAddTargetType(group.targetType);
+          const outOfSlots = hasCapability && !hasSlots;
+
           return (
             <RadioCard
               key={group.id}
@@ -84,13 +100,18 @@ export default function TargetTypeStep({ formData, updateForm, selectedOrganizat
                 <div className="flex flex-col gap-2">
                   <div className="prose prose-sm" dangerouslySetInnerHTML={{ __html: group.description }} />
                   {!isAllowed && selectedOrganization?.identifier && (
-                    <a
-                      href={`${dashboardUrl}/org/${selectedOrganization.identifier}/subscription`}
-                      className="p-button p-button-sm p-button-outlined w-max"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      Upgrade to access
-                    </a>
+                    <div className="flex flex-col gap-2 mt-2">
+                      {outOfSlots && (
+                        <span className="text-red-500 text-sm font-medium">No empty target slots available.</span>
+                      )}
+                      <a
+                        href={`${dashboardUrl}/org/${selectedOrganization.identifier}/subscription`}
+                        className="p-button p-button-sm p-button-outlined w-max"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        {outOfSlots ? "Upgrade to add more" : "Upgrade to access"}
+                      </a>
+                    </div>
                   )}
                 </div>
               }
