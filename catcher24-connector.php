@@ -10,7 +10,7 @@
  * Requires at least: 6.5
  * Requires PHP: 7.4
  * Text Domain: catcher24-connector
- * Domain Path: languages
+ * Domain Path: /languages
  *
  * @package Catcher24 Connector
  */

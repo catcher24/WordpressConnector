@@ -1,0 +1,18 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Catcher24 Connector 1.0.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-04-30 12:00+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: en_US\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "Catcher24 Connector"
+msgstr "Catcher24 Connector"
+
+msgid "When you use the Catcher24 Connector, we may collect and transmit telemetry, security configuration, and site status information to the Catcher24 cybersecurity platform. This includes server IP addresses, software versions, and potentially access logs to identify emerging threats. This data is transmitted securely and is governed by the Catcher24 privacy policy. For more information, please see our <a href=\"%s\">Privacy Policy</a>."
+msgstr "When you use the Catcher24 Connector, we may collect and transmit telemetry, security configuration, and site status information to the Catcher24 cybersecurity platform. This includes server IP addresses, software versions, and potentially access logs to identify emerging threats. This data is transmitted securely and is governed by the Catcher24 privacy policy. For more information, please see our <a href=\"%s\">Privacy Policy</a>."

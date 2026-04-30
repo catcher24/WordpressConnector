@@ -23,7 +23,6 @@ const distFiles = [
     '!.jshintrc',
     '!.env',
     '!bower.json',
-    '!composer.json',
     '!plugin-config.json',
     '!composer.lock',
     '!contributing.md',
@@ -68,38 +67,38 @@ grunt.initConfig({
 
     checktextdomain: {
         options: {
-          text_domain: config.text_domain,
-          correct_domain: true,
-          keywords: [
-            "__:1,2d",
-            "_e:1,2d",
-            "_x:1,2c,3d",
-            "esc_html__:1,2d",
-            "esc_html_e:1,2d",
-            "esc_html_x:1,2c,3d",
-            "esc_attr__:1,2d",
-            "esc_attr_e:1,2d",
-            "esc_attr_x:1,2c,3d",
-            "_ex:1,2c,3d",
-            "_n:1,2,4d",
-            "_nx:1,2,4c,5d",
-            "_n_noop:1,2,3d",
-            "_nx_noop:1,2,3c,4d",
-            "wp_set_script_translations:1,2d",
-            "load_plugin_textdomain:1d,2,3",
+            text_domain: config.text_domain,
+            correct_domain: true,
+            keywords: [
+                "__:1,2d",
+                "_e:1,2d",
+                "_x:1,2c,3d",
+                "esc_html__:1,2d",
+                "esc_html_e:1,2d",
+                "esc_html_x:1,2c,3d",
+                "esc_attr__:1,2d",
+                "esc_attr_e:1,2d",
+                "esc_attr_x:1,2c,3d",
+                "_ex:1,2c,3d",
+                "_n:1,2,4d",
+                "_nx:1,2,4c,5d",
+                "_n_noop:1,2,3d",
+                "_nx_noop:1,2,3c,4d",
+                "wp_set_script_translations:1,2d",
+                "load_plugin_textdomain:1d,2,3",
             ],
         },
         files: {
             src: [
-              "includes/**/*.php",
-              "includes/function.php",
-              "views/*.php",
-              config.plugin_file_name,
-              "uninstall.php",
-              "plugin.php",
+                "includes/**/*.php",
+                "includes/function.php",
+                "views/*.php",
+                config.plugin_file_name,
+                "uninstall.php",
+                "plugin.php",
             ],
             expand: true,
-          },
+        },
     },
 
     // Task to copy files to the release directory
@@ -111,7 +110,7 @@ grunt.initConfig({
         },
     },
 
-     // Task to delete .js.map files
+    // Task to delete .js.map files
     clean: {
         mapFiles: ['release/catcher24-connector/js/dist/assets/**/*.js.map']
     },
