@@ -24,6 +24,8 @@
 		<exclude name="WordPress.NamingConventions.ValidFunctionName.MethodDoubleUnderscore" />
 	</rule>
 
+	<rule ref="WordPress-Extra">
+
 	<rule ref="WordPress-Docs"/>
 
 	<rule ref="WordPress.WP.I18n"/>
@@ -48,4 +50,5 @@
 	<exclude-pattern>*/vendor/*</exclude-pattern>
 	<exclude-pattern>*/tests/*</exclude-pattern>
 	<exclude-pattern>*/assets/*</exclude-pattern>
+  <exclude-pattern>*/node_modules/*</exclude-pattern>
 </ruleset>

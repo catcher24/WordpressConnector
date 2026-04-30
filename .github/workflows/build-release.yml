@@ -40,7 +40,7 @@ jobs:
         continue-on-error: false # Fails the build if vulnerabilities are found
 
       - name: WordPress Coding Standards
-        run: phpcs --standard=WordPress-Core,WordPress-Extra ./libs
+        run: phpcs
 
       - name: PHPStan Analysis
         run: phpstan analyse -c phpstan.neon
