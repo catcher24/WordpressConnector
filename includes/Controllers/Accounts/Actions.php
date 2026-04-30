@@ -1,7 +1,8 @@
 <?php
-defined( 'ABSPATH' ) || exit;
 
 namespace Catcher24\WordPress_Connector\Controllers\Accounts;
+
+defined( 'ABSPATH' ) || exit;
 
 use Catcher24\WordPress_Connector\Libs\API\Catcher24Client;
 use Exception;

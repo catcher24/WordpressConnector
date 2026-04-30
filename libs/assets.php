@@ -1,14 +1,15 @@
 <?php
-defined( 'ABSPATH' ) || exit;
+declare(strict_types=1);
+
 /**
  * Vite integration for WordPress
  *
  * @package ViteForWp
  */
 
-declare(strict_types=1);
-
 namespace Catcher24\WordPress_Connector\Libs\Assets;
+
+defined( 'ABSPATH' ) || exit;
 
 use Exception;
 use WP_HTML_Tag_Processor;

@@ -1,12 +1,13 @@
 <?php
-defined( 'ABSPATH' ) || exit;
 /**
  * Route Configuration.
- * 
+ *
  * @since 1.0.0
  */
 
 namespace Catcher24\WordPress_Connector\Libs\API;
+
+defined( 'ABSPATH' ) || exit;
 
 use Catcher24\WordPress_Connector\Libs\API\ApiRouteException;
 

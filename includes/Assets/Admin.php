@@ -1,9 +1,9 @@
 <?php
-defined( 'ABSPATH' ) || exit;
-
 declare(strict_types=1);
 
 namespace Catcher24\WordPress_Connector\Assets;
+
+defined( 'ABSPATH' ) || exit;
 
 use Catcher24\WordPress_Connector\Core\Template;
 use Catcher24\WordPress_Connector\Libs\API\Catcher24Client;

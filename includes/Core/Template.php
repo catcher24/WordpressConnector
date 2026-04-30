@@ -1,7 +1,8 @@
 <?php
-defined( 'ABSPATH' ) || exit;
 
 namespace Catcher24\WordPress_Connector\Core;
+
+defined( 'ABSPATH' ) || exit;
 
 use Catcher24\WordPress_Connector\Traits\Base;
 

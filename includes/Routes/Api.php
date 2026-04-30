@@ -1,5 +1,4 @@
 <?php
-defined( 'ABSPATH' ) || exit;
 /**
  * Catcher24\WordPress_Connector Routes
  *
@@ -9,6 +8,8 @@ defined( 'ABSPATH' ) || exit;
  */
 
 namespace Catcher24\WordPress_Connector\Routes;
+
+defined( 'ABSPATH' ) || exit;
 
 use Catcher24\WordPress_Connector\Libs\API\Route;
 

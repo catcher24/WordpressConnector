@@ -26,10 +26,24 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: '8.2'
-          tools: composer
+          tools: composer, phpstan, phpcs
 
       - name: Install PHP Dependencies
         run: composer install --no-dev --optimize-autoloader
+
+      - name: Check PHP Syntax (Lint)
+        run: |
+          find . -name "*.php" -not -path "./vendor/*" -not -path "./node_modules/*" -print0 | xargs -0 -n1 php -l
+
+      - name: Composer Audit (PHP Security)
+        run: composer audit
+        continue-on-error: false # Fails the build if vulnerabilities are found
+
+      - name: WordPress Coding Standards
+        run: phpcs --standard=WordPress-Core,WordPress-Extra ./libs
+
+      - name: PHPStan Analysis
+        run: phpstan analyse -c phpstan.neon
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -43,6 +57,9 @@ jobs:
 
       - name: Install Node Dependencies
         run: pnpm install
+
+      - name: pnpm Audit (Node Security)
+        run: pnpm audit --audit-level moderate
 
       - name: Configure Environment Constants
         run: |

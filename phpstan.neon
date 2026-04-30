@@ -1,0 +1,9 @@
+parameters:
+    level: 5 # Start at 5, work your way up to 9
+    paths:
+        - libs
+        - catcher24-wordpress-connector.php
+    excludePaths:
+        - vendor
+    scanFiles:
+        - %currentWorkingDirectory%/vendor/php-stubs/wordpress-stubs/wordpress-stubs.php
