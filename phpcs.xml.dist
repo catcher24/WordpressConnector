@@ -24,12 +24,16 @@
 		<exclude name="WordPress.NamingConventions.ValidFunctionName.MethodDoubleUnderscore" />
 	</rule>
 
+	<rule ref="WordPress-Extra"/>
+
 	<rule ref="WordPress-Docs"/>
 
 	<rule ref="WordPress.WP.I18n"/>
 	<rule ref="WordPress.WP.I18n.TextDomainMismatch">
 		<properties>
-			<property name="text_domain" type="array" value="catcher24-connector"/>
+			<property name="text_domain" type="array">
+				<element value="catcher24-connector"/>
+			</property>
 		</properties>
 	</rule>
 
@@ -48,4 +52,5 @@
 	<exclude-pattern>*/vendor/*</exclude-pattern>
 	<exclude-pattern>*/tests/*</exclude-pattern>
 	<exclude-pattern>*/assets/*</exclude-pattern>
+  <exclude-pattern>*/node_modules/*</exclude-pattern>
 </ruleset>
