@@ -21,8 +21,7 @@
     "build-storybook": "storybook build",
     "release": "npm run build && grunt release",
     "change-text-domain": "grunt change-text-domain --force",
-    "i18n": "wp i18n make-pot catcher24-wordpress-connector languages/catcher24-wordpress-connector.pot --domain=catcher24-wordpress-connector --exclude='*/js/*,build'",
-
+    "i18n": "wp i18n make-pot . languages/catcher24-wordpress-connector.pot --domain=catcher24-wordpress-connector --exclude='*/js/*,build'"
   },
   "devDependencies": {
     "@faker-js/faker": "^10.3.0",

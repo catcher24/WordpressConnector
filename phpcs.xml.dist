@@ -27,6 +27,11 @@
 	<rule ref="WordPress-Docs"/>
 
 	<rule ref="WordPress.WP.I18n"/>
+	<rule ref="WordPress.WP.I18n.TextDomainMismatch">
+		<properties>
+			<property name="text_domain" type="array" value="catcher24-wordpress-connector"/>
+		</properties>
+	</rule>
 
 	<rule ref="PEAR.Functions.FunctionCallSignature">
 		<properties>
