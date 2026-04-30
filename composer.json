@@ -13,5 +13,13 @@
   },
   "require": {
     "stevenmaguire/oauth2-keycloak": "^6.1"
+  },
+  "require-dev": {
+    "dealerdirect/phpcodesniffer-composer-installer": "^1.2"
+  },
+  "config": {
+    "allow-plugins": {
+      "dealerdirect/phpcodesniffer-composer-installer": true
+    }
   }
 }
