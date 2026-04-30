@@ -30,7 +30,7 @@ class Catcher24Client {
 		return $provider;
 	}
 
-	public static function generate_login_flow( bool $silent = false ): string {
+	public static function generate_login_flow( bool $silent = false, ?string $kc_action = null ): string {
 		$provider = self::get_provider();
 
 		$options = [
@@ -39,6 +39,10 @@ class Catcher24Client {
 
 		if ( $silent ) {
 			$options['prompt'] = 'none';
+		}
+
+		if ( $kc_action ) {
+			$options['kc_action'] = $kc_action;
 		}
 
 		$authUrl  = $provider->getAuthorizationUrl( $options );

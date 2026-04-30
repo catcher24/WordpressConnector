@@ -19,6 +19,14 @@ class Actions {
     ], 200);
   }
 
+  public function register(WP_REST_Request $request) {
+    $authUrl = Catcher24Client::generate_login_flow(false, 'register');
+
+    return new WP_REST_Response([
+      'redirect_url' => $authUrl
+    ], 200);
+  }
+
 	public function callback( WP_REST_Request $request ) {
 		// phpcs:disable WordPress.Security.NonceVerification.Recommended -- Accessing OAuth callback parameters, which are validated via state parameter rather than nonces
 		$code     = $request->get_param( 'code' ) ?: ( isset( $_GET['code'] ) ? sanitize_text_field( wp_unslash( $_GET['code'] ) ) : null );
