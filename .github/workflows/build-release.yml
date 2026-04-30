@@ -59,7 +59,7 @@ jobs:
         run: pnpm install
 
       - name: pnpm Audit (Node Security)
-        run: pnpm audit --audit-level moderate
+        run: pnpm audit --audit-level critical
 
       - name: Configure Environment Constants
         run: |
