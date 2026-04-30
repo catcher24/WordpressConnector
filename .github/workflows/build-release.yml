@@ -29,7 +29,7 @@ jobs:
           tools: composer, phpstan, phpcs
 
       - name: Install PHP Dependencies
-        run: composer install --no-dev --optimize-autoloader
+        run: composer install --optimize-autoloader
 
       - name: Check PHP Syntax (Lint)
         run: |
