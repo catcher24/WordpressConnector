@@ -24,7 +24,7 @@
 		<exclude name="WordPress.NamingConventions.ValidFunctionName.MethodDoubleUnderscore" />
 	</rule>
 
-	<rule ref="WordPress-Extra">
+	<rule ref="WordPress-Extra"/>
 
 	<rule ref="WordPress-Docs"/>
 
