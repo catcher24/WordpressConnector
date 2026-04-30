@@ -20,7 +20,7 @@ class Actions {
   }
 
   public function register(WP_REST_Request $request) {
-    $authUrl = Catcher24Client::generate_login_flow(false, 'register');
+    $authUrl = Catcher24Client::generate_register_flow();
 
     return new WP_REST_Response([
       'redirect_url' => $authUrl

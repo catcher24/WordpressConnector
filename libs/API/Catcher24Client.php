@@ -53,6 +53,23 @@ class Catcher24Client {
 		return $authUrl;
 	}
 
+	public static function generate_register_flow(): string {
+		$provider = self::get_provider();
+
+		$options = [
+			'scope' => 'openid profile email'
+		];
+
+		$authUrl  = $provider->getAuthorizationUrl( $options );
+		$pkce     = $provider->getPkceCode();
+
+		$authUrl = str_replace( 'openid-connect/auth', 'openid-connect/registrations', $authUrl );
+
+		set_transient( 'oauth2_state_' . $provider->getState(), $pkce, 15 * MINUTE_IN_SECONDS );
+
+		return $authUrl;
+	}
+
 	public static function handle_callback( string $code, string $state ): void {
 		$saved_pkce = get_transient( 'oauth2_state_' . $state );
 

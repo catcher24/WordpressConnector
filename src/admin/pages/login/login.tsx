@@ -2,6 +2,7 @@ import { Button } from "primereact/button";
 import { Card } from "primereact/card";
 import { useState } from "react";
 import { apiFetch } from "../../utils/api-fetch";
+import Logo from "../../icons/Logo";
 
 export default function LoginPage() {
   const [loadingSignIn, setLoadingSignIn] = useState(false);
@@ -44,9 +45,12 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex min-h-[600px] py-12 w-full items-center justify-center bg-gray-50 border border-gray-200 rounded-xl">
+    <div className="flex flex-col min-h-[600px] py-12 w-full items-center justify-center bg-gray-50 border border-gray-200 rounded-xl">
+      <div className="mb-8">
+        <Logo className="h-10 w-auto" />
+      </div>
       <div className="w-full max-w-4xl grid grid-cols-1 md:grid-cols-2 gap-6 p-4">
-        
+
         {/* Register / Sales Front */}
         <Card className="shadow-sm border border-gray-200 rounded-xl p-2 bg-white flex flex-col h-full">
           <div className="mb-6 flex flex-col">
@@ -57,7 +61,7 @@ export default function LoginPage() {
             <p className="text-gray-500 mt-2 text-sm leading-relaxed">
               Protect your WordPress site with enterprise-grade security. Join Catcher24 to get continuous vulnerability scanning, automated reports, and instant threat alerts.
             </p>
-            
+
             <ul className="mt-6 space-y-3">
               <li className="flex items-center text-sm text-gray-700">
                 <i className="pi pi-check-circle text-green-500 mr-2"></i> Continuous Vulnerability Scanning
