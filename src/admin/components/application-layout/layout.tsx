@@ -25,7 +25,7 @@ export default function ApplicationLayout({ children }: { children?: React.React
   const location = useLocation();
   const menuRight = useRef<Menu>(null);
 
-  const { userInfo, organization, dashboardUrl, apiUrl } = catcher24WordpressConnector;
+  const { userInfo, organization, dashboardUrl, apiUrl } = catcher24Connector;
 
   const baseUrl = dashboardUrl.replace(/\/$/, "");
 

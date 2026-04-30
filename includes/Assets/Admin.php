@@ -24,12 +24,12 @@ class Admin {
 	/**
 	 * Script handle for Catcher24\WordPress_Connector.
 	 */
-	const HANDLE = 'catcher24-wordpress-connector';
+	const HANDLE = 'catcher24-connector';
 
 	/**
 	 * JS Object name for Catcher24\WordPress_Connector.
 	 */
-	const OBJ_NAME = 'catcher24WordpressConnector';
+	const OBJ_NAME = 'catcher24Connector';
 
 	/**
 	 * Development script path for Catcher24\WordPress_Connector.
@@ -42,7 +42,7 @@ class Admin {
 	 * @var array
 	 */
 	private $allowed_screens = array(
-		'toplevel_page_catcher24-wordpress-connector',
+		'toplevel_page_catcher24-connector',
 	);
 
 	/**
@@ -60,6 +60,7 @@ class Admin {
 	 */
 	public function handle_silent_auth_redirect() {
 		// Only run this logic on your specific plugin page
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Accessing URL parameter to determine silent auth redirect
 		$page = isset( $_GET['page'] ) ? sanitize_text_field( wp_unslash( $_GET['page'] ) ) : '';
 		if ( $page !== self::HANDLE ) {
 			return;
@@ -69,7 +70,7 @@ class Admin {
 			delete_transient('catcher24_retry_silent_auth');
 
 			$auth_url = Catcher24Client::generate_login_flow( true );
-			wp_redirect( $auth_url );
+			wp_safe_redirect( $auth_url );
 			exit;
 		}
 	}

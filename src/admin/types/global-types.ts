@@ -1,4 +1,4 @@
-declare const catcher24WordpressConnector: {
+declare const catcher24Connector: {
   developer: string;
   isAdmin: boolean;
   targetId?: string;

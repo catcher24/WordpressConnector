@@ -19,6 +19,7 @@ class Actions {
   }
 
 	public function callback( WP_REST_Request $request ) {
+		// phpcs:disable WordPress.Security.NonceVerification.Recommended -- Accessing OAuth callback parameters, which are validated via state parameter rather than nonces
 		$code     = $request->get_param( 'code' ) ?: ( isset( $_GET['code'] ) ? sanitize_text_field( wp_unslash( $_GET['code'] ) ) : null );
 		$state    = $request->get_param( 'state' ) ?: ( isset( $_GET['state'] ) ? sanitize_text_field( wp_unslash( $_GET['state'] ) ) : null );
 		$error    = $request->get_param( 'error' ) ?: ( isset( $_GET['error'] ) ? sanitize_text_field( wp_unslash( $_GET['error'] ) ) : null );
@@ -32,15 +33,16 @@ class Actions {
 			$state = $manual_params['state'] ?? null;
 			$error = $manual_params['error'] ?? null;
 		}
+		// phpcs:enable WordPress.Security.NonceVerification.Recommended
 
 		if ( $error === 'temporarily_unavailable' ) {
-			$login_page_url = admin_url( 'admin.php?page=catcher24-wordpress-connector#/dashboard' );
+			$login_page_url = admin_url( 'admin.php?page=catcher24-connector#/dashboard' );
 			wp_safe_redirect( $login_page_url );
 			exit;
 		}
 
 		if ( $error === 'temporarily_unavailable' || $error === 'login_required' || $error === 'interaction_required' ) {
-			$login_page_url = admin_url( 'admin.php?page=catcher24-wordpress-connector#/login' );
+			$login_page_url = admin_url( 'admin.php?page=catcher24-connector#/login' );
 			wp_safe_redirect( $login_page_url );
 			exit;
 		}
@@ -56,7 +58,7 @@ class Actions {
 		try {
 			Catcher24Client::handle_callback( $code, $state );
 
-			$react_app_url = admin_url( 'admin.php?page=catcher24-wordpress-connector#/dashboard' );
+			$react_app_url = admin_url( 'admin.php?page=catcher24-connector#/dashboard' );
 			wp_safe_redirect( $react_app_url );
 			exit;
 
@@ -71,7 +73,7 @@ class Actions {
 				// so we can detect it when the user comes back
 				$retry_auth_url = add_query_arg( 'retry', '1', $retry_auth_url );
 
-				wp_redirect( $retry_auth_url );
+				wp_safe_redirect( $retry_auth_url );
 				exit;
 			}
 
@@ -91,7 +93,7 @@ class Actions {
 		// Clear local session first
 		Catcher24Client::disconnect();
 
-		wp_redirect( $logout_url );
+		wp_safe_redirect( $logout_url );
 		exit;
 	}
 }

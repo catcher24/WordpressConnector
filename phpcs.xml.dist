@@ -3,7 +3,7 @@
 
 	<config name="testVersion" value="7.2"/>
 	<config name="minimum_supported_wp_version" value="5.9" />
-	<config name="text_domain" value="catcher24-wordpress-connector"/>
+	<config name="text_domain" value="catcher24-connector"/>
 
 	<rule ref="PHPCompatibility">
 		<exclude name="PHPCompatibility.FunctionNameRestrictions.ReservedFunctionNames.FunctionDoubleUnderscore" />
@@ -29,7 +29,7 @@
 	<rule ref="WordPress.WP.I18n"/>
 	<rule ref="WordPress.WP.I18n.TextDomainMismatch">
 		<properties>
-			<property name="text_domain" type="array" value="catcher24-wordpress-connector"/>
+			<property name="text_domain" type="array" value="catcher24-connector"/>
 		</properties>
 	</rule>
 

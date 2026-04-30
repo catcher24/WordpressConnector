@@ -17,7 +17,7 @@ export async function apiFetch(input: RequestInfo | URL, init?: RequestInit): Pr
   }
 
   // @ts-ignore
-  const connector = window.catcher24WordpressConnector;
+  const connector = window.catcher24Connector;
 
   if (connector && connector.apiUrl && url.startsWith(connector.apiUrl)) {
     const newInit = init || {};

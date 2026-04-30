@@ -49,7 +49,7 @@ export function SettingsForm() {
   useEffect(() => {
     async function initialize() {
       try {
-        const { organizationId, targetId, apiUrl } = catcher24WordpressConnector
+        const { organizationId, targetId, apiUrl } = catcher24Connector
 
         // Fetch Data
         const [orgsRes, targetsRes] = await Promise.all([
@@ -102,7 +102,7 @@ export function SettingsForm() {
 
   async function onSubmit(data: SettingsFormValues) {
     setIsSubmitting(true)
-    const { apiUrl, organizationId: currentOrgId, targetId: currentTargetId } = catcher24WordpressConnector
+    const { apiUrl, organizationId: currentOrgId, targetId: currentTargetId } = catcher24Connector
     let needsReload = false
 
     try {

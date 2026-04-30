@@ -7,7 +7,7 @@ import SetupWizard from "./pages/setup/setup";
 import {SettingsForm} from "./pages/settings/settings";
 
 const RequireAuth = () => {
-  const isAuthenticated = !!catcher24WordpressConnector?.userInfo;
+  const isAuthenticated = !!catcher24Connector?.userInfo;
 
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
@@ -22,8 +22,8 @@ const RequireAuth = () => {
  * Otherwise, they are redirected to the Wizard.
  */
 const RequireSetup = () => {
-  const hasOrg = !!catcher24WordpressConnector?.organizationId;
-  const hasTarget = !!catcher24WordpressConnector?.targetId;
+  const hasOrg = !!catcher24Connector?.organizationId;
+  const hasTarget = !!catcher24Connector?.targetId;
 
   if (!hasOrg || !hasTarget) {
     return <Navigate to="/setup" replace />;

@@ -21,7 +21,7 @@ class Menu {
 	 *
 	 * @var string
 	 */
-	private $parent_slug = 'catcher24-wordpress-connector';
+	private $parent_slug = 'catcher24-connector';
 
 	/**
 	 * Initializes the admin menu.
@@ -56,8 +56,8 @@ class Menu {
     $icon_url = 'data:image/svg+xml;base64,' . base64_encode( $svg );
 
 		add_menu_page(
-			__( 'Catcher24', 'catcher24-wordpress-connector' ),
-			__( 'Catcher24', 'catcher24-wordpress-connector' ),
+			__( 'Catcher24', 'catcher24-connector' ),
+			__( 'Catcher24', 'catcher24-connector' ),
 			'manage_options',
 			$this->parent_slug,
 			array( $this, 'admin_page' ),

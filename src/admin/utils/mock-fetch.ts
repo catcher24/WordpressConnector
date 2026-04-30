@@ -25,7 +25,7 @@ export const setupStorybookMocks = (customMocks: any = {}) => {
     organization: generateMockOrganization("org-123"),
   };
 
-  (window as any).catcher24WordpressConnector = {
+  (window as any).catcher24Connector = {
     ...connectorDefaults,
     ...customMocks.connector,
   };
@@ -34,7 +34,7 @@ export const setupStorybookMocks = (customMocks: any = {}) => {
   const connectorKeys = Object.keys(connectorDefaults);
   connectorKeys.forEach(key => {
     if (customMocks[key] !== undefined) {
-      (window as any).catcher24WordpressConnector[key] = customMocks[key];
+      (window as any).catcher24Connector[key] = customMocks[key];
     }
   });
 

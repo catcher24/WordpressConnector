@@ -17,7 +17,7 @@ interface Props {
 }
 
 export default function TargetTypeStep({ formData, updateForm, selectedOrganization, onAutoselect, setIsInitializing }: Props) {
-  const { apiUrl, dashboardUrl } = catcher24WordpressConnector;
+  const { apiUrl, dashboardUrl } = catcher24Connector;
   const [groups, setGroups] = useState<CollectorGroupModel[]>([]);
   const [loading, setLoading] = useState(true);
 

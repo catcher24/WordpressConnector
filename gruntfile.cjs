@@ -107,13 +107,13 @@ grunt.initConfig({
         main: {
             expand: true,
             src: distFiles,
-            dest: 'release/catcher24-wordpress-connector',
+            dest: 'release/catcher24-connector',
         },
     },
 
      // Task to delete .js.map files
     clean: {
-        mapFiles: ['release/catcher24-wordpress-connector/js/dist/assets/**/*.js.map']
+        mapFiles: ['release/catcher24-connector/js/dist/assets/**/*.js.map']
     },
 
     // Task to compress the release directory into a zip file
@@ -121,29 +121,29 @@ grunt.initConfig({
         main: {
             options: {
                 mode: 'zip',
-                archive: `./release/catcher24-wordpress-connector.zip`,
+                archive: `./release/catcher24-connector.zip`,
             },
             expand: true,
             src: distFiles,
-            dest: '/catcher24-wordpress-connector',
+            dest: '/catcher24-connector',
         },
         version: {
             options: {
                 mode: 'zip',
-                archive: `./release/catcher24-wordpress-connector-${pkg.version}.zip`,
+                archive: `./release/catcher24-connector-${pkg.version}.zip`,
             },
             expand: true,
             src: distFiles,
-            dest: '/catcher24-wordpress-connector',
+            dest: '/catcher24-connector',
         },
         todocs: {
             options: {
                 mode: 'zip',
-                archive: `./documentation/public/plugin/catcher24-wordpress-connector.zip`,
+                archive: `./documentation/public/plugin/catcher24-connector.zip`,
             },
             expand: true,
             src: distFiles,
-            dest: '/catcher24-wordpress-connector',
+            dest: '/catcher24-connector',
         },
     },
 });

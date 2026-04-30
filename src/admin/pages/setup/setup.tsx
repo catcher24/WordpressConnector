@@ -18,7 +18,7 @@ export enum WizardStep {
 export default function SetupWizard() {
   const navigate = useNavigate();
   // Assuming this is injected globally or imported
-  const { siteHostname, organizationId, targetId, apiUrl, hasSingleOrganization } = catcher24WordpressConnector;
+  const { siteHostname, organizationId, targetId, apiUrl, hasSingleOrganization } = catcher24Connector;
 
   const [step, setStep] = useState<WizardStep>(WizardStep.ORGANIZATION);
   const [loading, setLoading] = useState(true);

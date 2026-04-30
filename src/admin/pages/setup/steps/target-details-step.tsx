@@ -25,7 +25,7 @@ export default function TargetDetailsStep({
   selectedOrganization,
   errors = {}
 }: Props) {
-  const { dashboardUrl } = catcher24WordpressConnector;
+  const { dashboardUrl } = catcher24Connector;
 
   const isLocalhost = (address: string) =>
     ["localhost", "127.0.0.1"].includes(address.toLowerCase()) ||

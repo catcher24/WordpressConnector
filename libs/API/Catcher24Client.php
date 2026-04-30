@@ -261,7 +261,7 @@ class Catcher24Client {
 
 	public static function get_logout_url(): string {
 		$config = self::get_keycloak_config();
-		$redirect_uri = admin_url( 'admin.php?page=catcher24-wordpress-connector' );
+		$redirect_uri = admin_url( 'admin.php?page=catcher24-connector' );
 
 		return add_query_arg( [
 			'client_id'                => $config['clientId'],

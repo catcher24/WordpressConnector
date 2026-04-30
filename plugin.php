@@ -8,13 +8,13 @@ use Catcher24\WordPress_Connector\Traits\Base;
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Class Catcher24_Wordpress_Connector
+ * Class Catcher24_Connector
  *
- * The main class for the Catcher24 wordpress connector plugin, responsible for initialization and setup.
+ * The main class for the Catcher24 connector plugin, responsible for initialization and setup.
  *
  * @since 1.0.0
  */
-final class Catcher24_Wordpress_Connector {
+final class Catcher24_Connector {
 
 	use Base;
 
@@ -73,12 +73,12 @@ final class Catcher24_Wordpress_Connector {
 
 		$content = sprintf(
 			/* translators: %s: URL to the privacy policy */
-			__( 'When you use the Catcher24 Wordpress Connector, we may collect and transmit telemetry, security configuration, and site status information to the Catcher24 cybersecurity platform. This includes server IP addresses, software versions, and potentially access logs to identify emerging threats. This data is transmitted securely and is governed by the Catcher24 privacy policy. For more information, please see our <a href="%s">Privacy Policy</a>.', 'catcher24-wordpress-connector' ),
+			__( 'When you use the Catcher24 Connector, we may collect and transmit telemetry, security configuration, and site status information to the Catcher24 cybersecurity platform. This includes server IP addresses, software versions, and potentially access logs to identify emerging threats. This data is transmitted securely and is governed by the Catcher24 privacy policy. For more information, please see our <a href="%s">Privacy Policy</a>.', 'catcher24-connector' ),
 			'https://catcher24.com/privacy'
 		);
 
 		wp_add_privacy_policy_content(
-			__( 'Catcher24 WP Connector', 'catcher24-wordpress-connector' ),
+			__( 'Catcher24 Connector', 'catcher24-connector' ),
 			$content
 		);
 	}

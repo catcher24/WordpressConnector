@@ -9,7 +9,7 @@ export default function LoginPage() {
   const handleSignIn = async () => {
     setLoading(true);
     try {
-      const response = await apiFetch(`${catcher24WordpressConnector.apiUrl}/accounts/signin`);
+      const response = await apiFetch(`${catcher24Connector.apiUrl}/accounts/signin`);
       const data = await response.json();
 
       if (data.redirect_url) {

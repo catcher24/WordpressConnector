@@ -1,6 +1,6 @@
 {
-  "name": "catcher24/wordpress_connector",
-  "description": "Wordpress Plugin boilerplate",
+  "name": "catcher24/connector",
+  "description": "Catcher24 Connector",
   "autoload": {
     "psr-4": {
       "Catcher24\\WordPress_Connector\\": "includes/",

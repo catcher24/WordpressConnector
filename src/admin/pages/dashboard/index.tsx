@@ -27,7 +27,7 @@ import { apiFetch } from "../../utils/api-fetch";
 
 export default function DashboardPage() {
   const toast = useRef<Toast>(null);
-  const { apiUrl, targetId, dashboardUrl, organization } = catcher24WordpressConnector;
+  const { apiUrl, targetId, dashboardUrl, organization } = catcher24Connector;
 
   // -------------------------------------------------------------------------
   // State
