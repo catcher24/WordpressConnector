@@ -101,8 +101,8 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           # This appends '-dev' or '-stg' only if the environment is NOT prod
-          name: catcher24-wordpress-connector${{ github.event.inputs.environment != 'prod' && format('-{0}', github.event.inputs.environment) || '' }}
-          path: release/catcher24-wordpress-connector
+          name: catcher24-connector${{ github.event.inputs.environment != 'prod' && format('-{0}', github.event.inputs.environment) || '' }}
+          path: release/catcher24-connector
           retention-days: 14
 
       # ---------------------------------------------------------
@@ -124,5 +124,5 @@ jobs:
           draft: false
           prerelease: false
           files: |
-            release/catcher24-wordpress-connector.zip
-            release/catcher24-wordpress-connector-${{ steps.pkg.outputs.version }}.zip
+            release/catcher24-connector.zip
+            release/catcher24-connector-${{ steps.pkg.outputs.version }}.zip
