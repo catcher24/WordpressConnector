@@ -1,4 +1,5 @@
 <?php
+defined( 'ABSPATH' ) || exit;
 
 declare(strict_types=1);
 
@@ -59,7 +60,7 @@ class Admin {
 	 */
 	public function handle_silent_auth_redirect() {
 		// Only run this logic on your specific plugin page
-		$page = isset($_GET['page']) ? $_GET['page'] : '';
+		$page = isset( $_GET['page'] ) ? sanitize_text_field( wp_unslash( $_GET['page'] ) ) : '';
 		if ( $page !== self::HANDLE ) {
 			return;
 		}

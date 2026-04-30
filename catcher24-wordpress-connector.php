@@ -1,6 +1,6 @@
 <?php
 /**
- * Plugin Name: Catcher24 Wordpress Connector
+ * Plugin Name: Catcher24 WP Connector
  * Plugin URI: https://github.com/catcher24/WordpressConnector
  * Description: Seamlessly connect your WordPress site to the Catcher24 cybersecurity dashboard for automated vulnerability scanning, real-time threat alerts, and continuous security monitoring.
  * Author: Catcher24
@@ -12,7 +12,7 @@
  * Text Domain: catcher24-wordpress-connector
  * Domain Path: /languages
  *
- * @package Catcher24 Wordpress Connector
+ * @package Catcher24 WP Connector
  */
 
 use Catcher24\WordPress_Connector\Core\Install;

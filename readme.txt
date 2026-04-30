@@ -1,4 +1,4 @@
-=== Catcher24 Wordpress Connector ===
+=== Catcher24 WP Connector ===
 Contributors: catcher24
 Tags: security, vulnerability scanner, cybersecurity, malware scanner, firewall
 Requires at least: 6.5
@@ -8,11 +8,11 @@ Requires PHP: 7.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Seamlessly connect your WordPress site to the Catcher24 cybersecurity dashboard for automated vulnerability scanning, real-time threat alerts, and continuous security monitoring.
+Connect your WordPress site to Catcher24 for automated vulnerability scanning, real-time threat alerts, and continuous security monitoring.
 
 == Description ==
 
-The **Catcher24 Wordpress Connector** is a powerful, behind-the-scenes integration tool designed to bridge the gap between your WordPress installation and the robust Catcher24 cybersecurity platform.
+The **Catcher24 WP Connector** is a powerful, behind-the-scenes integration tool designed to bridge the gap between your WordPress installation and the robust Catcher24 cybersecurity platform.
 
 With cybersecurity threats constantly evolving, managing security purely within your WordPress admin dashboard is no longer enough. This plugin acts as a secure, lightweight conduit that allows the Catcher24 dashboard to:
 

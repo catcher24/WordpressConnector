@@ -1,4 +1,5 @@
 <?php
+defined( 'ABSPATH' ) || exit;
 /**
  * Catcher24\WordPress_Connector Routes
  *
@@ -46,7 +47,7 @@ Route::prefix(
 		$route->post( '/hub/public', '\Catcher24\WordPress_Connector\Controllers\Hub\Actions@public_negotiate' );
 
 		// Allow hooks to add more custom API routes.
-		do_action( 'c24_api', $route );
+		do_action( 'catcher24_wp_connector_api', $route );
 
 		// Secure all registered routes with manage_options capability
 		$route->auth( function () {

@@ -78,7 +78,7 @@ final class Catcher24_Wordpress_Connector {
 		);
 
 		wp_add_privacy_policy_content(
-			__( 'Catcher24 Wordpress Connector', 'catcher24-wordpress-connector' ),
+			__( 'Catcher24 WP Connector', 'catcher24-wordpress-connector' ),
 			$content
 		);
 	}
@@ -95,6 +95,6 @@ final class Catcher24_Wordpress_Connector {
 	 * @return void
 	 */
 	public function i18n() {
-		load_plugin_textdomain( 'catcher24-wordpress-connector', false, dirname( plugin_basename( __FILE__ ) ) . '/languages/' );
+		// WordPress 4.6+ automatically loads translations from the languages directory.
 	}
 }

@@ -1,4 +1,5 @@
 <?php
+defined( 'ABSPATH' ) || exit;
 
 namespace Catcher24\WordPress_Connector\Admin;
 

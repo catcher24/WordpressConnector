@@ -17,7 +17,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * @since 1.0.0
  */
-function c24_get_config( $config_file_name ) {
+function catcher24_wp_connector_get_config( $config_file_name ) {
 	$config_file_path = __DIR__ . '/../config/' . $config_file_name . '.php';
 	if ( file_exists( $config_file_path ) ) {
 		return require $config_file_path;

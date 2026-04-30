@@ -1,4 +1,5 @@
 <?php
+defined( 'ABSPATH' ) || exit;
 
 namespace Catcher24\WordPress_Connector\Controllers\Accounts;
 
@@ -18,13 +19,14 @@ class Actions {
   }
 
 	public function callback( WP_REST_Request $request ) {
-		$code  = $request->get_param( 'code' ) ?: ( $_GET['code'] ?? null );
-		$state = $request->get_param( 'state' ) ?: ( $_GET['state'] ?? null );
-		$error = $request->get_param( 'error' ) ?: ( $_GET['error'] ?? null );
-		$is_retry = ($request->get_param( 'retry' ) ?: ( $_GET['retry'] ?? null )) === '1';
+		$code     = $request->get_param( 'code' ) ?: ( isset( $_GET['code'] ) ? sanitize_text_field( wp_unslash( $_GET['code'] ) ) : null );
+		$state    = $request->get_param( 'state' ) ?: ( isset( $_GET['state'] ) ? sanitize_text_field( wp_unslash( $_GET['state'] ) ) : null );
+		$error    = $request->get_param( 'error' ) ?: ( isset( $_GET['error'] ) ? sanitize_text_field( wp_unslash( $_GET['error'] ) ) : null );
+		$is_retry = ( $request->get_param( 'retry' ) ?: ( isset( $_GET['retry'] ) ? sanitize_text_field( wp_unslash( $_GET['retry'] ) ) : null ) ) === '1';
 
 		if ( empty( $code ) && empty( $error ) ) {
-			parse_str( $_SERVER['QUERY_STRING'], $manual_params );
+			$query_string = isset( $_SERVER['QUERY_STRING'] ) ? sanitize_text_field( wp_unslash( $_SERVER['QUERY_STRING'] ) ) : '';
+			parse_str( $query_string, $manual_params );
 
 			$code  = $manual_params['code']  ?? null;
 			$state = $manual_params['state'] ?? null;
@@ -33,13 +35,13 @@ class Actions {
 
 		if ( $error === 'temporarily_unavailable' ) {
 			$login_page_url = admin_url( 'admin.php?page=catcher24-wordpress-connector#/dashboard' );
-			wp_redirect( $login_page_url );
+			wp_safe_redirect( $login_page_url );
 			exit;
 		}
 
 		if ( $error === 'temporarily_unavailable' || $error === 'login_required' || $error === 'interaction_required' ) {
 			$login_page_url = admin_url( 'admin.php?page=catcher24-wordpress-connector#/login' );
-			wp_redirect( $login_page_url );
+			wp_safe_redirect( $login_page_url );
 			exit;
 		}
 
@@ -55,7 +57,7 @@ class Actions {
 			Catcher24Client::handle_callback( $code, $state );
 
 			$react_app_url = admin_url( 'admin.php?page=catcher24-wordpress-connector#/dashboard' );
-			wp_redirect( $react_app_url );
+			wp_safe_redirect( $react_app_url );
 			exit;
 
 		} catch ( Exception $e ) {

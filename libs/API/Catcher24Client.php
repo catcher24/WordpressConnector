@@ -183,7 +183,7 @@ class Catcher24Client {
 		$response = wp_remote_request( $url, $args );
 
 		if ( is_wp_error( $response ) ) {
-			throw new Exception( $response->get_error_message() );
+			throw new Exception( esc_html( $response->get_error_message() ) );
 		}
 
 		$status_code = wp_remote_retrieve_response_code( $response );
