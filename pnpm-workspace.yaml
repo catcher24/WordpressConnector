@@ -1,2 +1,2 @@
 patchedDependencies:
-  '@kucrut/vite-for-wp': patches/@kucrut__vite-for-wp.patch
+  '@kucrut/vite-for-wp': patches/@kucrut-vite-for-wp.patch
