@@ -115,16 +115,16 @@ class Catcher24Client {
 			'expires'       => $token->getExpires(),
 		];
 
-		update_option( 'catcher24_saas_connection', $account_data );
+		update_option( CATCHER24_SETTING_SAAS_CONNECTION, $account_data );
 	}
 
 	public static function is_connected(): bool {
-		$account = get_option( 'catcher24_saas_connection' );
+		$account = get_option( CATCHER24_SETTING_SAAS_CONNECTION );
 		return ! empty( $account['access_token'] );
 	}
 
 	public static function disconnect(): void {
-		delete_option( 'catcher24_saas_connection' );
+		delete_option( CATCHER24_SETTING_SAAS_CONNECTION );
 	}
 
 	/**
@@ -132,7 +132,7 @@ class Catcher24Client {
 	 * Returns the token string if valid/refreshed, or null if unauthenticated/expired.
 	 */
 	public static function get_valid_token(): ?string {
-		$account = get_option('catcher24_saas_connection');
+		$account = get_option(CATCHER24_SETTING_SAAS_CONNECTION);
 
 		if (empty($account) || empty($account['access_token'])) {
 			return null;
@@ -160,7 +160,7 @@ class Catcher24Client {
 
 				update_option( CATCHER24_SETTING_SELECTED_TENANT, $tenant_id );
 
-				update_option('catcher24_saas_connection', $account);
+				update_option(CATCHER24_SETTING_SAAS_CONNECTION, $account);
 			} catch (Exception $e) {
 				self::disconnect();
 				// Set a flag indicating we should try a silent re-auth once
@@ -175,7 +175,7 @@ class Catcher24Client {
 	public static function get_user_info(): ?array {
 		self::get_valid_token();
 
-		$account = get_option( 'catcher24_saas_connection' );
+		$account = get_option( CATCHER24_SETTING_SAAS_CONNECTION );
 
 		if ( empty( $account ) ) {
 			return null;

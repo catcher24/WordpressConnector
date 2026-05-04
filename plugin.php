@@ -34,6 +34,7 @@ final class Catcher24_Connector {
 		define( 'CATCHER24_DASHBOARD_URL', 'https://dev.catcher24.net/' );
 		define( 'CATCHER24_AUTH_URL', 'https://auth.dev.catcher24.net' );
 		define( 'CATCHER24_API_GATEWAY_URL', 'https://wordpress-connector-api-gateway.dev.catcher24.net/' );
+		define( 'CATCHER24_SETTING_SAAS_CONNECTION', 'catcher24_saas_connection' );
 		define( 'CATCHER24_SETTING_SELECTED_TENANT', 'catcher24_selected_tenant' );
 		define( 'CATCHER24_SETTING_SELECTED_ORGANIZATION', 'catcher24_selected_organization' );
 		define( 'CATCHER24_SETTING_SELECTED_TARGET', 'catcher24_selected_target' );
@@ -63,7 +64,7 @@ final class Catcher24_Connector {
 
 	/**
 	 * Registers privacy policy content for the plugin.
-	 * 
+	 *
 	 * @since 1.0.0
 	 */
 	public function add_privacy_policy_content() {
