@@ -94,6 +94,18 @@ class Catcher24Client {
 			throw new Exception( 'Email not provided by identity provider.' );
 		}
 
+    $access_token = $token->getToken();
+
+    $token_parts = explode( '.', $access_token );
+    if ( count( $token_parts ) === 3 ) {
+      $payload = json_decode( base64_decode( str_replace( ['-', '_'], ['+', '/'], $token_parts[1] ) ), true );
+      $tenant_id = $payload['__tenant__'] ?? null;
+
+      if ( $tenant_id ) {
+        update_option( CATCHER24_SETTING_SELECTED_TENANT, $tenant_id );
+      }
+    }
+
 		$account_data = [
 			'email'         => $email,
 			'first_name'    => $user_data['given_name'] ?? '',
