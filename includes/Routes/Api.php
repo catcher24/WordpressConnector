@@ -22,7 +22,7 @@ Route::prefix(
 		$route->get( '/accounts/register', '\Catcher24\WordPress_Connector\Controllers\Accounts\Actions@register', false );
 		$route->get( '/accounts/callback', '\Catcher24\WordPress_Connector\Controllers\Accounts\Actions@callback', false );
 		$route->get( '/accounts/status', '\Catcher24\WordPress_Connector\Controllers\Accounts\Actions@status' );
-		$route->get( '/accounts/disconnect', '\Catcher24\WordPress_Connector\Controllers\Accounts\Actions@disconnect' );
+		$route->get( '/accounts/disconnect', '\Catcher24\WordPress_Connector\Controllers\Accounts\Actions@disconnect', false );
 		$route->post( '/accounts/disconnect', '\Catcher24\WordPress_Connector\Controllers\Accounts\Actions@disconnect' );
 
 		$route->get( '/organizations', '\Catcher24\WordPress_Connector\Controllers\Organizations\Actions@get_organizations' );
