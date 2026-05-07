@@ -13,7 +13,7 @@ if (el) {
     <PrimeReactProvider
       value={{
         unstyled: true,
-        appendTo: el,
+        appendTo: "self",
         pt: CustomTailwind,
         ptOptions: { mergeSections: true },
       }}>
