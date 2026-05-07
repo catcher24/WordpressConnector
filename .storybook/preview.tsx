@@ -28,13 +28,21 @@ const preview: Preview = {
   },
   decorators: [
     (Story) => (
-      <PrimeReactProvider value={{ unstyled: true, pt: CustomTailwind, ptOptions: { mergeSections: true } }}>
-        <div className="bg-white text-slate-800">
-          <BrowserRouter>
-            <Story />
-          </BrowserRouter>
-        </div>
-      </PrimeReactProvider>
+      <div id="catcher24Connector">
+        <PrimeReactProvider
+          value={{
+            unstyled: true,
+            appendTo: "self",
+            pt: CustomTailwind,
+            ptOptions: { mergeSections: true },
+          }}>
+          <div className="bg-white text-slate-800">
+            <BrowserRouter>
+              <Story />
+            </BrowserRouter>
+          </div>
+        </PrimeReactProvider>
+      </div>
     ),
   ],
 };

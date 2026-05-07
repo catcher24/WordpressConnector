@@ -10,7 +10,13 @@ import { CustomTailwind } from "./prime-config";
 const el = document.getElementById("catcher24Connector");
 if (el) {
   ReactDOM.createRoot(el).render(
-    <PrimeReactProvider value={{ unstyled: true, pt: CustomTailwind, ptOptions: { mergeSections: true } }}>
+    <PrimeReactProvider
+      value={{
+        unstyled: true,
+        appendTo: el,
+        pt: CustomTailwind,
+        ptOptions: { mergeSections: true },
+      }}>
       <React.StrictMode>
         <RouterProvider router={router} />
       </React.StrictMode>
