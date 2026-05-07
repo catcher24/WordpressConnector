@@ -56,7 +56,7 @@ final class Catcher24_Connector {
 
 		// Initialze core functionalities.
 		API::get_instance()->init();
-    Template::get_instance()->init();
+        Template::get_instance()->init();
 
 		add_action( 'init', array( $this, 'i18n' ) );
 		add_action( 'admin_init', array( $this, 'add_privacy_policy_content' ) );

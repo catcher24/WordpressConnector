@@ -58,46 +58,43 @@ class Actions {
 	/**
 	 * Create a new target via the SaaS API.
 	 */
-	public function create_target( \WP_REST_Request $request ) {
-		$body = json_decode( $request->get_body(), true );
-		if ( is_array( $body ) ) {
-			$body = $this->sanitize_array( $body );
-		} else {
-			$body = [];
-		}
+  public function create_target( \WP_REST_Request $request ) {
+    $body = json_decode( $request->get_body(), true );
+    $body = is_array( $body ) ? $this->sanitize_array( $body ) : [];
 
-		$response = Catcher24Client::proxy_request( 'POST', 'targets', $request->get_query_params(), $body, true, true );
+    // Apply object casting
+    $body = $this->force_empty_configs_to_objects( $body );
 
-		$resolved = Catcher24Client::resolve_proxy_response( $response, 201 );
+    $response = Catcher24Client::proxy_request( 'POST', 'targets', $request->get_query_params(), $body, true, true );
+    $resolved = Catcher24Client::resolve_proxy_response( $response, 201 );
 
-		if ( $resolved instanceof WP_REST_Response && $resolved->get_status() === 201 ) {
-			$data = $resolved->get_data();
-			if ( isset( $data->id ) ) {
-				update_option( CATCHER24_SETTING_SELECTED_TARGET, $data->id );
-			}
-		}
+    if ( $resolved instanceof \WP_REST_Response && $resolved->get_status() === 201 ) {
+      $data = $resolved->get_data();
+      if ( isset( $data->id ) ) {
+        update_option( CATCHER24_SETTING_SELECTED_TARGET, $data->id );
+      }
+    }
 
-		return $resolved;
-	}
+    return $resolved;
+  }
 
-	/**
-	 * Update an existing target via the SaaS API.
-	 */
-	public function update_target( \WP_REST_Request $request ) {
-		$target_id = sanitize_text_field( $request->get_param( 'targetId' ) );
-		if ( ! $target_id ) return new \WP_REST_Response( array( 'message' => 'Missing target context' ), 400 );
+  /**
+   * Update an existing target via the SaaS API.
+   */
+  public function update_target( \WP_REST_Request $request ) {
+    $target_id = sanitize_text_field( $request->get_param( 'targetId' ) );
+    if ( ! $target_id ) return new \WP_REST_Response( array( 'message' => 'Missing target context' ), 400 );
 
-		$body = json_decode( $request->get_body(), true );
-		if ( is_array( $body ) ) {
-			$body = $this->sanitize_array( $body );
-		} else {
-			$body = [];
-		}
+    $body = json_decode( $request->get_body(), true );
+    $body = is_array( $body ) ? $this->sanitize_array( $body ) : [];
 
-		$response = Catcher24Client::proxy_request( 'PUT', "targets/{$target_id}", $request->get_query_params(), $body, true, true );
+    // Apply object casting
+    $body = $this->force_empty_configs_to_objects( $body );
 
-		return Catcher24Client::resolve_proxy_response( $response );
-	}
+    $response = Catcher24Client::proxy_request( 'PUT', "targets/{$target_id}", $request->get_query_params(), $body, true, true );
+
+    return Catcher24Client::resolve_proxy_response( $response );
+  }
 
 	public function get_vulnerabilities( \WP_REST_Request $request ) {
 		$target_id = $request->get_param( 'targetId' );
@@ -168,4 +165,24 @@ class Actions {
 		$response = Catcher24Client::proxy_request( 'POST', "scans/{$scan_id}/cancel", $request->get_query_params(), $body, true, true, $target_id );
 		return Catcher24Client::resolve_proxy_response( $response );
 	}
+
+  /**
+   * Ensures specific nested keys are treated as JSON objects {} instead of arrays [].
+   */
+  private function force_empty_configs_to_objects( array $body ) {
+    if ( isset( $body['scannerConfigurations'] ) && is_array( $body['scannerConfigurations'] ) ) {
+      foreach ( $body['scannerConfigurations'] as &$config ) {
+        // Check 'configuration'
+        if ( isset( $config['configuration'] ) && empty( $config['configuration'] ) ) {
+          $config['configuration'] = (object) [];
+        }
+        // Check 'confidentialConfiguration'
+        if ( isset( $config['confidentialConfiguration'] ) && empty( $config['confidentialConfiguration'] ) ) {
+          $config['confidentialConfiguration'] = (object) [];
+        }
+      }
+      unset( $config );
+    }
+    return $body;
+  }
 }
