@@ -49,6 +49,9 @@ export default function DashboardPage() {
   const [collectorGroups, setCollectorGroups] = useState<CollectorGroupModel[]>([]);
   const [collectors, setCollectors] = useState<CollectorModel[]>([]);
 
+  const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const retryTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   const orgModel = useMemo(() => OrganizationModel.asOrganizationModel(organization), [organization]);
   const capabilities = useOrganizationCapabilities(orgModel);
 
@@ -96,9 +99,67 @@ export default function DashboardPage() {
   // -------------------------------------------------------------------------
   // Data fetching
   // -------------------------------------------------------------------------
-  const fetchDashboardData = useCallback(async () => {
+
+  const fetchEndpoint = useCallback(async (path: string, queryParams?: any) => {
+    const res = await apiFetch(getApiUrl(apiUrl, path, queryParams));
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return res.json();
+  }, [apiUrl]);
+
+  const fetchScansData = useCallback(async () => {
     if (!targetId) return;
-    try {
+
+    const results = await Promise.allSettled([
+      fetchEndpoint(`/targets/${targetId}/scans`, {
+        orderBy: "startedAt desc",
+        pageSize: 5,
+      }),
+      fetchEndpoint(`/targets/${targetId}/scans`, { filter: "endedAt=" }),
+    ]);
+
+    const [scansRes, activeScansRes] = results;
+
+    if (scansRes.status === "fulfilled") {
+      setRecentScans(scansRes.value.items || []);
+    }
+
+    if (activeScansRes.status === "fulfilled") {
+      setActiveScans(activeScansRes.value.items || []);
+    }
+  }, [targetId, fetchEndpoint]);
+
+  const fetchScansDebounced = useCallback(() => {
+    if (debounceTimer.current) clearTimeout(debounceTimer.current);
+    debounceTimer.current = setTimeout(() => {
+      fetchScansData();
+    }, 1500);
+  }, [fetchScansData]);
+
+  const fetchDashboardDataWithRetry = useCallback(
+    async (attempt = 1) => {
+      if (!targetId) return;
+
+      if (retryTimer.current) clearTimeout(retryTimer.current);
+
+      const results = await Promise.allSettled([
+        fetchEndpoint(`/targets/${targetId}`),
+        fetchEndpoint(`/targets/${targetId}/vulnerabilities`, {
+          pageSize: 500,
+          orderBy: "severity desc, occurrences desc, name",
+        }),
+        fetchEndpoint(`/targets/${targetId}/scans`, {
+          orderBy: "startedAt desc",
+          pageSize: 5,
+        }),
+        fetchEndpoint(`/targets/${targetId}/scans`, { filter: "endedAt=" }),
+        fetchEndpoint(`/targets/${targetId}/certificates`, { pageSize: 5 }),
+        fetchEndpoint(`/targets/${targetId}/rootDomains`, { pageSize: 5 }),
+        fetchEndpoint(`/targets/${targetId}/ports`, { pageSize: 50 }),
+        fetchEndpoint("/scanners"),
+        fetchEndpoint("/collectorGroups"),
+        fetchEndpoint("/collectors"),
+      ]);
+
       const [
         targetRes,
         vulnRes,
@@ -110,35 +171,41 @@ export default function DashboardPage() {
         scannersRes,
         collectorGroupsRes,
         collectorsRes,
-      ] = await Promise.all([
-        apiFetch(getApiUrl(apiUrl, `/targets/${targetId}`)).then((r) => r.json()),
-        apiFetch(getApiUrl(apiUrl, `/targets/${targetId}/vulnerabilities`, { pageSize: 500, orderBy: "severity desc, occurrences desc, name" })).then((r) => r.json()),
-        apiFetch(getApiUrl(apiUrl, `/targets/${targetId}/scans`, { orderBy: "startedAt desc", pageSize: 5 })).then((r) => r.json()),
-        apiFetch(getApiUrl(apiUrl, `/targets/${targetId}/scans`, { filter: "endedAt=" })).then((r) => r.json()),
-        apiFetch(getApiUrl(apiUrl, `/targets/${targetId}/certificates`, { pageSize: 5 })).then((r) => r.json()),
-        apiFetch(getApiUrl(apiUrl, `/targets/${targetId}/rootDomains`, { pageSize: 5 })).then((r) => r.json()),
-        apiFetch(getApiUrl(apiUrl, `/targets/${targetId}/ports`, { pageSize: 50 })).then((r) => r.json()),
-        apiFetch(getApiUrl(apiUrl, "/scanners")).then((r) => r.json()),
-        apiFetch(getApiUrl(apiUrl, "/collectorGroups")).then((r) => r.json()),
-        apiFetch(getApiUrl(apiUrl, "/collectors")).then((r) => r.json()),
-      ]);
+      ] = results;
 
-      setTarget(targetRes);
-      setVulnerabilities(vulnRes.items || []);
-      setRecentScans(scansRes.items || []);
-      setActiveScans(activeScansRes.items || []);
-      setCertificates(certsRes.items || []);
-      setTargetPorts(portsRes || []);
-      setRootDomains(domainsRes.items || []);
-      setScanners(scannersRes.items || []);
-      setCollectorGroups(collectorGroupsRes.items || []);
-      setCollectors(collectorsRes.items || []);
-    } catch (error) {
-      console.error("Failed to fetch dashboard data", error);
-    } finally {
+      if (targetRes.status === "fulfilled") setTarget(targetRes.value);
+      if (vulnRes.status === "fulfilled") setVulnerabilities(vulnRes.value.items || []);
+      if (scansRes.status === "fulfilled") setRecentScans(scansRes.value.items || []);
+      if (activeScansRes.status === "fulfilled") setActiveScans(activeScansRes.value.items || []);
+      if (certsRes.status === "fulfilled") setCertificates(certsRes.value.items || []);
+      if (domainsRes.status === "fulfilled") setRootDomains(domainsRes.value.items || []);
+      if (portsRes.status === "fulfilled") setTargetPorts(portsRes.value || []);
+      if (scannersRes.status === "fulfilled") setScanners(scannersRes.value.items || []);
+      if (collectorGroupsRes.status === "fulfilled") setCollectorGroups(collectorGroupsRes.value.items || []);
+      if (collectorsRes.status === "fulfilled") setCollectors(collectorsRes.value.items || []);
+
       setLoading(false);
-    }
-  }, [apiUrl, targetId]);
+
+      const hasErrors = results.some((r) => r.status === "rejected");
+
+      if (hasErrors) {
+        const delay = Math.min(attempt * 2000, 15000);
+        retryTimer.current = setTimeout(() => {
+          fetchDashboardDataWithRetry(attempt + 1);
+        }, delay);
+      }
+    },
+    [targetId, fetchEndpoint],
+  );
+
+  useEffect(() => {
+    fetchDashboardDataWithRetry(1);
+
+    return () => {
+      if (debounceTimer.current) clearTimeout(debounceTimer.current);
+      if (retryTimer.current) clearTimeout(retryTimer.current);
+    };
+  }, [fetchDashboardDataWithRetry]);
 
   const onStartScan = async () => {
     if (!targetId || scanners.length === 0) return;
@@ -150,7 +217,7 @@ export default function DashboardPage() {
       const res = await apiFetch(getApiUrl(apiUrl, `/targets/${targetId}/scanners/${scannerId}/start`), { method: "POST" });
       if (res.ok) {
         toast.current?.show({ severity: "success", summary: "Success", detail: "Scan started." });
-        fetchDashboardData();
+        fetchScansData();
       } else {
         toast.current?.show({ severity: "error", summary: "Error", detail: "Failed to start scan." });
       }
@@ -169,7 +236,7 @@ export default function DashboardPage() {
       const res = await apiFetch(getApiUrl(apiUrl, `/targets/${targetId}/scans/${scanId}/cancel`), { method: "POST" });
       if (res.ok) {
         toast.current?.show({ severity: "success", summary: "Success", detail: "Scan canceled." });
-        fetchDashboardData();
+        fetchScansData();
       } else {
         toast.current?.show({ severity: "error", summary: "Error", detail: "Failed to cancel scan." });
       }
@@ -179,10 +246,6 @@ export default function DashboardPage() {
       setIsCancelingScan(false);
     }
   };
-
-  useEffect(() => {
-    fetchDashboardData();
-  }, [fetchDashboardData]);
 
   // -------------------------------------------------------------------------
   // SignalR
@@ -210,12 +273,15 @@ export default function DashboardPage() {
           .withAutomaticReconnect()
           .build();
 
-        newConnection.on("ScanCreated", fetchDashboardData);
-        newConnection.on("ScanStarted", fetchDashboardData);
-        newConnection.on("ScanUpdated", fetchDashboardData);
-        newConnection.on("ScanCompleted", fetchDashboardData);
-        newConnection.on("ScanRunnerCompleted", fetchDashboardData);
-        newConnection.on("ScanFailed", fetchDashboardData);
+        newConnection.on("ScanCreated", fetchScansDebounced);
+        newConnection.on("ScanStarted", fetchScansDebounced);
+        newConnection.on("ScanUpdated", fetchScansDebounced);
+
+        newConnection.on("ScanCompleted", () => fetchDashboardDataWithRetry(10));
+        newConnection.on("ScanRunnerCompleted", () =>
+          fetchDashboardDataWithRetry(10),
+        );
+        newConnection.on("ScanFailed", () => fetchDashboardDataWithRetry(10));
 
         await newConnection.start();
       } catch (e) {
@@ -229,7 +295,7 @@ export default function DashboardPage() {
       isCancelled = true;
       if (newConnection) newConnection.stop();
     };
-  }, [apiUrl, targetId, fetchDashboardData]);
+  }, [apiUrl, targetId, fetchScansDebounced, fetchDashboardDataWithRetry]);
 
   // -------------------------------------------------------------------------
   // DNS grouping
