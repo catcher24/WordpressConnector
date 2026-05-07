@@ -56,7 +56,7 @@ export const RecentScansTable: React.FC<RecentScansTableProps> = ({
               className={`flex justify-between items-center text-xs py-1 ${
                 !isLast ? "border-b border-secondary-light" : ""
               }`}>
-              <span className="truncate mr-2 max-w-[150px]" title={name}>
+              <span className="truncate mr-2" title={name}>
                 {name}
               </span>
               <span className="bg-tertiary-light text-secondary-dark px-1.5 py-0.5 rounded text-[10px] font-medium border border-secondary-light uppercase">

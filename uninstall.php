@@ -12,13 +12,13 @@ if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
 
 require_once __DIR__ . '/vendor/autoload.php';
 
-$options_to_delete = [
+$catcher24_connector_options_to_delete = [
   'catcher24_saas_connection',
   'catcher24_selected_tenant',
   'catcher24_selected_organization',
   'catcher24_selected_target',
 ];
 
-foreach ( $options_to_delete as $option ) {
-  delete_option( $option );
+foreach ( $catcher24_connector_options_to_delete as $catcher24_connector_option ) {
+  delete_option( $catcher24_connector_option );
 }

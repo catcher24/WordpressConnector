@@ -2,6 +2,8 @@ import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 import { getSeverityColor, getSeverityLabel } from "../helpers";
 import { EmptyState } from "./EmptyState";
+import { Button } from "primereact/button";
+import React from "react";
 
 interface TopVulnerabilitiesTableProps {
   vulnerabilities: any[];
@@ -20,12 +22,14 @@ const renderSeverity = (rowData: any) => {
 };
 
 export const TopVulnerabilitiesTable: React.FC<TopVulnerabilitiesTableProps> = ({ vulnerabilities }) => {
+  const { dashboardUrl, organization } = catcher24Connector;
+
   if (!vulnerabilities || vulnerabilities.length === 0) {
     return (
-      <EmptyState 
-        icon="pi pi-check-circle" 
-        title="No vulnerabilities found" 
-        description="Great news! No recent vulnerabilities have been detected for this target." 
+      <EmptyState
+        icon="pi pi-check-circle"
+        title="No vulnerabilities found"
+        description="Great news! No recent vulnerabilities have been detected for this target."
       />
     );
   }
@@ -37,10 +41,37 @@ export const TopVulnerabilitiesTable: React.FC<TopVulnerabilitiesTableProps> = (
     </div>
   );
 
+  const rendedViewDetails = (rowData: any) => (
+    <Button
+      label="View details"
+      icon="pi pi-external-link"
+      size="small"
+      outlined
+      severity={"secondary"}
+      onClick={() => {
+        const baseUrl = dashboardUrl.replace(/\/$/, "");
+        window.open(
+          `${baseUrl}/org/${organization.identifier}/vulnerabilities/${rowData.id}`,
+          "_blank",
+        );
+      }}
+    />
+  );
+
   return (
-    <DataTable value={vulnerabilities} emptyMessage="No recent vulnerabilities found" stripedRows size="small" rows={5}>
+    <DataTable
+      value={vulnerabilities}
+      emptyMessage="No recent vulnerabilities found"
+      stripedRows
+      size="small"
+      rows={5}>
       <Column header="Vulnerability" body={renderNameWithSeverity} />
-      <Column field="occurrences" header="Occurrences" style={{ width: '120px' }} />
+      <Column
+        field="occurrences"
+        header="Occurrences"
+        style={{ width: "120px" }}
+      />
+      <Column header="" style={{ width: "150px" }} body={rendedViewDetails} />
     </DataTable>
   );
 };
