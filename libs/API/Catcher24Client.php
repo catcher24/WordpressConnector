@@ -138,36 +138,43 @@ class Catcher24Client {
 			return null;
 		}
 
-		if (time() >= ($account['expires'] - 60)) {
-			$provider = self::get_provider();
+    if (time() >= ($account['expires'] - 60)) {
+      $provider = self::get_provider();
 
-			try {
-				$new_token = $provider->getAccessToken('refresh_token', [
-					'refresh_token' => $account['refresh_token']
-				]);
+      try {
+        $new_token = $provider->getAccessToken('refresh_token', [
+          'refresh_token' => $account['refresh_token']
+        ]);
 
-				$account['access_token']  = $new_token->getToken();
-				$account['refresh_token'] = $new_token->getRefreshToken();
-				$account['expires']       = $new_token->getExpires();
+        $account['access_token']  = $new_token->getToken();
+        $account['expires']       = $new_token->getExpires();
 
-				$token_parts = explode( '.', $new_token );
-				if ( count( $token_parts ) !== 3 ) {
-					return null;
-				}
+        $new_refresh = $new_token->getRefreshToken();
+        if ( ! empty( $new_refresh ) ) {
+          $account['refresh_token'] = $new_refresh;
+        }
 
-				$payload = json_decode( base64_decode( $token_parts[1] ), true );
-				$tenant_id = $payload['__tenant__'] ?? null;
+        $token_string = $new_token->getToken();
+        $token_parts  = explode( '.', $token_string );
 
-				update_option( CATCHER24_SETTING_SELECTED_TENANT, $tenant_id );
+        if ( count( $token_parts ) === 3 ) {
+          $payload_base64 = str_replace( ['-', '_'], ['+', '/'], $token_parts[1] );
+          $payload        = json_decode( base64_decode( $payload_base64 ), true );
+          $tenant_id      = $payload['__tenant__'] ?? null;
 
-				update_option(CATCHER24_SETTING_SAAS_CONNECTION, $account);
-			} catch (Exception $e) {
-				self::disconnect();
-				// Set a flag indicating we should try a silent re-auth once
-				set_transient('catcher24_retry_silent_auth', get_current_user_id(), 30);
-				return null;
-			}
-		}
+          if ( $tenant_id ) {
+            update_option( CATCHER24_SETTING_SELECTED_TENANT, $tenant_id );
+          }
+        }
+
+        update_option(CATCHER24_SETTING_SAAS_CONNECTION, $account);
+
+      } catch (Exception $e) {
+        self::disconnect();
+        set_transient('catcher24_retry_silent_auth', get_current_user_id(), 30);
+        return null;
+      }
+    }
 
 		return $account['access_token'];
 	}
@@ -267,9 +274,13 @@ class Catcher24Client {
 
 		try {
 			return self::request( $method, $url, $body );
-		} catch ( Exception $e ) {
-			return new \WP_REST_Response( array( 'message' => $e->getMessage() ), 500 );
-		}
+    } catch ( Exception $e ) {
+      $message = $e->getMessage();
+
+      $status_code = str_contains( $message, 'Session expired' ) ? 401 : 500;
+
+      return new \WP_REST_Response( array( 'message' => $message ), $status_code );
+    }
 	}
 
 	public static function resolve_proxy_response( $response, $success_status = 200 ) {
