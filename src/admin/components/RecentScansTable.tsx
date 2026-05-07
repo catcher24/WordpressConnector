@@ -2,7 +2,7 @@ import React from "react";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 import { ScanModel, ScannerModel, CollectorGroupModel, CollectorModel } from "../models";
-import {formatDate, formatDuration} from "../helpers";
+import { formatDate, formatDuration, topologicalSortRunners } from "../helpers";
 
 interface RecentScansTableProps {
   recentScans: ScanModel[];
@@ -33,14 +33,16 @@ export const RecentScansTable: React.FC<RecentScansTableProps> = ({
 
   const renderCollectors = (scan: ScanModel) => {
     if (!scan.runners || scan.runners.length === 0) return <span className="text-secondary italic text-xs">None</span>;
+
+    const sortedRunners = topologicalSortRunners(scan.runners, collectorMap);
     return (
       <div className="flex flex-col gap-1 w-full min-w-[200px]">
-        {scan.runners.map((runner, idx) => {
+        {sortedRunners.map((runner, idx) => {
           const collector = collectorMap?.get(runner.collectorId);
           const specializationId = runner.collectorSpecializationId;
 
           const specialization = collector?.collectorSpecializations?.find(
-            (s: any) => s.id === specializationId
+            (s: any) => s.id === specializationId,
           );
 
           const name =
@@ -51,8 +53,9 @@ export const RecentScansTable: React.FC<RecentScansTableProps> = ({
           return (
             <div
               key={idx}
-              className={`flex justify-between items-center text-xs py-1 ${!isLast ? "border-b border-secondary-light" : ""}`}
-            >
+              className={`flex justify-between items-center text-xs py-1 ${
+                !isLast ? "border-b border-secondary-light" : ""
+              }`}>
               <span className="truncate mr-2 max-w-[150px]" title={name}>
                 {name}
               </span>

@@ -1,56 +1,45 @@
-export const topologicalSortRunners = <T extends { collectorId: string; configuration?: any }>(
-  items: T[],
-  collectors?: any[]
-): T[] => {
-  const collectorMap = new Map();
-  if (collectors && collectors.length > 0) {
-    collectors.forEach(c => collectorMap.set(c.id, c));
-  } else {
-    // Infer from runners
-    items.forEach(item => {
-      if (item.configuration) collectorMap.set(item.collectorId, item.configuration);
-    });
-  }
+import { CollectorModel, ScanRunnerModel } from "../models";
 
-  // Map collectorId to an array of items with that collectorId
-  const itemMap = new Map<string, T[]>();
-  for (const item of items) {
-    if (!itemMap.has(item.collectorId)) {
-      itemMap.set(item.collectorId, []);
+export const topologicalSortRunners = (
+  runners: ScanRunnerModel[],
+  collectorMap?: Map<string, CollectorModel>,
+): ScanRunnerModel[] => {
+  // 1. Corrected: Map collectorId to an array of runners to handle duplicates
+  const runnerMap = new Map<string, ScanRunnerModel[]>();
+  for (const runner of runners) {
+    if (!runnerMap.has(runner.collectorId)) {
+      runnerMap.set(runner.collectorId, []);
     }
-    itemMap.get(item.collectorId)!.push(item);
+    runnerMap.get(runner.collectorId)!.push(runner);
   }
 
-  const sorted: T[] = [];
-  const visited = new Set<string>(); // Tracks visited collectorIds (nodes in the dependency graph)
+  const sorted: ScanRunnerModel[] = [];
+  // Tracks visited collectorIds (the nodes in the dependency graph)
+  const visited = new Set<string>();
 
-  // Use a recursive function (DFS) to process dependencies
   const visit = (collectorId: string) => {
     if (visited.has(collectorId)) return;
     visited.add(collectorId);
 
-    const collector = collectorMap.get(collectorId);
+    const collector = collectorMap?.get(collectorId);
     if (collector && collector.dependsOn) {
       // Recursively visit all dependencies first
       for (const depId of collector.dependsOn) {
-        // Ensure the dependency is a collector we are sorting items for
-        if (itemMap.has(depId)) {
+        // Only visit dependencies that have runners in the current list
+        if (runnerMap.has(depId)) {
           visit(depId);
         }
       }
     }
 
-    // Add ALL items associated with this collectorId *after* its dependencies are added
-    const itemsForCollector = itemMap.get(collectorId);
-    if (itemsForCollector) {
-      for (const item of itemsForCollector) {
-        sorted.push(item);
-      }
+    const runnersForCollector = runnerMap.get(collectorId);
+    if (runnersForCollector) {
+      sorted.push(...runnersForCollector);
     }
   };
 
-  // Start the sort for every unique collectorId (to catch all independent chains)
-  for (const collectorId of itemMap.keys()) {
+  // Start the sort for every unique collectorId (node) that has runners
+  for (const collectorId of runnerMap.keys()) {
     visit(collectorId);
   }
 

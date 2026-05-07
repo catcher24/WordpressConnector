@@ -266,7 +266,10 @@ export default function DashboardPage() {
             targetPorts={targetPorts}
             onViewFullInsights={() => {
               const baseUrl = dashboardUrl.replace(/\/$/, "");
-              window.open(`${baseUrl}/org/${organization.identifier}/targets/${target.id}`, "_blank");
+              window.open(
+                `${baseUrl}/org/${organization.identifier}/targets/${target.id}`,
+                "_blank",
+              );
             }}
             isScanRunning={activeScans.length > 0}
             onStartScan={onStartScan}
@@ -283,12 +286,19 @@ export default function DashboardPage() {
                   <div className="flex justify-between items-center text-sm mb-2 text-blue-900 font-medium pb-2 border-b border-blue-100">
                     <div>
                       {/* Scanner name resolved via scannerId → collectorGroup.name */}
-                      <span className="font-bold mr-2 text-base">{getScannerName(scan)}</span>
-                      <span className="text-gray-500 text-xs">Started: {formatDate(scan.startedAt)}</span>
+                      <span className="font-bold mr-2 text-base">
+                        {getScannerName(scan)}
+                      </span>
+                      <span className="text-gray-500 text-xs">
+                        Started: {formatDate(scan.startedAt)}
+                      </span>
                     </div>
                   </div>
                   <div className="flex flex-col gap-1 flex-1">
-                    <TargetsScanProgressBar scan={scan} collectorMap={collectorMap} />
+                    <TargetsScanProgressBar
+                      scan={scan}
+                      collectorMap={collectorMap}
+                    />
                   </div>
                 </div>
               ))}
@@ -315,7 +325,9 @@ export default function DashboardPage() {
               groupedRecords={groupedDnsRecords}
               showFullDns={showFullDns}
               setShowFullDns={setShowFullDns}
-              isSubdomain={rootDomains.some((rd) => rd.value !== target?.hostname)}
+              isSubdomain={rootDomains.some(
+                (rd) => rd.value !== target?.hostname,
+              )}
               isExcluded={isDnsExcluded}
               onUpgrade={onUpgrade}
             />

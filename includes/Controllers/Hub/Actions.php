@@ -21,6 +21,7 @@ class Actions {
 				$query_params['organizationId'] = $organization_id;
 			}
 
+      // Get scoped access token that only allows for shortlived hub connection
 			$data = Catcher24Client::request( 'POST', rtrim( CATCHER24_API_GATEWAY_URL, '/' ) . '/signalr/authorization/ticket');
 
 			$query_params['access_token'] = is_object($data) ? ($data->ticket ?? null) : ($data['ticket'] ?? null);

@@ -38,19 +38,24 @@ interface TargetsScanProgressBarProps {
   collectorMap?: Map<string, CollectorModel>;
 }
 
-export const TargetsScanProgressBar = ({ scan, collectorMap }: TargetsScanProgressBarProps) => {
+export const TargetsScanProgressBar = ({
+  scan,
+  collectorMap,
+}: TargetsScanProgressBarProps) => {
   const meterItems = useMemo<MeterItem[]>(() => {
     if (!scan || !scan.runners) return [];
 
-    const activeRunners = scan.runners.filter((x: ScanRunnerModel) => !x.endedAt);
-    const sortedRunners = topologicalSortRunners(activeRunners);
+    const activeRunners = scan.runners.filter(
+      (x: ScanRunnerModel) => !x.endedAt,
+    );
+    const sortedRunners = topologicalSortRunners(activeRunners, collectorMap);
 
     return sortedRunners.map((scanRunner: ScanRunnerModel) => {
       const collector = collectorMap?.get(scanRunner.collectorId);
       const specializationId = scanRunner.collectorSpecializationId;
 
       const specialization = collector?.collectorSpecializations?.find(
-        (s: any) => s.id === specializationId
+        (s: any) => s.id === specializationId,
       );
 
       const name =
@@ -63,15 +68,21 @@ export const TargetsScanProgressBar = ({ scan, collectorMap }: TargetsScanProgre
         scanRunner.collectorStatus === CollectorStatus.Running;
       const baseProgression = isRunning && scanRunner.progression === 0 ? 1 : 0;
 
-      const statusLabel = typeof scanRunner.collectorStatus === 'string'
-        ? scanRunner.collectorStatus.charAt(0).toUpperCase() + scanRunner.collectorStatus.slice(1)
-        : scanRunner.collectorStatus;
+      const statusLabel =
+        typeof scanRunner.collectorStatus === "string"
+          ? scanRunner.collectorStatus.charAt(0).toUpperCase() +
+            scanRunner.collectorStatus.slice(1)
+          : scanRunner.collectorStatus;
 
       const label = `${name} - ${statusLabel}`;
 
       // Resolve timing: prefer CollectorModel data, fall back to configuration
-      const avgDuration = collector?.averageDuration ?? (scanRunner.configuration as any)?.averageDuration;
-      const timeoutDuration = collector?.timeoutDuration ?? (scanRunner.configuration as any)?.timeoutDuration;
+      const avgDuration =
+        collector?.averageDuration ??
+        (scanRunner.configuration as any)?.averageDuration;
+      const timeoutDuration =
+        collector?.timeoutDuration ??
+        (scanRunner.configuration as any)?.timeoutDuration;
 
       const meterItem: MeterItem = {
         label,
@@ -94,7 +105,8 @@ export const TargetsScanProgressBar = ({ scan, collectorMap }: TargetsScanProgre
   if (meterItems.length === 0) return null;
 
   const totalRunners = meterItems.length;
-  const percentValue = (progression: number) => `${Math.max(1, Math.round(progression / totalRunners))}%`;
+  const percentValue = (progression: number) =>
+    `${Math.max(1, Math.round(progression / totalRunners))}%`;
 
   return (
     <div className="mt-2 flex flex-col gap-2">
@@ -115,7 +127,11 @@ export const TargetsScanProgressBar = ({ scan, collectorMap }: TargetsScanProgre
             <span
               key={i}
               className="h-full border-r border-white border-opacity-50 last:border-0"
-              style={{ width: percentValue(item.value), backgroundColor: item.color, transition: "width 0.3s ease" }}
+              style={{
+                width: percentValue(item.value),
+                backgroundColor: item.color,
+                transition: "width 0.3s ease",
+              }}
               title={item.label}
             />
           );
@@ -128,15 +144,21 @@ export const TargetsScanProgressBar = ({ scan, collectorMap }: TargetsScanProgre
           <div key={i} className="flex gap-2 items-center text-sm min-w-max">
             <span
               className="w-3 h-3 rounded-full shrink-0"
-              style={{ backgroundColor: item.isStarting ? "#f0f0f0" : item.color }}
+              style={{
+                backgroundColor: item.isStarting ? "#f0f0f0" : item.color,
+              }}
             />
             <div className="flex flex-col">
-              <span className="font-semibold text-gray-700 text-xs">{item.label}</span>
+              <span className="font-semibold text-gray-700 text-xs">
+                {item.label}
+              </span>
               {item.isRunning && (
                 <span className="text-[10px] text-gray-500 font-medium whitespace-nowrap">
                   {Math.round(item.value)}%
-                  {item.averageDuration && ` | Average duration: ${item.averageDuration}`}
-                  {item.timeoutDuration && ` | Timeout: ${item.timeoutDuration}`}
+                  {item.averageDuration &&
+                    ` | Average duration: ${item.averageDuration}`}
+                  {item.timeoutDuration &&
+                    ` | Timeout: ${item.timeoutDuration}`}
                 </span>
               )}
             </div>
