@@ -38,7 +38,9 @@ class Catcher24Client
   {
     $provider = self::get_provider();
 
-    $options = [];
+    $options = [
+      'scope' => 'openid profile email phone roles web-origins organization-management-api_audience public-message-hub_audience vulnerability-management-api_audience wordpress-connector-api-gateway_audience'
+    ];
 
     if ($silent) {
       $options['prompt'] = 'none';
@@ -60,7 +62,9 @@ class Catcher24Client
   {
     $provider = self::get_provider();
 
-    $options = [];
+    $options = [
+      'scope' => 'openid profile email phone roles web-origins organization-management-api_audience public-message-hub_audience vulnerability-management-api_audience wordpress-connector-api-gateway_audience'
+    ];
 
     $authUrl = $provider->getAuthorizationUrl($options);
     $pkce = $provider->getPkceCode();
