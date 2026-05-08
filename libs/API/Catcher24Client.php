@@ -139,6 +139,21 @@ class Catcher24Client {
 		}
 
     if (time() >= ($account['expires'] - 60)) {
+      $lock_name = 'catcher24_token_refresh_lock';
+
+      if ( get_transient( $lock_name ) ) {
+        // Wait up to 5 seconds for the other process to finish refreshing
+        for ( $i = 0; $i < 5; $i++ ) {
+          sleep( 1 );
+          $account = get_option( CATCHER24_SETTING_SAAS_CONNECTION );
+          if ( ! empty( $account ) && time() < ( $account['expires'] - 60 ) ) {
+            return $account['access_token'];
+          }
+        }
+      }
+
+      set_transient( $lock_name, true, 15 );
+
       $provider = self::get_provider();
 
       try {
@@ -168,8 +183,10 @@ class Catcher24Client {
         }
 
         update_option(CATCHER24_SETTING_SAAS_CONNECTION, $account);
+        delete_transient( $lock_name );
 
       } catch (Exception $e) {
+        delete_transient( $lock_name );
         self::disconnect();
         set_transient('catcher24_retry_silent_auth', get_current_user_id(), 30);
         return null;
