@@ -18,7 +18,7 @@ interface NavigationItem {
 
 const navigation: NavigationItem[] = [
   { name: "Dashboard", href: "/dashboard", icon: Home },
-  { name: "Settings", href: "/settings", icon: SlidersHorizontal },
+/*  { name: "Settings", href: "/settings", icon: SlidersHorizontal },*/
 ];
 
 export default function ApplicationLayout({ children }: { children?: React.ReactNode }) {
@@ -123,25 +123,25 @@ export default function ApplicationLayout({ children }: { children?: React.React
       <footer className="p-8 border-t bg-background">
         <div className="container mx-auto flex justify-between items-center text-xs">
           <div className="flex gap-6">
-            <a 
-              href="https://catcher24.com/terms-and-conditions/" 
-              target="_blank" 
+            <a
+              href="https://catcher24.com/terms-and-conditions/"
+              target="_blank"
               rel="noopener noreferrer"
               className="text-secondary-dark hover:text-primary transition-colors font-medium"
             >
               Terms and Conditions
             </a>
-            <a 
-              href="https://catcher24.com/privacy-policy/" 
-              target="_blank" 
+            <a
+              href="https://catcher24.com/privacy-policy/"
+              target="_blank"
               rel="noopener noreferrer"
               className="text-secondary-dark hover:text-primary transition-colors font-medium"
             >
               Privacy Policy
             </a>
-            <a 
-              href="https://catcher24.com/contact/" 
-              target="_blank" 
+            <a
+              href="https://catcher24.com/contact/"
+              target="_blank"
               rel="noopener noreferrer"
               className="text-secondary-dark hover:text-primary transition-colors font-medium"
             >
