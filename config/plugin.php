@@ -8,15 +8,15 @@
 
 return array(
 
-	/*
-	|--------------------------------------------------------------------------
-	| Plugin Name
-	|--------------------------------------------------------------------------
-	|
-	| The name of your plugin. This name will be used throughout the plugin.
-	| It should be unique to your plugin.
-	|
-	*/
+  /*
+  |--------------------------------------------------------------------------
+  | Plugin Name
+  |--------------------------------------------------------------------------
+  |
+  | The name of your plugin. This name will be used throughout the plugin.
+  | It should be unique to your plugin.
+  |
+  */
 
-	'plugin_name' => 'Catcher24 Wordpress Connector',
+  'plugin_name' => 'Catcher24 Wordpress Connector',
 );

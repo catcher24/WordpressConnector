@@ -15,13 +15,13 @@
     "dev:server": "concurrently \"npm run dev\" \"npx @wp-playground/cli@3.1.0 start --blueprint=blueprint.json --xdebug \"",
     "build": "vite build -c vite.admin.config.js",
     "preview": "vite preview",
-    "format:check": "prettier --check catcher24-wordpress-connector",
-    "format:fix": "prettier --write catcher24-wordpress-connector",
+    "format:check": "prettier --check catcher24-connector",
+    "format:fix": "prettier --write catcher24-connector",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
     "release": "npm run build && grunt release",
     "change-text-domain": "grunt change-text-domain --force",
-    "i18n": "wp i18n make-pot . languages/catcher24-wordpress-connector.pot --domain=catcher24-wordpress-connector --exclude='*/js/*,build'"
+    "i18n": "wp i18n make-pot . languages/catcher24-connector.pot --domain=catcher24-connector --exclude='*/js/*,build'"
   },
   "devDependencies": {
     "@faker-js/faker": "^10.3.0",

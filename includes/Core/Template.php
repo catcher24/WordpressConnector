@@ -2,7 +2,7 @@
 
 namespace Catcher24\WordPress_Connector\Core;
 
-defined( 'ABSPATH' ) || exit;
+defined('ABSPATH') || exit;
 
 use Catcher24\WordPress_Connector\Traits\Base;
 
@@ -13,49 +13,54 @@ use Catcher24\WordPress_Connector\Traits\Base;
  *
  * @package Catcher24\WordPress_Connector\Core
  */
-class Template {
+class Template
+{
 
-	use Base;
+  use Base;
 
-	const FRONTEND_TEMPLATE      = 'frontend-template.php';
-	const FRONTEND_TEMPLATE_NAME = 'Catcher24\WordPress_Connector';
-	const FRONTEND_TEMPLATE_SLUG = 'catcher24-connector';
+  const FRONTEND_TEMPLATE = 'frontend-template.php';
+  const FRONTEND_TEMPLATE_NAME = 'Catcher24\WordPress_Connector';
+  const FRONTEND_TEMPLATE_SLUG = 'catcher24-connector';
 
-	/**
-	 * Initialize the class.
-	 *
-	 * @return void
-	 */
-	public function init() {
-		add_filter( 'theme_page_templates', array( $this, 'custom_template' ) );
-		add_filter( 'template_include', array( $this, 'load_custom_template' ) );
-	}
-	/**
-	 * Add custom template to theme.
-	 *
-	 * @param array $templates List of templates.
-	 * @return array
-	 */
-	public function custom_template( $templates ) {
-		$templates[ self::FRONTEND_TEMPLATE ] = self::FRONTEND_TEMPLATE_NAME;
-		return $templates;
-	}
+  /**
+   * Initialize the class.
+   *
+   * @return void
+   */
+  public function init()
+  {
+    add_filter('theme_page_templates', array($this, 'custom_template'));
+    add_filter('template_include', array($this, 'load_custom_template'));
+  }
+
+  /**
+   * Add custom template to theme.
+   *
+   * @param array $templates List of templates.
+   * @return array
+   */
+  public function custom_template($templates)
+  {
+    $templates[self::FRONTEND_TEMPLATE] = self::FRONTEND_TEMPLATE_NAME;
+    return $templates;
+  }
 
 
-	/**
-	 * Load custom template.
-	 *
-	 * @param string $template Template file.
-	 * @return string
-	 */
-	public function load_custom_template( $template ) {
-		if ( get_page_template_slug() === self::FRONTEND_TEMPLATE ) {
-			$template_file_dir = CATCHER24_DIR . 'views/templates/' . self::FRONTEND_TEMPLATE;
+  /**
+   * Load custom template.
+   *
+   * @param string $template Template file.
+   * @return string
+   */
+  public function load_custom_template($template)
+  {
+    if (get_page_template_slug() === self::FRONTEND_TEMPLATE) {
+      $template_file_dir = CATCHER24_DIR . 'views/templates/' . self::FRONTEND_TEMPLATE;
 
-			if ( file_exists( $template_file_dir ) ) {
-				return $template_file_dir;
-			}
-		}
-		return $template;
-	}
+      if (file_exists($template_file_dir)) {
+        return $template_file_dir;
+      }
+    }
+    return $template;
+  }
 }

@@ -50,6 +50,9 @@ export default function DashboardPage() {
   const [collectors, setCollectors] = useState<CollectorModel[]>([]);
 
   const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const dashboardDebounceTimer = useRef<ReturnType<typeof setTimeout> | null>(
+    null,
+  );
   const retryTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const orgModel = useMemo(() => OrganizationModel.asOrganizationModel(organization), [organization]);
@@ -198,11 +201,22 @@ export default function DashboardPage() {
     [targetId, fetchEndpoint],
   );
 
+  const fetchDashboardDebounced = useCallback(() => {
+    if (dashboardDebounceTimer.current)
+      clearTimeout(dashboardDebounceTimer.current);
+
+    dashboardDebounceTimer.current = setTimeout(() => {
+      fetchDashboardDataWithRetry(1);
+    }, 1500);
+  }, [fetchDashboardDataWithRetry]);
+
   useEffect(() => {
     fetchDashboardDataWithRetry(1);
 
     return () => {
       if (debounceTimer.current) clearTimeout(debounceTimer.current);
+      if (dashboardDebounceTimer.current)
+        clearTimeout(dashboardDebounceTimer.current);
       if (retryTimer.current) clearTimeout(retryTimer.current);
     };
   }, [fetchDashboardDataWithRetry]);
@@ -277,11 +291,9 @@ export default function DashboardPage() {
         newConnection.on("ScanStarted", fetchScansDebounced);
         newConnection.on("ScanUpdated", fetchScansDebounced);
 
-        newConnection.on("ScanCompleted", () => fetchDashboardDataWithRetry(10));
-        newConnection.on("ScanRunnerCompleted", () =>
-          fetchDashboardDataWithRetry(10),
-        );
-        newConnection.on("ScanFailed", () => fetchDashboardDataWithRetry(10));
+        newConnection.on("ScanCompleted", () => fetchDashboardDebounced);
+        newConnection.on("ScanRunnerCompleted", () => fetchDashboardDebounced);
+        newConnection.on("ScanFailed", () => fetchDashboardDebounced);
 
         await newConnection.start();
       } catch (e) {
@@ -295,7 +307,7 @@ export default function DashboardPage() {
       isCancelled = true;
       if (newConnection) newConnection.stop();
     };
-  }, [apiUrl, targetId, fetchScansDebounced, fetchDashboardDataWithRetry]);
+  }, [apiUrl, targetId, fetchScansDebounced, fetchDashboardDebounced]);
 
   // -------------------------------------------------------------------------
   // DNS grouping

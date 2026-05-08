@@ -6,8 +6,8 @@
  * @subpackage Database
  */
 
-if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
-	exit;
+if (!defined('WP_UNINSTALL_PLUGIN')) {
+  exit;
 }
 
 require_once __DIR__ . '/vendor/autoload.php';
@@ -19,6 +19,6 @@ $catcher24_connector_options_to_delete = [
   'catcher24_selected_target',
 ];
 
-foreach ( $catcher24_connector_options_to_delete as $catcher24_connector_option ) {
-  delete_option( $catcher24_connector_option );
+foreach ($catcher24_connector_options_to_delete as $catcher24_connector_option) {
+  delete_option($catcher24_connector_option);
 }

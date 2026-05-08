@@ -1,158 +1,164 @@
 <?php
+
 namespace Catcher24\WordPress_Connector\Libs\API;
 
+use Exception;
 use GuzzleHttp\Client;
 use League\OAuth2\Client\Provider\AbstractProvider;
-use Exception;
 
-class Catcher24Client {
+class Catcher24Client
+{
 
-  private static function get_keycloak_config(): array {
+  private static function get_keycloak_config(): array
+  {
     return [
-      'authServerUrl' => rtrim( CATCHER24_AUTH_URL, '/' ),
-      'realm'         => '3efa9fb5-41e4-4695-85c1-44d9dc256c0a',
-      'clientId'      => 'wordpress-connector',
-      'redirectUri'   => rest_url( rtrim( CATCHER24_ROUTE_PREFIX, '/' ) . '/accounts/callback' ),
-      'pkceMethod'    => AbstractProvider::PKCE_METHOD_S256,
+      'authServerUrl' => rtrim(CATCHER24_AUTH_URL, '/'),
+      'realm' => '3efa9fb5-41e4-4695-85c1-44d9dc256c0a',
+      'clientId' => 'wordpress-connector',
+      'redirectUri' => rest_url(rtrim(CATCHER24_ROUTE_PREFIX, '/') . '/accounts/callback'),
+      'pkceMethod' => AbstractProvider::PKCE_METHOD_S256,
     ];
   }
 
-	private static function get_provider() {
-		$config = self::get_keycloak_config();
-		$provider = new KeycloakPKCEProvider( $config );
+  private static function get_provider()
+  {
+    $config = self::get_keycloak_config();
+    $provider = new KeycloakPKCEProvider($config);
 
-		$httpClient = new Client([
-			'verify' => ABSPATH . WPINC . '/certificates/ca-bundle.crt',
-		]);
+    $httpClient = new Client([
+      'verify' => ABSPATH . WPINC . '/certificates/ca-bundle.crt',
+    ]);
 
-		$provider->setHttpClient( $httpClient );
+    $provider->setHttpClient($httpClient);
 
-		return $provider;
-	}
+    return $provider;
+  }
 
-	public static function generate_login_flow( bool $silent = false, ?string $kc_action = null ): string {
-		$provider = self::get_provider();
+  public static function generate_login_flow(bool $silent = false, ?string $kc_action = null): string
+  {
+    $provider = self::get_provider();
 
-		$options = [
-			'scope' => 'openid profile email'
-		];
+    $options = [];
 
-		if ( $silent ) {
-			$options['prompt'] = 'none';
-		}
+    if ($silent) {
+      $options['prompt'] = 'none';
+    }
 
-		if ( $kc_action ) {
-			$options['kc_action'] = $kc_action;
-		}
+    if ($kc_action) {
+      $options['kc_action'] = $kc_action;
+    }
 
-		$authUrl  = $provider->getAuthorizationUrl( $options );
-		$pkce     = $provider->getPkceCode();
+    $authUrl = $provider->getAuthorizationUrl($options);
+    $pkce = $provider->getPkceCode();
 
-		set_transient( 'oauth2_state_' . $provider->getState(), $pkce, 15 * MINUTE_IN_SECONDS );
+    set_transient('oauth2_state_' . $provider->getState(), $pkce, 15 * MINUTE_IN_SECONDS);
 
-		return $authUrl;
-	}
+    return $authUrl;
+  }
 
-	public static function generate_register_flow(): string {
-		$provider = self::get_provider();
+  public static function generate_register_flow(): string
+  {
+    $provider = self::get_provider();
 
-		$options = [
-			'scope' => 'openid profile email'
-		];
+    $options = [];
 
-		$authUrl  = $provider->getAuthorizationUrl( $options );
-		$pkce     = $provider->getPkceCode();
+    $authUrl = $provider->getAuthorizationUrl($options);
+    $pkce = $provider->getPkceCode();
 
-		$authUrl = str_replace( 'openid-connect/auth', 'openid-connect/registrations', $authUrl );
+    $authUrl = str_replace('openid-connect/auth', 'openid-connect/registrations', $authUrl);
 
-		set_transient( 'oauth2_state_' . $provider->getState(), $pkce, 15 * MINUTE_IN_SECONDS );
+    set_transient('oauth2_state_' . $provider->getState(), $pkce, 15 * MINUTE_IN_SECONDS);
 
-		return $authUrl;
-	}
+    return $authUrl;
+  }
 
-	public static function handle_callback( string $code, string $state ): void {
-		$saved_pkce = get_transient( 'oauth2_state_' . $state );
+  public static function handle_callback(string $code, string $state): void
+  {
+    $saved_pkce = get_transient('oauth2_state_' . $state);
 
-		if ( empty( $state ) || ! $saved_pkce ) {
-			throw new Exception( 'Invalid state or expired session.' );
-		}
+    if (empty($state) || !$saved_pkce) {
+      throw new Exception('Invalid state or expired session.');
+    }
 
-		delete_transient( 'oauth2_state_' . $state );
+    delete_transient('oauth2_state_' . $state);
 
-		$provider = self::get_provider();
-		$provider->setPkceCode( $saved_pkce );
+    $provider = self::get_provider();
+    $provider->setPkceCode($saved_pkce);
 
-		$token = $provider->getAccessToken( 'authorization_code', [
-			'code' => $code
-		] );
+    $token = $provider->getAccessToken('authorization_code', [
+      'code' => $code
+    ]);
 
-		$user      = $provider->getResourceOwner( $token );
-		$user_data = $user->toArray();
-		$email     = $user_data['email'] ?? null;
+    $user = $provider->getResourceOwner($token);
+    $user_data = $user->toArray();
+    $email = $user_data['email'] ?? null;
 
-		if ( ! $email ) {
-			throw new Exception( 'Email not provided by identity provider.' );
-		}
+    if (!$email) {
+      throw new Exception('Email not provided by identity provider.');
+    }
 
     $access_token = $token->getToken();
 
-    $token_parts = explode( '.', $access_token );
-    if ( count( $token_parts ) === 3 ) {
-      $payload = json_decode( base64_decode( str_replace( ['-', '_'], ['+', '/'], $token_parts[1] ) ), true );
+    $token_parts = explode('.', $access_token);
+    if (count($token_parts) === 3) {
+      $payload = json_decode(base64_decode(str_replace(['-', '_'], ['+', '/'], $token_parts[1])), true);
       $tenant_id = $payload['__tenant__'] ?? null;
 
-      if ( $tenant_id ) {
-        update_option( CATCHER24_SETTING_SELECTED_TENANT, $tenant_id );
+      if ($tenant_id) {
+        update_option(CATCHER24_SETTING_SELECTED_TENANT, $tenant_id);
       }
     }
 
-		$account_data = [
-			'email'         => $email,
-			'first_name'    => $user_data['given_name'] ?? '',
-			'last_name'     => $user_data['family_name'] ?? '',
-			'access_token'  => $token->getToken(),
-			'refresh_token' => $token->getRefreshToken(),
-			'expires'       => $token->getExpires(),
-		];
+    $account_data = [
+      'email' => $email,
+      'first_name' => $user_data['given_name'] ?? '',
+      'last_name' => $user_data['family_name'] ?? '',
+      'access_token' => $token->getToken(),
+      'refresh_token' => $token->getRefreshToken(),
+      'expires' => $token->getExpires(),
+    ];
 
-		update_option( CATCHER24_SETTING_SAAS_CONNECTION, $account_data );
-	}
+    update_option(CATCHER24_SETTING_SAAS_CONNECTION, $account_data);
+  }
 
-	public static function is_connected(): bool {
-		$account = get_option( CATCHER24_SETTING_SAAS_CONNECTION );
-		return ! empty( $account['access_token'] );
-	}
+  public static function is_connected(): bool
+  {
+    $account = get_option(CATCHER24_SETTING_SAAS_CONNECTION);
+    return !empty($account['access_token']);
+  }
 
-	public static function disconnect(): void {
-		delete_option( CATCHER24_SETTING_SAAS_CONNECTION );
-	}
+  public static function disconnect(): void
+  {
+    delete_option(CATCHER24_SETTING_SAAS_CONNECTION);
+  }
 
-	/**
-	 * Tries to get a valid access token.
-	 * Returns the token string if valid/refreshed, or null if unauthenticated/expired.
-	 */
-	public static function get_valid_token(): ?string {
-		$account = get_option(CATCHER24_SETTING_SAAS_CONNECTION);
+  /**
+   * Tries to get a valid access token.
+   * Returns the token string if valid/refreshed, or null if unauthenticated/expired.
+   */
+  public static function get_valid_token(): ?string
+  {
+    $account = get_option(CATCHER24_SETTING_SAAS_CONNECTION);
 
-		if (empty($account) || empty($account['access_token'])) {
-			return null;
-		}
+    if (empty($account) || empty($account['access_token'])) {
+      return null;
+    }
 
     if (time() >= ($account['expires'] - 60)) {
       $lock_name = 'catcher24_token_refresh_lock';
 
-      if ( get_transient( $lock_name ) ) {
+      if (get_transient($lock_name)) {
         // Wait up to 5 seconds for the other process to finish refreshing
-        for ( $i = 0; $i < 5; $i++ ) {
-          sleep( 1 );
-          $account = get_option( CATCHER24_SETTING_SAAS_CONNECTION );
-          if ( ! empty( $account ) && time() < ( $account['expires'] - 60 ) ) {
+        for ($i = 0; $i < 5; $i++) {
+          sleep(1);
+          $account = get_option(CATCHER24_SETTING_SAAS_CONNECTION);
+          if (!empty($account) && time() < ($account['expires'] - 60)) {
             return $account['access_token'];
           }
         }
       }
 
-      set_transient( $lock_name, true, 15 );
+      set_transient($lock_name, true, 15);
 
       $provider = self::get_provider();
 
@@ -161,172 +167,177 @@ class Catcher24Client {
           'refresh_token' => $account['refresh_token']
         ]);
 
-        $account['access_token']  = $new_token->getToken();
-        $account['expires']       = $new_token->getExpires();
+        $account['access_token'] = $new_token->getToken();
+        $account['expires'] = $new_token->getExpires();
 
         $new_refresh = $new_token->getRefreshToken();
-        if ( ! empty( $new_refresh ) ) {
+        if (!empty($new_refresh)) {
           $account['refresh_token'] = $new_refresh;
         }
 
         $token_string = $new_token->getToken();
-        $token_parts  = explode( '.', $token_string );
+        $token_parts = explode('.', $token_string);
 
-        if ( count( $token_parts ) === 3 ) {
-          $payload_base64 = str_replace( ['-', '_'], ['+', '/'], $token_parts[1] );
-          $payload        = json_decode( base64_decode( $payload_base64 ), true );
-          $tenant_id      = $payload['__tenant__'] ?? null;
+        if (count($token_parts) === 3) {
+          $payload_base64 = str_replace(['-', '_'], ['+', '/'], $token_parts[1]);
+          $payload = json_decode(base64_decode($payload_base64), true);
+          $tenant_id = $payload['__tenant__'] ?? null;
 
-          if ( $tenant_id ) {
-            update_option( CATCHER24_SETTING_SELECTED_TENANT, $tenant_id );
+          if ($tenant_id) {
+            update_option(CATCHER24_SETTING_SELECTED_TENANT, $tenant_id);
           }
         }
 
         update_option(CATCHER24_SETTING_SAAS_CONNECTION, $account);
-        delete_transient( $lock_name );
+        delete_transient($lock_name);
 
       } catch (Exception $e) {
-        delete_transient( $lock_name );
+        delete_transient($lock_name);
         self::disconnect();
         set_transient('catcher24_retry_silent_auth', get_current_user_id(), 30);
         return null;
       }
     }
 
-		return $account['access_token'];
-	}
+    return $account['access_token'];
+  }
 
-	public static function get_user_info(): ?array {
-		self::get_valid_token();
+  public static function get_user_info(): ?array
+  {
+    self::get_valid_token();
 
-		$account = get_option( CATCHER24_SETTING_SAAS_CONNECTION );
+    $account = get_option(CATCHER24_SETTING_SAAS_CONNECTION);
 
-		if ( empty( $account ) ) {
-			return null;
-		}
+    if (empty($account)) {
+      return null;
+    }
 
-		return array(
-			'email'      => $account['email'] ?? '',
-			'first_name' => $account['first_name'] ?? '',
-			'last_name'  => $account['last_name'] ?? '',
-		);
-	}
+    return array(
+      'email' => $account['email'] ?? '',
+      'first_name' => $account['first_name'] ?? '',
+      'last_name' => $account['last_name'] ?? '',
+    );
+  }
 
-	public static function request( string $method, string $endpoint, array|object $body = [] ) {
-		$token = self::get_valid_token();
+  public static function request(string $method, string $endpoint, array|object $body = [])
+  {
+    $token = self::get_valid_token();
 
-		if ( ! $token ) {
-			throw new Exception( 'Session expired. Please re-authenticate.' );
-		}
+    if (!$token) {
+      throw new Exception('Session expired. Please re-authenticate.');
+    }
 
-		$url = str_starts_with( $endpoint, 'http' )
-			? $endpoint
-			: rtrim( CATCHER24_API_GATEWAY_URL, '/' ) . '/' . ltrim( $endpoint, '/' );
+    $url = str_starts_with($endpoint, 'http')
+      ? $endpoint
+      : rtrim(CATCHER24_API_GATEWAY_URL, '/') . '/' . ltrim($endpoint, '/');
 
-		$args = [
-			'method'  => strtoupper( $method ),
-			'headers' => [
-				'Authorization' => 'Bearer ' . $token,
-				'Accept'        => 'application/json',
-				'Content-Type'        => 'application/json',
-			],
-			'timeout' => 15,
-		];
+    $args = [
+      'method' => strtoupper($method),
+      'headers' => [
+        'Authorization' => 'Bearer ' . $token,
+        'Accept' => 'application/json',
+        'Content-Type' => 'application/json',
+      ],
+      'timeout' => 15,
+    ];
 
-		if ( ! empty( $body ) ) {
-			$args['body']                    = wp_json_encode( $body );
-		}
+    if (!empty($body)) {
+      $args['body'] = wp_json_encode($body);
+    }
 
-		$response = wp_remote_request( $url, $args );
+    $response = wp_remote_request($url, $args);
 
-		if ( is_wp_error( $response ) ) {
-			throw new Exception( esc_html( $response->get_error_message() ) );
-		}
+    if (is_wp_error($response)) {
+      throw new Exception(esc_html($response->get_error_message()));
+    }
 
-		$status_code = wp_remote_retrieve_response_code( $response );
+    $status_code = wp_remote_retrieve_response_code($response);
 
-		if ( $status_code === 401 ) {
-			self::disconnect();
-			throw new Exception( 'Session expired. Please re-authenticate.' );
-		}
+    if ($status_code === 401) {
+      self::disconnect();
+      throw new Exception('Session expired. Please re-authenticate.');
+    }
 
-		$response_body = wp_remote_retrieve_body( $response );
+    $response_body = wp_remote_retrieve_body($response);
 
-		// 2. Remove 'true' to decode as objects
-		$decoded = json_decode( $response_body );
+    // 2. Remove 'true' to decode as objects
+    $decoded = json_decode($response_body);
 
-		return $decoded;
-	}
+    return $decoded;
+  }
 
-	public static function proxy_request( string $method, string $sub_path, array $query_params = [], array|object $body = [], bool $include_tenant = false, bool $include_org = false, ?string $target_id = null ) {
-    $tenant_id = get_option( CATCHER24_SETTING_SELECTED_TENANT );
-		$organization_id = get_option( CATCHER24_SETTING_SELECTED_ORGANIZATION );
+  public static function proxy_request(string $method, string $sub_path, array $query_params = [], array|object $body = [], bool $include_tenant = false, bool $include_org = false, ?string $target_id = null)
+  {
+    $tenant_id = get_option(CATCHER24_SETTING_SELECTED_TENANT);
+    $organization_id = get_option(CATCHER24_SETTING_SELECTED_ORGANIZATION);
 
-		if ( $include_tenant && ! $tenant_id ) {
-			return new \WP_REST_Response( array( 'message' => 'Missing tenant context' ), 400 );
-		}
+    if ($include_tenant && !$tenant_id) {
+      return new \WP_REST_Response(array('message' => 'Missing tenant context'), 400);
+    }
 
-		if ( $include_org && ! $organization_id ) {
-			return new \WP_REST_Response( array( 'message' => 'Missing organization context' ), 400 );
-		}
+    if ($include_org && !$organization_id) {
+      return new \WP_REST_Response(array('message' => 'Missing organization context'), 400);
+    }
 
-		$pathSegments = [];
-		if ( $include_tenant ) {
-			$pathSegments[] = "tenants/{$tenant_id}";
-		}
-		if ( $include_org ) {
-			$pathSegments[] = "organizations/{$organization_id}";
-		}
-		if ( $target_id ) {
-			$pathSegments[] = "targets/{$target_id}";
-		}
-		$pathSegments[] = ltrim( $sub_path, '/' );
+    $pathSegments = [];
+    if ($include_tenant) {
+      $pathSegments[] = "tenants/{$tenant_id}";
+    }
+    if ($include_org) {
+      $pathSegments[] = "organizations/{$organization_id}";
+    }
+    if ($target_id) {
+      $pathSegments[] = "targets/{$target_id}";
+    }
+    $pathSegments[] = ltrim($sub_path, '/');
 
-		$full_path = implode( '/', $pathSegments );
-		$endpoint = rtrim( CATCHER24_API_GATEWAY_URL, '/' ) .  "/api/{$full_path}";
+    $full_path = implode('/', $pathSegments);
+    $endpoint = rtrim(CATCHER24_API_GATEWAY_URL, '/') . "/api/{$full_path}";
 
-		$query_string = http_build_query($query_params);
+    $query_string = http_build_query($query_params);
 
-		$url = $endpoint . (str_contains($endpoint, '?') ? '&' : '?') . $query_string;
+    $url = $endpoint . (str_contains($endpoint, '?') ? '&' : '?') . $query_string;
 
-		try {
-			return self::request( $method, $url, $body );
-    } catch ( Exception $e ) {
+    try {
+      return self::request($method, $url, $body);
+    } catch (Exception $e) {
       $message = $e->getMessage();
 
-      $status_code = str_contains( $message, 'Session expired' ) ? 401 : 500;
+      $status_code = str_contains($message, 'Session expired') ? 401 : 500;
 
-      return new \WP_REST_Response( array( 'message' => $message ), $status_code );
+      return new \WP_REST_Response(array('message' => $message), $status_code);
     }
-	}
+  }
 
-	public static function resolve_proxy_response( $response, $success_status = 200 ) {
-		if ( is_wp_error( $response ) || $response instanceof \WP_REST_Response ) {
-			return $response;
-		}
+  public static function resolve_proxy_response($response, $success_status = 200)
+  {
+    if (is_wp_error($response) || $response instanceof \WP_REST_Response) {
+      return $response;
+    }
 
-		$status_code = null;
+    $status_code = null;
 
-		if ( is_object( $response ) && isset( $response->status ) ) {
-			$status_code = $response->status;
-		} elseif ( is_array( $response ) && isset( $response['status'] ) ) {
-			$status_code = $response['status'];
-		}
+    if (is_object($response) && isset($response->status)) {
+      $status_code = $response->status;
+    } elseif (is_array($response) && isset($response['status'])) {
+      $status_code = $response['status'];
+    }
 
-		if ( $status_code !== null && is_numeric( $status_code ) && $status_code >= 400 ) {
-			return new \WP_REST_Response( $response, (int) $status_code );
-		}
+    if ($status_code !== null && is_numeric($status_code) && $status_code >= 400) {
+      return new \WP_REST_Response($response, (int)$status_code);
+    }
 
-		return new \WP_REST_Response( $response, $success_status );
-	}
+    return new \WP_REST_Response($response, $success_status);
+  }
 
-	public static function get_logout_url(): string {
-		$config = self::get_keycloak_config();
-		$redirect_uri = admin_url( 'admin.php?page=catcher24-connector' );
+  public static function get_logout_url(): string
+  {
+    $config = self::get_keycloak_config();
+    $redirect_uri = admin_url('admin.php?page=catcher24-connector');
 
-		return add_query_arg( [
-			'client_id'                => $config['clientId'],
-			'post_logout_redirect_uri' => $redirect_uri,
-		], sprintf('%s/realms/%s/protocol/openid-connect/logout', rtrim($config['authServerUrl'], '/'), $config['realm']) );
-	}
+    return add_query_arg([
+      'client_id' => $config['clientId'],
+      'post_logout_redirect_uri' => $redirect_uri,
+    ], sprintf('%s/realms/%s/protocol/openid-connect/logout', rtrim($config['authServerUrl'], '/'), $config['realm']));
+  }
 }

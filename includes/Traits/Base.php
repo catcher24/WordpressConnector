@@ -9,25 +9,27 @@ namespace Catcher24\WordPress_Connector\Traits;
  *
  * @package Catcher24\WordPress_Connector\Trait
  */
-trait Base {
+trait Base
+{
 
-	/**
-	 * The singleton instance.
-	 *
-	 * @var mixed
-	 */
-	private static $instance;
+  /**
+   * The singleton instance.
+   *
+   * @var mixed
+   */
+  private static $instance;
 
-	/**
-	 * Retrieves the singleton instance. If it does not exist, creates a new instance.
-	 *
-	 * @return mixed The singleton instance.
-	 */
-	public static function get_instance() {
-		if ( ! self::$instance ) {
-			self::$instance = new self();
-		}
+  /**
+   * Retrieves the singleton instance. If it does not exist, creates a new instance.
+   *
+   * @return mixed The singleton instance.
+   */
+  public static function get_instance()
+  {
+    if (!self::$instance) {
+      self::$instance = new self();
+    }
 
-		return self::$instance;
-	}
+    return self::$instance;
+  }
 }

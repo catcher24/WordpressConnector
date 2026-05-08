@@ -8,18 +8,20 @@ use Catcher24\WordPress_Connector\Traits\Base;
  * This class is responsible for the functionality
  * which is required to set up after activating the plugin
  */
-class Install {
+class Install
+{
 
 
-	use Base;
+  use Base;
 
-	/**
-	 * Initialize the class
-	 *
-	 * @return void
-	 */
-	public function init() {
-	}
+  /**
+   * Initialize the class
+   *
+   * @return void
+   */
+  public function init()
+  {
+  }
 
 
 }
