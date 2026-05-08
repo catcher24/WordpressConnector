@@ -113,6 +113,9 @@ class Catcher24Client
       }
     }
 
+    $values = $token->getValues();
+    $id_token = $values['id_token'] ?? null;
+
     $account_data = [
       'email' => $email,
       'first_name' => $user_data['given_name'] ?? '',
@@ -120,6 +123,7 @@ class Catcher24Client
       'access_token' => $token->getToken(),
       'refresh_token' => $token->getRefreshToken(),
       'expires' => $token->getExpires(),
+      'id_token' => $id_token,
     ];
 
     update_option(CATCHER24_SETTING_SAAS_CONNECTION, $account_data);
@@ -148,58 +152,82 @@ class Catcher24Client
       return null;
     }
 
-    if (time() >= ($account['expires'] - 60)) {
+    $time_now = time();
+
+    if ($time_now >= ($account['expires'] - 60)) {
       $lock_name = 'catcher24_token_refresh_lock';
 
-      if (get_transient($lock_name)) {
-        // Wait up to 5 seconds for the other process to finish refreshing
-        for ($i = 0; $i < 5; $i++) {
-          sleep(1);
+      // Use add_option for a truly atomic database lock
+      $locked = add_option($lock_name, $time_now, '', 'no');
+
+      if (!$locked) {
+        $lock_time = get_option($lock_name);
+        // Clean up stale lock if it's older than 15 seconds
+        if ($time_now - (int)$lock_time > 15) {
+          delete_option($lock_name);
+          $locked = add_option($lock_name, $time_now, '', 'no');
+        }
+      }
+
+      if (!$locked) {
+        // Another process is already refreshing the token.
+        // If our token is still technically valid (within the 60s grace period),
+        // we return it immediately to avoid blocking PHP workers and causing 401s!
+        if ($time_now < $account['expires']) {
+          return $account['access_token'];
+        }
+
+        // Only block if strictly expired, and wait in smaller increments
+        for ($i = 0; $i < 10; $i++) {
+          usleep(500000); // Wait 0.5s instead of 1s (max 5s)
           $account = get_option(CATCHER24_SETTING_SAAS_CONNECTION);
           if (!empty($account) && time() < ($account['expires'] - 60)) {
             return $account['access_token'];
           }
         }
-      }
+      } else {
+        $provider = self::get_provider();
 
-      set_transient($lock_name, true, 15);
+        try {
+          $new_token = $provider->getAccessToken('refresh_token', [
+            'refresh_token' => $account['refresh_token']
+          ]);
 
-      $provider = self::get_provider();
+          $account['access_token'] = $new_token->getToken();
+          $account['expires'] = $new_token->getExpires();
 
-      try {
-        $new_token = $provider->getAccessToken('refresh_token', [
-          'refresh_token' => $account['refresh_token']
-        ]);
-
-        $account['access_token'] = $new_token->getToken();
-        $account['expires'] = $new_token->getExpires();
-
-        $new_refresh = $new_token->getRefreshToken();
-        if (!empty($new_refresh)) {
-          $account['refresh_token'] = $new_refresh;
-        }
-
-        $token_string = $new_token->getToken();
-        $token_parts = explode('.', $token_string);
-
-        if (count($token_parts) === 3) {
-          $payload_base64 = str_replace(['-', '_'], ['+', '/'], $token_parts[1]);
-          $payload = json_decode(base64_decode($payload_base64), true);
-          $tenant_id = $payload['__tenant__'] ?? null;
-
-          if ($tenant_id) {
-            update_option(CATCHER24_SETTING_SELECTED_TENANT, $tenant_id);
+          $new_refresh = $new_token->getRefreshToken();
+          if (!empty($new_refresh)) {
+            $account['refresh_token'] = $new_refresh;
           }
+
+          $values = $new_token->getValues();
+          if (!empty($values['id_token'])) {
+            $account['id_token'] = $values['id_token'];
+          }
+
+          $token_string = $new_token->getToken();
+          $token_parts = explode('.', $token_string);
+
+          if (count($token_parts) === 3) {
+            $payload_base64 = str_replace(['-', '_'], ['+', '/'], $token_parts[1]);
+            $payload = json_decode(base64_decode($payload_base64), true);
+            $tenant_id = $payload['__tenant__'] ?? null;
+
+            if ($tenant_id) {
+              update_option(CATCHER24_SETTING_SELECTED_TENANT, $tenant_id);
+            }
+          }
+
+          update_option(CATCHER24_SETTING_SAAS_CONNECTION, $account);
+          delete_option($lock_name);
+
+        } catch (Exception $e) {
+          delete_option($lock_name);
+          self::disconnect();
+          set_transient('catcher24_retry_silent_auth', get_current_user_id(), 30);
+          return null;
         }
-
-        update_option(CATCHER24_SETTING_SAAS_CONNECTION, $account);
-        delete_transient($lock_name);
-
-      } catch (Exception $e) {
-        delete_transient($lock_name);
-        self::disconnect();
-        set_transient('catcher24_retry_silent_auth', get_current_user_id(), 30);
-        return null;
       }
     }
 
@@ -338,10 +366,20 @@ class Catcher24Client
   {
     $config = self::get_keycloak_config();
     $redirect_uri = admin_url('admin.php?page=catcher24-connector');
+    $account = get_option(CATCHER24_SETTING_SAAS_CONNECTION);
 
-    return add_query_arg([
+    $params = [
       'client_id' => $config['clientId'],
       'post_logout_redirect_uri' => $redirect_uri,
-    ], sprintf('%s/realms/%s/protocol/openid-connect/logout', rtrim($config['authServerUrl'], '/'), $config['realm']));
+    ];
+
+    if (!empty($account['id_token'])) {
+      $params['id_token_hint'] = $account['id_token'];
+    }
+
+    return add_query_arg(
+      $params,
+      sprintf('%s/realms/%s/protocol/openid-connect/logout', rtrim($config['authServerUrl'], '/'), $config['realm'])
+    );
   }
 }

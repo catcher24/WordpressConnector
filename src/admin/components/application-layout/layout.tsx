@@ -1,6 +1,5 @@
 import {
   Home,
-  SlidersHorizontal,
   LucideIcon
 } from "lucide-react";
 import { useRef } from "react";
@@ -18,7 +17,7 @@ interface NavigationItem {
 
 const navigation: NavigationItem[] = [
   { name: "Dashboard", href: "/dashboard", icon: Home },
-/*  { name: "Settings", href: "/settings", icon: SlidersHorizontal },*/
+  /*  { name: "Settings", href: "/settings", icon: SlidersHorizontal },*/
 ];
 
 export default function ApplicationLayout({ children }: { children?: React.ReactNode }) {
@@ -89,30 +88,33 @@ export default function ApplicationLayout({ children }: { children?: React.React
             <div className="flex gap-2">
               <span className="tracking-wider text-muted-foreground font-bold">Organization:</span>
               <a href={`${baseUrl}/org/${organization.identifier}`} className="font-medium text-foreground">
-                 {organization.displayName || organization.name}
-               </a>
+                {organization.displayName || organization.name}
+              </a>
             </div>
           )}
 
-          <Menu
-            model={userMenuItems}
-            popup
-            ref={menuRight}
-            id="popup_menu_right"
-            popupAlignment="right"
-          />
+          <div className="relative flex">
+            <Menu
+              model={userMenuItems}
+              popup
+              ref={menuRight}
+              id="popup_menu_right"
+              popupAlignment="right"
+              pt={{ root: { className: '!right-0 !left-auto !top-full mt-1 origin-top-right min-w-max' } }}
+            />
 
-          <Button
-            outlined={true}
-            severity={"secondary"}
-            size={"small"}
-            className={'px-1'}
-            onClick={(event) => menuRight.current?.toggle(event)}
-          >
-                <span className="font-bold uppercase">
-                    {getInitials()}
-                </span>
-          </Button>
+            <Button
+              outlined={true}
+              severity={"secondary"}
+              size={"small"}
+              className={'px-1'}
+              onClick={(event) => menuRight.current?.toggle(event)}
+            >
+                  <span className="font-bold uppercase">
+                      {getInitials()}
+                  </span>
+            </Button>
+          </div>
         </div>
       </header>
 

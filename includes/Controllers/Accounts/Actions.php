@@ -12,6 +12,20 @@ use WP_REST_Response;
 class Actions
 {
 
+  private function safe_external_redirect(string $url): void
+  {
+    add_filter('allowed_redirect_hosts', function ($hosts) use ($url) {
+      $host = parse_url($url, PHP_URL_HOST);
+      if ($host && !in_array($host, $hosts)) {
+        $hosts[] = $host;
+      }
+      return $hosts;
+    });
+
+    wp_safe_redirect($url);
+    exit;
+  }
+
   public function signin(WP_REST_Request $request)
   {
     $authUrl = Catcher24Client::generate_login_flow();
@@ -86,8 +100,7 @@ class Actions
         // so we can detect it when the user comes back
         $retry_auth_url = add_query_arg('retry', '1', $retry_auth_url);
 
-        wp_safe_redirect($retry_auth_url);
-        exit;
+        $this->safe_external_redirect($retry_auth_url);
       }
 
       // If it still fails or it's a different error, show the message
@@ -108,7 +121,6 @@ class Actions
     // Clear local session first
     Catcher24Client::disconnect();
 
-    wp_safe_redirect($logout_url);
-    exit;
+    $this->safe_external_redirect($logout_url);
   }
 }
