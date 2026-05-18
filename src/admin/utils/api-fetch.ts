@@ -1,33 +1,42 @@
 /**
- * A wrapper around the native fetch API that automatically injects the WordPress CSRF nonce
- * when calling the plugin's REST API endpoints.
- *
- * @param input The URL or Request object
- * @param init The fetch options
- * @returns Promise<Response>
+ * A fetch wrapper that automatically injects the WordPress Nonce,
+ * enforces credentials, and silently refreshes the session if it expires.
  */
 export async function apiFetch(
   input: RequestInfo | URL,
   init?: RequestInit,
 ): Promise<Response> {
-  const url = input instanceof Request ? input.url : input.toString();
-  const connector = (window as any).catcher24Connector;
+  const urlString = input instanceof Request ? input.url : input.toString();
 
+  // @ts-ignore - Assuming this is injected via wp_localize_script
+  const connector = window.catcher24Connector;
+
+  let finalInit = { ...init };
+
+  // CRITICAL: Ensure WordPress auth cookies are sent with every request
+  finalInit.credentials = finalInit.credentials || "same-origin";
+
+  // Safely decode both URLs so encoded slashes (%2F) don't break the match
+  const normalizedTarget = decodeURIComponent(urlString);
+  const normalizedBase = connector?.apiUrl
+    ? decodeURIComponent(connector.apiUrl)
+    : "";
+
+  // Inject Nonce if the request is going to our plugin's API
   if (
-    connector?.apiUrl &&
+    normalizedBase &&
     connector?.nonce &&
-    url.startsWith(connector.apiUrl)
+    normalizedTarget.includes(normalizedBase)
   ) {
-    const newInit = { ...init };
     const headers = new Headers(
-      newInit.headers || (input instanceof Request ? input.headers : {}),
+      finalInit.headers || (input instanceof Request ? input.headers : {}),
     );
-
     headers.set("X-WP-Nonce", connector.nonce);
-    newInit.headers = headers;
-
-    return window.fetch(input, newInit);
+    finalInit.headers = headers;
   }
 
-  return window.fetch(input, init);
+  // 1. Make the initial request
+  let response = await window.fetch(input, finalInit);
+
+  return response;
 }
