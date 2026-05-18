@@ -13,10 +13,10 @@ class Catcher24Client
   {
     return [
       'authServerUrl' => rtrim(CATCHER24_AUTH_URL, '/'),
-      'realm'         => '3efa9fb5-41e4-4695-85c1-44d9dc256c0a',
-      'clientId'      => 'wordpress-connector',
-      'redirectUri'   => rest_url(rtrim(CATCHER24_ROUTE_PREFIX, '/') . '/accounts/callback'),
-      'pkceMethod'    => AbstractProvider::PKCE_METHOD_S256,
+      'realm' => '3efa9fb5-41e4-4695-85c1-44d9dc256c0a',
+      'clientId' => 'wordpress-connector',
+      'redirectUri' => rest_url(rtrim(CATCHER24_ROUTE_PREFIX, '/') . '/accounts/callback'),
+      'pkceMethod' => AbstractProvider::PKCE_METHOD_S256,
     ];
   }
 
@@ -117,13 +117,13 @@ class Catcher24Client
     $id_token = $values['id_token'] ?? null;
 
     $account_data = [
-      'email'         => $email,
-      'first_name'    => $user_data['given_name'] ?? '',
-      'last_name'     => $user_data['family_name'] ?? '',
-      'access_token'  => $token->getToken(),
+      'email' => $email,
+      'first_name' => $user_data['given_name'] ?? '',
+      'last_name' => $user_data['family_name'] ?? '',
+      'access_token' => $token->getToken(),
       'refresh_token' => $token->getRefreshToken(),
-      'expires'       => $token->getExpires(),
-      'id_token'      => $id_token,
+      'expires' => $token->getExpires(),
+      'id_token' => $id_token,
     ];
 
     update_option(CATCHER24_SETTING_SAAS_CONNECTION, $account_data);
@@ -138,9 +138,12 @@ class Catcher24Client
   public static function disconnect(): void
   {
     delete_option(CATCHER24_SETTING_SAAS_CONNECTION);
-    delete_option('catcher24_401_strikes');
   }
 
+  /**
+   * Tries to get a valid access token.
+   * Returns the token string if valid/refreshed, or null if unauthenticated/expired.
+   */
   public static function get_valid_token(): ?string
   {
     $account = get_option(CATCHER24_SETTING_SAAS_CONNECTION);
@@ -151,12 +154,15 @@ class Catcher24Client
 
     $time_now = time();
 
-    if ($time_now >= ($account['expires'] - 300)) {
+    if ($time_now >= ($account['expires'] - 60)) {
       $lock_name = 'catcher24_token_refresh_lock';
+
+      // Use add_option for a truly atomic database lock
       $locked = add_option($lock_name, $time_now, '', 'no');
 
       if (!$locked) {
         $lock_time = get_option($lock_name);
+        // Clean up stale lock if it's older than 15 seconds
         if ($time_now - (int)$lock_time > 15) {
           delete_option($lock_name);
           $locked = add_option($lock_name, $time_now, '', 'no');
@@ -164,13 +170,18 @@ class Catcher24Client
       }
 
       if (!$locked) {
+        // Another process is already refreshing the token.
+        // If our token is still technically valid (within the 60s grace period),
+        // we return it immediately to avoid blocking PHP workers and causing 401s!
+        if ($time_now < $account['expires']) {
+          return $account['access_token'];
+        }
+
+        // Only block if strictly expired, and wait in smaller increments
         for ($i = 0; $i < 10; $i++) {
-          usleep(500000);
-
-          wp_cache_delete(CATCHER24_SETTING_SAAS_CONNECTION, 'options');
+          usleep(500000); // Wait 0.5s instead of 1s (max 5s)
           $account = get_option(CATCHER24_SETTING_SAAS_CONNECTION);
-
-          if (!empty($account) && time() < ($account['expires'] - 300)) {
+          if (!empty($account) && time() < ($account['expires'] - 60)) {
             return $account['access_token'];
           }
         }
@@ -210,17 +221,17 @@ class Catcher24Client
 
           update_option(CATCHER24_SETTING_SAAS_CONNECTION, $account);
           delete_option($lock_name);
-          delete_option('catcher24_401_strikes');
 
         } catch (Exception $e) {
           delete_option($lock_name);
+          self::disconnect();
           set_transient('catcher24_retry_silent_auth', get_current_user_id(), 30);
           return null;
         }
       }
     }
 
-    return $account['access_token'] ?? null;
+    return $account['access_token'];
   }
 
   public static function get_user_info(): ?array
@@ -233,11 +244,11 @@ class Catcher24Client
       return null;
     }
 
-    return [
-      'email'      => $account['email'] ?? '',
+    return array(
+      'email' => $account['email'] ?? '',
       'first_name' => $account['first_name'] ?? '',
-      'last_name'  => $account['last_name'] ?? '',
-    ];
+      'last_name' => $account['last_name'] ?? '',
+    );
   }
 
   public static function request(string $method, string $endpoint, array|object $body = [])
@@ -253,11 +264,11 @@ class Catcher24Client
       : rtrim(CATCHER24_API_GATEWAY_URL, '/') . '/' . ltrim($endpoint, '/');
 
     $args = [
-      'method'  => strtoupper($method),
+      'method' => strtoupper($method),
       'headers' => [
         'Authorization' => 'Bearer ' . $token,
-        'Accept'        => 'application/json',
-        'Content-Type'  => 'application/json',
+        'Accept' => 'application/json',
+        'Content-Type' => 'application/json',
       ],
       'timeout' => 15,
     ];
@@ -275,27 +286,16 @@ class Catcher24Client
     $status_code = wp_remote_retrieve_response_code($response);
 
     if ($status_code === 401) {
-      $strikes = (int) get_option('catcher24_401_strikes', 0);
-      $strikes++;
-
-      if ($strikes >= 3) {
-        self::disconnect();
-        throw new Exception('Session completely expired. Please re-authenticate.');
-      }
-
-      update_option('catcher24_401_strikes', $strikes);
-      delete_option('catcher24_token_refresh_lock');
-
-      throw new Exception('API Request Unauthorized.');
-    }
-
-    if ($status_code < 400) {
-      delete_option('catcher24_401_strikes');
+      self::disconnect();
+      throw new Exception('Session completely expired. Please re-authenticate. Token: ' . $token);
     }
 
     $response_body = wp_remote_retrieve_body($response);
 
-    return json_decode($response_body);
+    // 2. Remove 'true' to decode as objects
+    $decoded = json_decode($response_body);
+
+    return $decoded;
   }
 
   public static function proxy_request(string $method, string $sub_path, array $query_params = [], array|object $body = [], bool $include_tenant = false, bool $include_org = false, ?string $target_id = null)
@@ -304,11 +304,11 @@ class Catcher24Client
     $organization_id = get_option(CATCHER24_SETTING_SELECTED_ORGANIZATION);
 
     if ($include_tenant && !$tenant_id) {
-      return new \WP_REST_Response(['message' => 'Missing tenant context'], 400);
+      return new \WP_REST_Response(array('message' => 'Missing tenant context'), 400);
     }
 
     if ($include_org && !$organization_id) {
-      return new \WP_REST_Response(['message' => 'Missing organization context'], 400);
+      return new \WP_REST_Response(array('message' => 'Missing organization context'), 400);
     }
 
     $pathSegments = [];
@@ -334,9 +334,10 @@ class Catcher24Client
       return self::request($method, $url, $body);
     } catch (Exception $e) {
       $message = $e->getMessage();
-      $status_code = str_contains($message, 'Unauthorized') || str_contains($message, 'Session completely expired') ? 401 : 500;
 
-      return new \WP_REST_Response(['message' => $message], $status_code);
+      $status_code = str_contains($message, 'Session expired') ? 401 : 500;
+
+      return new \WP_REST_Response(array('message' => $message), $status_code);
     }
   }
 
@@ -368,7 +369,7 @@ class Catcher24Client
     $account = get_option(CATCHER24_SETTING_SAAS_CONNECTION);
 
     $params = [
-      'client_id'                => $config['clientId'],
+      'client_id' => $config['clientId'],
       'post_logout_redirect_uri' => $redirect_uri,
     ];
 
