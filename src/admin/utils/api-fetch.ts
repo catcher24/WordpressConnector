@@ -6,25 +6,26 @@
  * @param init The fetch options
  * @returns Promise<Response>
  */
-export async function apiFetch(input: RequestInfo | URL, init?: RequestInit): Promise<Response> {
-  let url = '';
-  if (typeof input === 'string') {
-    url = input;
-  } else if (input instanceof URL) {
-    url = input.toString();
-  } else if (input instanceof Request) {
-    url = input.url;
-  }
+export async function apiFetch(
+  input: RequestInfo | URL,
+  init?: RequestInit,
+): Promise<Response> {
+  const url = input instanceof Request ? input.url : input.toString();
+  const connector = (window as any).catcher24Connector;
 
-  // @ts-ignore
-  const connector = window.catcher24Connector;
+  if (
+    connector?.apiUrl &&
+    connector?.nonce &&
+    url.startsWith(connector.apiUrl)
+  ) {
+    const newInit = { ...init };
+    const headers = new Headers(
+      newInit.headers || (input instanceof Request ? input.headers : {}),
+    );
 
-  if (connector && connector.apiUrl && url.startsWith(connector.apiUrl)) {
-    const newInit = init || {};
-    newInit.headers = {
-      ...newInit.headers,
-      'X-WP-Nonce': connector.nonce
-    };
+    headers.set("X-WP-Nonce", connector.nonce);
+    newInit.headers = headers;
+
     return window.fetch(input, newInit);
   }
 
