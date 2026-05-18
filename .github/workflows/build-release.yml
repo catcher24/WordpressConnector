@@ -87,9 +87,9 @@ jobs:
           echo "API Gateway URL: $API_URL"
 
           # Replace the constants in plugin.php
-          sed -i "s|define( 'CATCHER24_DASHBOARD_URL', '.*' );|define( 'CATCHER24_DASHBOARD_URL', '$DASH_URL' );|g" plugin.php
-          sed -i "s|define( 'CATCHER24_AUTH_URL', '.*' );|define( 'CATCHER24_AUTH_URL', '$AUTH_URL' );|g" plugin.php
-          sed -i "s|define( 'CATCHER24_API_GATEWAY_URL', '.*' );|define( 'CATCHER24_API_GATEWAY_URL', '$API_URL' );|g" plugin.php
+          sed -i "s|define *( *'CATCHER24_DASHBOARD_URL' *, *'.*' *);|define('CATCHER24_DASHBOARD_URL', '$DASH_URL');|g" plugin.php
+          sed -i "s|define *( *'CATCHER24_AUTH_URL' *, *'.*' *);|define('CATCHER24_AUTH_URL', '$AUTH_URL');|g" plugin.php
+          sed -i "s|define *( *'CATCHER24_API_GATEWAY_URL' *, *'.*' *);|define('CATCHER24_API_GATEWAY_URL', '$API_URL');|g" plugin.php
 
       - name: Build and Package (Grunt Release)
         run: pnpm run release
