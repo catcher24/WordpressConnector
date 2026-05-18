@@ -23,7 +23,14 @@ export function useOrganizationCapabilities(organization: OrganizationModel | nu
     if (!organization || !organization.isActive) {
       return {
         canAddTargetType: (_targetType: TargetType) => false,
-        isCollectorGroupAllowed: (_collectorGroupId: string, _targetType: TargetType) => false,
+        isCollectorGroupAllowed: (
+          _collectorGroupId: string,
+          _targetType: TargetType,
+        ) => false,
+        isCollectorExcluded: (
+          _collectorGroupId: string,
+          _targetType: TargetType,
+        ) => false,
         getTargetCapabilities: (_targetType: TargetType) => ({
           allowedCollectionMethods: [] as CollectorCollectionMethod[],
           allowedScheduleIntervals: [] as unknown as AllowedScheduleIntervals,
