@@ -20,7 +20,7 @@ export interface OrganizationCapabilities {
 
 export function useOrganizationCapabilities(organization: OrganizationModel | null): OrganizationCapabilities {
   return useMemo(() => {
-    if (!organization || !organization.isActive) {
+    if (!organization) {
       return {
         canAddTargetType: (_targetType: TargetType) => false,
         isCollectorGroupAllowed: (
@@ -55,9 +55,20 @@ export function useOrganizationCapabilities(organization: OrganizationModel | nu
       return canAddTargetType(targetType);
     };
 
-    const isCollectorExcluded = (collectorId: string, targetType: TargetType): boolean => {
-      const excludedIds = targetCapabilities.get(targetType)?.excludedCollectorIds;
-      return excludedIds?.includes(collectorId) || false;
+    const isCollectorExcluded = (
+      collectorId: string,
+      targetType: TargetType,
+    ): boolean => {
+      const excludedIds =
+        targetCapabilities.get(targetType)?.excludedCollectorIds;
+
+      const normalizedCollectorId = collectorId.toLowerCase();
+
+      const isExcluded =
+        excludedIds?.some((id) => id.toLowerCase() === normalizedCollectorId) ||
+        false;
+
+      return isExcluded;
     };
 
     const getTargetCapabilities = (targetType: TargetType) => {
