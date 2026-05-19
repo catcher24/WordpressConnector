@@ -69,7 +69,10 @@ export default function DashboardPage() {
 
   const onUpgrade = () => {
     const baseUrl = dashboardUrl.replace(/\/$/, "");
-    window.open(`${baseUrl}/org/${organization.identifier}/subscription`, "_blank");
+    window.open(
+      `${baseUrl}/org/${organization.identifier}/organization/subscription`,
+      "_blank",
+    );
   };
   const scannerMap = useMemo<Map<string, ScannerModel>>(
     () => new Map(scanners.map((s) => [s.id, s])),
