@@ -66,9 +66,12 @@ const distFiles = [
   "!phpstan.neon",
   "!markdown.md",
 
+  "!blueprint.json",
+
   // Build Tool Configs
   "!vite.frontend.config.js",
   "!vite.admin.config.js",
+  "!next.config.js",
   "!postcss.config.js",
   "!postcss.config.cjs",
   "!tailwind.config.js",
