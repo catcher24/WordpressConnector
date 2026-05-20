@@ -63,7 +63,6 @@ Absolutely. All communication between your WordPress site and the Catcher24 plat
 If you encounter any issues connecting your site to Catcher24 or running a scan, we are here to help.
 
 * **Documentation:** Visit our full documentation at [our help desk](https://help.catcher24.net/) for detailed setup guides and troubleshooting.
-* **Direct Support:** Active Catcher24 account holders can submit a secure support ticket directly through the Catcher24 cloud dashboard for priority assistance.
 
 == Privacy & Data Usage ==
 
