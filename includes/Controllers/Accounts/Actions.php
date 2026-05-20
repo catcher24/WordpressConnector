@@ -15,7 +15,7 @@ class Actions
   private function safe_external_redirect(string $url): void
   {
     add_filter('allowed_redirect_hosts', function ($hosts) use ($url) {
-      $host = parse_url($url, PHP_URL_HOST);
+      $host = wp_parse_url($url, PHP_URL_HOST);
       if ($host && !in_array($host, $hosts)) {
         $hosts[] = $host;
       }

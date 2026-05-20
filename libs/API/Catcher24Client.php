@@ -287,7 +287,7 @@ class Catcher24Client
 
     if ($status_code === 401) {
       self::disconnect();
-      throw new Exception('Session completely expired. Please re-authenticate. Token: ' . $token);
+      throw new Exception('Session completely expired. Please re-authenticate.');
     }
 
     $response_body = wp_remote_retrieve_body($response);
