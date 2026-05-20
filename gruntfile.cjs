@@ -60,9 +60,6 @@ const distFiles = [
   "!**/test/**",
   "!**/*.sh",
 
-  "!composer.json",
-  "!composer.lock",
-
   "!phpstan.neon",
   "!markdown.md",
 
