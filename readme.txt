@@ -25,6 +25,12 @@ Managing security purely within your WordPress admin dashboard drains server res
 
 **Note:** This plugin requires an active Catcher24 account. The plugin initiates the scans and fetches the results, while all actual scanning operations occur safely and efficiently on the Catcher24 cloud.
 
+== Pricing and Licensing ==
+
+The **Catcher24 Connector** plugin and all its integrated functionality are completely **free to use**.
+
+Upon registering for a Catcher24 account—available via email, password, or social login—you will automatically receive an account that includes **one free WordPress target slot**. This allows you to perform automated vulnerability scans and security analysis on your site with no additional costs for the connector or the core scanning services.
+
 == Installation ==
 
 1. Upload the plugin files to the `/wp-content/plugins/catcher24-connector` directory, or install the plugin through the WordPress 'Plugins' screen directly.

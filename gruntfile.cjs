@@ -32,8 +32,8 @@ const distFiles = [
   "!gruntfile.cjs",
   "!package.json",
   "!package-lock.json",
-  "!pnpm-lock.json",
-  "!pnpm-workspace.json",
+  "!pnpm-lock.yaml",
+  "!pnpm-workspace.yaml",
   "!readme.md",
   "!phpcs.xml.dist",
   "!phpunit.xml.dist",
@@ -53,7 +53,6 @@ const distFiles = [
   "!npm/**",
   "!src/**",
   "!yarn.lock",
-  "!postcss.config.js",
   "!components.json",
   "!js/dist/assets/**/*.js.map",
   "!assets/admin/dist/**/*.js.map",
@@ -61,13 +60,17 @@ const distFiles = [
   "!**/test/**",
   "!**/*.sh",
 
-  '!composer.json',
-  '!composer.lock',
+  "!composer.json",
+  "!composer.lock",
+
+  "!phpstan.neon",
+  "!markdown.md",
 
   // Build Tool Configs
   "!vite.frontend.config.js",
   "!vite.admin.config.js",
   "!postcss.config.js",
+  "!postcss.config.cjs",
   "!tailwind.config.js",
   "!tsconfig.json",
   "!eslint.config.js",
