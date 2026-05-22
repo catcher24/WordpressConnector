@@ -13,7 +13,7 @@ class Catcher24Client
   {
     return [
       'authServerUrl' => rtrim(CATCHER24_AUTH_URL, '/'),
-      'realm' => '3efa9fb5-41e4-4695-85c1-44d9dc256c0a',
+      'realm' => '3efa9fb5-41e4-4695-85c1-44d9dc256c0a', // Fine to be static, not secret and it will never change
       'clientId' => 'wordpress-connector',
       'redirectUri' => rest_url(rtrim(CATCHER24_ROUTE_PREFIX, '/') . '/accounts/callback'),
       'pkceMethod' => AbstractProvider::PKCE_METHOD_S256,
@@ -53,7 +53,7 @@ class Catcher24Client
     $authUrl = $provider->getAuthorizationUrl($options);
     $pkce = $provider->getPkceCode();
 
-    set_transient('oauth2_state_' . $provider->getState(), $pkce, 15 * MINUTE_IN_SECONDS);
+    set_transient(CATCHER24_TRANSIENT_OAUTH2_STATE_PREFIX . $provider->getState(), $pkce, 15 * MINUTE_IN_SECONDS);
 
     return $authUrl;
   }
@@ -71,20 +71,20 @@ class Catcher24Client
 
     $authUrl = str_replace('openid-connect/auth', 'openid-connect/registrations', $authUrl);
 
-    set_transient('oauth2_state_' . $provider->getState(), $pkce, 15 * MINUTE_IN_SECONDS);
+    set_transient(CATCHER24_TRANSIENT_OAUTH2_STATE_PREFIX . $provider->getState(), $pkce, 15 * MINUTE_IN_SECONDS);
 
     return $authUrl;
   }
 
   public static function handle_callback(string $code, string $state): void
   {
-    $saved_pkce = get_transient('oauth2_state_' . $state);
+    $saved_pkce = get_transient(CATCHER24_TRANSIENT_OAUTH2_STATE_PREFIX . $state);
 
     if (empty($state) || !$saved_pkce) {
       throw new Exception('Invalid state or expired session.');
     }
 
-    delete_transient('oauth2_state_' . $state);
+    delete_transient(CATCHER24_TRANSIENT_OAUTH2_STATE_PREFIX . $state);
 
     $provider = self::get_provider();
     $provider->setPkceCode($saved_pkce);
@@ -225,7 +225,7 @@ class Catcher24Client
         } catch (Exception $e) {
           delete_option($lock_name);
           self::disconnect();
-          set_transient('catcher24_retry_silent_auth', get_current_user_id(), 30);
+          set_transient(CATCHER24_TRANSIENT_RETRY_SILENT_AUTH, get_current_user_id(), 30);
           return null;
         }
       }
@@ -365,7 +365,7 @@ class Catcher24Client
   public static function get_logout_url(): string
   {
     $config = self::get_keycloak_config();
-    $redirect_uri = admin_url('admin.php?page=catcher24-connector');
+    $redirect_uri = admin_url('tools.php?page=catcher24-connector');
     $account = get_option(CATCHER24_SETTING_SAAS_CONNECTION);
 
     $params = [

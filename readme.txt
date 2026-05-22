@@ -1,5 +1,5 @@
 === Catcher24 Connector ===
-Contributors: catcher24
+Contributors: catcherdev, catcher24
 Tags: security, vulnerability scanner, cybersecurity, malware scanner, firewall
 Requires at least: 6.5
 Tested up to: 7.0
@@ -78,6 +78,26 @@ Transparency and data security are our top priorities. Because the Catcher24 Con
 * **On-Demand Execution:** Communication with the Catcher24 API only occurs when you explicitly initiate a scan from your WordPress dashboard, or when the plugin fetches the results of that scan.
 * **Scan Data:** During an active scan, the Catcher24 platform analyzes your site's public-facing endpoints and structural data (like plugin versions and core files) to identify vulnerabilities.
 * **Data Storage:** Scan results and vulnerability reports are stored securely in your Catcher24 cloud account.
+
+== External Services ==
+
+This plugin connects to the external Catcher24 platform (including its API gateway and Keycloak authentication service) to perform on-demand vulnerability scans and retrieve security reports for your site.
+
+* **Free Account Authentication:** The user signs into Catcher24 with a free account. During this process, standard user profile details (email, first name, last name) are authenticated securely.
+* **Target Registration:** Once signed in, the user is asked to create a target. The WordPress site's hostname and site name are prefilled for convenience.
+* **No Background Transmission:** No data is sent to the Catcher24 platform without the user explicitly clicking a button or initiating the connection process. No visitor data or continuous server metrics are ever tracked in the background.
+* **Real-time Synchronization:** When a target is selected, the plugin establishes a WebSocket connection to monitor changes for that target in the Catcher24 platform and automatically refresh the dashboard details.
+* **Service Provider:** Catcher24.
+* **Service Links:**
+    - Terms and Conditions: [https://catcher24.com/terms-and-conditions/](https://catcher24.com/terms-and-conditions/)
+    - Privacy Policy: [https://catcher24.com/privacy-policy/](https://catcher24.com/privacy-policy/)
+
+== Development ==
+
+The source code for this plugin is managed in a public GitHub repository. 
+You can view the development history, report issues, and access the raw 
+source files (including build scripts) here:
+[https://github.com/catcher24/WordpressConnector](https://github.com/catcher24/WordpressConnector)
 
 == Screenshots ==
 

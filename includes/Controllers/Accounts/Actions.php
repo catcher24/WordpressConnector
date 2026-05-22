@@ -63,13 +63,13 @@ class Actions
     // phpcs:enable WordPress.Security.NonceVerification.Recommended
 
     if ($error === 'temporarily_unavailable') {
-      $login_page_url = admin_url('admin.php?page=catcher24-connector#/dashboard');
+      $login_page_url = admin_url('tools.php?page=catcher24-connector#/dashboard');
       wp_safe_redirect($login_page_url);
       exit;
     }
 
     if ($error === 'temporarily_unavailable' || $error === 'login_required' || $error === 'interaction_required') {
-      $login_page_url = admin_url('admin.php?page=catcher24-connector#/login');
+      $login_page_url = admin_url('tools.php?page=catcher24-connector#/login');
       wp_safe_redirect($login_page_url);
       exit;
     }
@@ -85,7 +85,7 @@ class Actions
     try {
       Catcher24Client::handle_callback($code, $state);
 
-      $react_app_url = admin_url('admin.php?page=catcher24-connector#/dashboard');
+      $react_app_url = admin_url('tools.php?page=catcher24-connector#/dashboard');
       wp_safe_redirect($react_app_url);
       exit;
 

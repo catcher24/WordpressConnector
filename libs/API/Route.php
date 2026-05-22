@@ -329,7 +329,7 @@ class Route
   private static function prepare_callback($callback)
   {
     if (false === $callback) {
-      return '__return_false';
+      return '__return_true';
     }
 
     if (true === $callback) {

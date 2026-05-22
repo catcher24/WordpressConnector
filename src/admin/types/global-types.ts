@@ -14,4 +14,5 @@ declare const catcher24Connector: {
   } | null;
   siteName: string;
   siteHostname: string;
+  nonce: string;
 };

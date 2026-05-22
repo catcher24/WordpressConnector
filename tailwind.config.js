@@ -1,5 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 import colors from "tailwindcss/colors.js";
+import typography from "@tailwindcss/typography";
 
 /** @type {import('tailwindcss').Config} */
 export default {
@@ -9,7 +10,7 @@ export default {
     "./src/admin/**/*.{js,ts,jsx,tsx}",
     "./src/components/**/*.{js,ts,jsx,tsx}",
   ],
-  plugins: [require("@tailwindcss/typography")],
+  plugins: [typography],
   theme: {
     screens: {
       xs: "380px",

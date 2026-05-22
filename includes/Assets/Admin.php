@@ -43,7 +43,7 @@ class Admin
    * @var array
    */
   private $allowed_screens = array(
-    'toplevel_page_catcher24-connector',
+    'tools_page_catcher24-connector',
   );
 
   /**
@@ -69,8 +69,8 @@ class Admin
       return;
     }
 
-    if (!Catcher24Client::get_valid_token() && get_transient('catcher24_retry_silent_auth')) {
-      delete_transient('catcher24_retry_silent_auth');
+    if (!Catcher24Client::get_valid_token() && get_transient(CATCHER24_TRANSIENT_RETRY_SILENT_AUTH)) {
+      delete_transient(CATCHER24_TRANSIENT_RETRY_SILENT_AUTH);
 
       $auth_url = Catcher24Client::generate_login_flow(true);
       wp_safe_redirect($auth_url);
@@ -263,7 +263,7 @@ class Admin
    */
   private function is_target_valid(string $token, string $org_id, string $target_id): bool
   {
-    $transient_key = 'catcher24_target_valid_' . $target_id;
+    $transient_key = CATCHER24_TRANSIENT_TARGET_VALID_PREFIX . $target_id;
     /*		$cached = get_transient( $transient_key );
 
         if ( false !== $cached ) {
@@ -316,7 +316,7 @@ class Admin
    */
   private function get_current_organization_details(string $token, string $org_id)
   {
-    $transient_key = 'catcher24_org_data_' . $org_id;
+    $transient_key = CATCHER24_TRANSIENT_ORG_DATA_PREFIX . $org_id;
     $cached = get_transient($transient_key);
 
     if (false !== $cached) {

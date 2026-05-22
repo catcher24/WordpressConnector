@@ -41,6 +41,10 @@ final class Catcher24_Connector
     define('CATCHER24_SETTING_SELECTED_TENANT', 'catcher24_selected_tenant');
     define('CATCHER24_SETTING_SELECTED_ORGANIZATION', 'catcher24_selected_organization');
     define('CATCHER24_SETTING_SELECTED_TARGET', 'catcher24_selected_target');
+    define('CATCHER24_TRANSIENT_OAUTH2_STATE_PREFIX', 'catcher24_oauth2_state_');
+    define('CATCHER24_TRANSIENT_RETRY_SILENT_AUTH', 'catcher24_retry_silent_auth');
+    define('CATCHER24_TRANSIENT_TARGET_VALID_PREFIX', 'catcher24_target_valid_');
+    define('CATCHER24_TRANSIENT_ORG_DATA_PREFIX', 'catcher24_org_data_');
   }
 
   /**

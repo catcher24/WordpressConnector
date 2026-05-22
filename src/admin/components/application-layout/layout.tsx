@@ -37,7 +37,8 @@ export default function ApplicationLayout({ children }: { children?: React.React
           icon: 'pi pi-power-off',
           command: async () => {
             const cleanApiUrl = apiUrl ? apiUrl.replace(/\/+$/, "") : "";
-            window.location.href = `${cleanApiUrl}/accounts/disconnect`;
+            const nonce = catcher24Connector.nonce || "";
+            window.location.href = `${cleanApiUrl}/accounts/disconnect?_wpnonce=${encodeURIComponent(nonce)}`;
           }
         }
       ]
