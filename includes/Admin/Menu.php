@@ -51,7 +51,7 @@ class Menu
 
     $icon_url = 'data:image/svg+xml;base64,' . base64_encode($svg);
 
-    add_management_page(
+    add_menu_page(
       __('Catcher24', 'catcher24-connector'),
       __('Catcher24', 'catcher24-connector'),
       'manage_options',

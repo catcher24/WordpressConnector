@@ -43,7 +43,7 @@ class Admin
    * @var array
    */
   private $allowed_screens = array(
-    'tools_page_catcher24-connector',
+    'toplevel_page_catcher24-connector',
   );
 
   /**
