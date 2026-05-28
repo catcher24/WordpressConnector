@@ -1,7 +1,7 @@
 import { Button } from "primereact/button";
 import { Card } from "primereact/card";
 import { useState, useEffect } from "react";
-import { apiFetch, performSilentRefresh } from "../../utils/api-fetch";
+import { apiFetch } from "../../utils/api-fetch";
 import { useNavigate } from "react-router-dom";
 import Logo from "../../icons/Logo";
 
@@ -12,21 +12,45 @@ export default function LoginPage() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    let active = true;
+    // 1. Check if we already tried the silent redirect on this load to prevent loops
+    const silentChecked = sessionStorage.getItem("catcher24_silent_checked");
+    if (silentChecked === "1") {
+      sessionStorage.removeItem("catcher24_silent_checked");
+      setCheckingSession(false);
+      return;
+    }
+
     const checkSession = async () => {
-      const success = await performSilentRefresh();
-      if (!active) return;
-      // @ts-ignore
-      if (success && window.catcher24Connector?.userInfo) {
-        navigate("/dashboard", { replace: true });
-      } else {
-        setCheckingSession(false);
+      // Set the flag to prevent infinite loops before redirecting
+      sessionStorage.setItem("catcher24_silent_checked", "1");
+
+      try {
+        // @ts-ignore
+        const response = await window.fetch(`${catcher24Connector.apiUrl}/accounts/signin?silent=1`, {
+          headers: {
+            // @ts-ignore
+            "X-WP-Nonce": catcher24Connector.nonce || "",
+          },
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          if (data.redirect_url) {
+            // Perform top-level silent redirect to Keycloak (bypasses third-party cookie restrictions)
+            window.location.href = data.redirect_url;
+            return;
+          }
+        }
+      } catch (error) {
+        console.error("Top-level silent check failed", error);
       }
+      
+      // If signin request failed or returned no redirect URL, disable loader
+      sessionStorage.removeItem("catcher24_silent_checked");
+      setCheckingSession(false);
     };
+
     checkSession();
-    return () => {
-      active = false;
-    };
   }, [navigate]);
 
   const handleSignIn = async () => {
@@ -76,7 +100,7 @@ export default function LoginPage() {
         <div className="flex flex-col items-center gap-4 text-center p-8 bg-white rounded-xl border border-gray-200 shadow-sm max-w-sm w-full">
           <i className="pi pi-spin pi-spinner text-primary-500 text-3xl"></i>
           <div>
-            <h3 className="font-bold text-gray-900 text-lg">Checking secure session...</h3>
+            <h3 className="font-bold text-gray-900 text-lg">Checking for active session...</h3>
             <p className="text-sm text-gray-500 mt-1">Connecting to Catcher24 security gateway</p>
           </div>
         </div>
