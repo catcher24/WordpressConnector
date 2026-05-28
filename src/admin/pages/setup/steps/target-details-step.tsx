@@ -32,6 +32,13 @@ export default function TargetDetailsStep({
     address.includes("://localhost") ||
     address.includes("://127.0.0.1");
 
+  const cleanAddress = (value: string) => {
+    return value
+      .trim()
+      .replace(/^[a-zA-Z]+:\/\//, "")
+      .replace(/(:\d+|\/.*|\?.*)(?:\d+|\/.*|\?.*)?$/, "");
+  };
+
   const isInvalidAddress = formData.targetAddress ? isLocalhost(formData.targetAddress) : false;
 
   const targetAddressErrors = errors.TargetAddress || [];
@@ -63,6 +70,7 @@ export default function TargetDetailsStep({
             id="targetaddress"
             value={formData.targetAddress}
             onChange={(e) => updateForm({ targetAddress: e.target.value })}
+            onBlur={(e) => updateForm({ targetAddress: cleanAddress(e.target.value) })}
             placeholder="e.g. example.com or https://api.mysite.com"
             disabled={disabled}
             className={hasTargetAddressError ? "p-invalid w-full" : "w-full"}
