@@ -28,7 +28,8 @@ class Actions
 
   public function signin(WP_REST_Request $request)
   {
-    $authUrl = Catcher24Client::generate_login_flow();
+    $silent = $request->get_param('silent') === '1' || $request->get_param('silent') === 'true';
+    $authUrl = Catcher24Client::generate_login_flow($silent);
 
     return new WP_REST_Response([
       'redirect_url' => $authUrl
@@ -51,6 +52,7 @@ class Actions
     $state = $request->get_param('state') ?: (isset($_GET['state']) ? sanitize_text_field(wp_unslash($_GET['state'])) : null);
     $error = $request->get_param('error') ?: (isset($_GET['error']) ? sanitize_text_field(wp_unslash($_GET['error'])) : null);
     $is_retry = ($request->get_param('retry') ?: (isset($_GET['retry']) ? sanitize_text_field(wp_unslash($_GET['retry'])) : null)) === '1';
+    $is_silent = ($request->get_param('silent') ?: (isset($_GET['silent']) ? sanitize_text_field(wp_unslash($_GET['silent'])) : null)) === '1';
 
     if (empty($code) && empty($error)) {
       $query_string = isset($_SERVER['QUERY_STRING']) ? sanitize_text_field(wp_unslash($_SERVER['QUERY_STRING'])) : '';
@@ -61,6 +63,24 @@ class Actions
       $error = $manual_params['error'] ?? null;
     }
     // phpcs:enable WordPress.Security.NonceVerification.Recommended
+
+    if ($is_silent) {
+      status_header(200);
+      header('Content-Type: text/html; charset=utf-8');
+      if (!empty($error)) {
+        echo '<!DOCTYPE html><html><head><script>if(window.parent){window.parent.postMessage({type:"CATCHER24_AUTH_FAILURE",error:' . wp_json_encode($error) . '},"*");}</script></head><body>Auth failed.</body></html>';
+      } else if (empty($code)) {
+        echo '<!DOCTYPE html><html><head><script>if(window.parent){window.parent.postMessage({type:"CATCHER24_AUTH_FAILURE",error:"Authorization code missing."},"*");}</script></head><body>Auth failed.</body></html>';
+      } else {
+        try {
+          Catcher24Client::handle_callback($code, $state);
+          echo '<!DOCTYPE html><html><head><script>if(window.parent){window.parent.postMessage({type:"CATCHER24_AUTH_SUCCESS"},"*");}</script></head><body>Auth success.</body></html>';
+        } catch (Exception $e) {
+          echo '<!DOCTYPE html><html><head><script>if(window.parent){window.parent.postMessage({type:"CATCHER24_AUTH_FAILURE",error:' . wp_json_encode($e->getMessage()) . '},"*");}</script></head><body>Auth failed.</body></html>';
+        }
+      }
+      exit;
+    }
 
     if ($error === 'temporarily_unavailable') {
       $login_page_url = admin_url('tools.php?page=catcher24-connector#/dashboard');
@@ -112,6 +132,12 @@ class Actions
   {
     $is_connected = Catcher24Client::is_connected();
     return Messages::connection_status($is_connected);
+  }
+
+  public function info()
+  {
+    $admin = \Catcher24\WordPress_Connector\Assets\Admin::get_instance();
+    return new WP_REST_Response($admin->get_data(), 200);
   }
 
   public function disconnect()

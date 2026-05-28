@@ -1,16 +1,38 @@
 import { Button } from "primereact/button";
 import { Card } from "primereact/card";
-import { useState } from "react";
-import { apiFetch } from "../../utils/api-fetch";
+import { useState, useEffect } from "react";
+import { apiFetch, performSilentRefresh } from "../../utils/api-fetch";
+import { useNavigate } from "react-router-dom";
 import Logo from "../../icons/Logo";
 
 export default function LoginPage() {
   const [loadingSignIn, setLoadingSignIn] = useState(false);
   const [loadingRegister, setLoadingRegister] = useState(false);
+  const [checkingSession, setCheckingSession] = useState(true);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    let active = true;
+    const checkSession = async () => {
+      const success = await performSilentRefresh();
+      if (!active) return;
+      // @ts-ignore
+      if (success && window.catcher24Connector?.userInfo) {
+        navigate("/dashboard", { replace: true });
+      } else {
+        setCheckingSession(false);
+      }
+    };
+    checkSession();
+    return () => {
+      active = false;
+    };
+  }, [navigate]);
 
   const handleSignIn = async () => {
     setLoadingSignIn(true);
     try {
+      // @ts-ignore
       const response = await apiFetch(`${catcher24Connector.apiUrl}/accounts/signin`);
       const data = await response.json();
 
@@ -29,6 +51,7 @@ export default function LoginPage() {
   const handleRegister = async () => {
     setLoadingRegister(true);
     try {
+      // @ts-ignore
       const response = await apiFetch(`${catcher24Connector.apiUrl}/accounts/register`);
       const data = await response.json();
 
@@ -43,6 +66,23 @@ export default function LoginPage() {
       setLoadingRegister(false);
     }
   };
+
+  if (checkingSession) {
+    return (
+      <div className="flex flex-col min-h-[600px] py-12 w-full items-center justify-center bg-gray-50 border border-gray-200 rounded-xl">
+        <div className="mb-8 animate-pulse">
+          <Logo className="h-10 w-auto" />
+        </div>
+        <div className="flex flex-col items-center gap-4 text-center p-8 bg-white rounded-xl border border-gray-200 shadow-sm max-w-sm w-full">
+          <i className="pi pi-spin pi-spinner text-primary-500 text-3xl"></i>
+          <div>
+            <h3 className="font-bold text-gray-900 text-lg">Checking secure session...</h3>
+            <p className="text-sm text-gray-500 mt-1">Connecting to Catcher24 security gateway</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col min-h-[600px] py-12 w-full items-center justify-center bg-gray-50 border border-gray-200 rounded-xl">

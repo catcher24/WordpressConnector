@@ -20,9 +20,12 @@ class Catcher24Client
     ];
   }
 
-  private static function get_provider()
+  private static function get_provider(?string $redirect_uri = null)
   {
     $config = self::get_keycloak_config();
+    if ($redirect_uri !== null) {
+      $config['redirectUri'] = $redirect_uri;
+    }
     $provider = new KeycloakPKCEProvider($config);
 
     $httpClient = new Client([
@@ -36,7 +39,11 @@ class Catcher24Client
 
   public static function generate_login_flow(bool $silent = false, ?string $kc_action = null): string
   {
-    $provider = self::get_provider();
+    $redirect_uri = null;
+    if ($silent) {
+      $redirect_uri = add_query_arg('silent', '1', rest_url(rtrim(CATCHER24_ROUTE_PREFIX, '/') . '/accounts/callback'));
+    }
+    $provider = self::get_provider($redirect_uri);
 
     $options = [
       'scope' => 'openid profile email phone roles web-origins organization-management-api_audience public-message-hub_audience vulnerability-management-api_audience wordpress-connector-api-gateway_audience'
