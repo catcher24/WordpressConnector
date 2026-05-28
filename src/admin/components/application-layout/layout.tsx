@@ -9,6 +9,8 @@ import { MenuItem } from "primereact/menuitem";
 import { Outlet, useLocation, Link } from "react-router-dom";
 import Logo from "../../icons/Logo";
 
+import { getApiUrl } from "../../helpers";
+
 interface NavigationItem {
   name: string;
   href: string;
@@ -36,9 +38,9 @@ export default function ApplicationLayout({ children }: { children?: React.React
           label: 'Logout',
           icon: 'pi pi-power-off',
           command: async () => {
-            const cleanApiUrl = apiUrl ? apiUrl.replace(/\/+$/, "") : "";
             const nonce = catcher24Connector.nonce || "";
-            window.location.href = `${cleanApiUrl}/accounts/disconnect?_wpnonce=${encodeURIComponent(nonce)}`;
+            const disconnectUrl = getApiUrl(apiUrl, "/accounts/disconnect", { _wpnonce: nonce });
+            window.location.href = disconnectUrl;
           }
         }
       ]
