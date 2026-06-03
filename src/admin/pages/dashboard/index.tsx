@@ -286,7 +286,7 @@ export default function DashboardPage() {
             transport: HttpTransportType.WebSockets,
             withCredentials: true,
           })
-          .configureLogging(LogLevel.Warning)
+          .configureLogging(LogLevel.None)
           .withAutomaticReconnect()
           .build();
 
