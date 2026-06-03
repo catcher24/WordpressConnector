@@ -15,7 +15,9 @@ const renderSeverity = (rowData: any) => {
   const label = getSeverityLabel(severity);
 
   return (
-    <div className={`inline-flex items-center justify-center px-2 py-1 rounded text-[10px] font-bold ${ui.border} ${ui.light} ${ui.text} border`}>
+    // Added whitespace-nowrap here
+    <div
+      className={`inline-flex items-center justify-center px-2 py-1 rounded text-[10px] font-bold ${ui.border} ${ui.light} ${ui.text} border whitespace-nowrap`}>
       {label} {severity.toFixed(1)}
     </div>
   );

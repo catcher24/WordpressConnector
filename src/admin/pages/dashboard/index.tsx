@@ -293,10 +293,10 @@ export default function DashboardPage() {
         newConnection.on("ScanCreated", fetchScansDebounced);
         newConnection.on("ScanStarted", fetchScansDebounced);
         newConnection.on("ScanUpdated", fetchScansDebounced);
-
-        newConnection.on("ScanCompleted", () => fetchDashboardDebounced);
-        newConnection.on("ScanRunnerCompleted", () => fetchDashboardDebounced);
-        newConnection.on("ScanFailed", () => fetchDashboardDebounced);
+        newConnection.on("ScanRunnerUpdated", () => {});
+        newConnection.on("ScanCompleted", () => fetchDashboardDebounced());
+        newConnection.on("ScanRunnerCompleted", () => fetchDashboardDebounced());
+        newConnection.on("ScanFailed", () => fetchDashboardDebounced());
 
         await newConnection.start();
       } catch (e) {
