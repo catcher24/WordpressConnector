@@ -72,7 +72,7 @@
     "@tailwindcss/typography": "^0.5.19",
     "vite": "^4.5.0",
     "vite-plugin-external": "^4.0.1",
-    "vitest": "^0.34.6"
+    "vitest": "^4.1.8"
   },
   "dependencies": {
     "@headlessui/react": "^1.7.17",
