@@ -57,6 +57,7 @@ const distFiles = [
   "!js/dist/assets/**/*.js.map",
   "!assets/admin/dist/**/*.js.map",
   "!**/tests/**",
+  "!**/assets/screenshot-*.png",
   "!**/test/**",
   "!**/*.sh",
 
