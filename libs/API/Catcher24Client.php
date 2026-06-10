@@ -372,7 +372,7 @@ class Catcher24Client
   public static function get_logout_url(): string
   {
     $config = self::get_keycloak_config();
-    $redirect_uri = admin_url('tools.php?page=catcher24-connector');
+    $redirect_uri = admin_url('admin.php?page=catcher24-connector');
     $account = get_option(CATCHER24_SETTING_SAAS_CONNECTION);
 
     $params = [
