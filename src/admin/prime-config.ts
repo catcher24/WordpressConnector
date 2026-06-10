@@ -82,12 +82,12 @@ export const CustomTailwind: PrimeReactPTOptions = {
             props.severity === "danger"
         },
         {
-          "text-white bg-gray-500 border border-gray-500 hover:bg-gray-600 hover:border-gray-600 ":
+          "!text-white bg-gray-500 border border-gray-500 hover:bg-gray-600 hover:border-gray-600 ":
             props.severity === "secondary" &&
             !props.text &&
             !props.outlined &&
             !props.plain,
-          "text-white bg-success border border-success hover:bg-success-light hover:border-success-light ":
+          "!text-white bg-success border border-success hover:bg-success-light hover:border-success-light ":
             props.severity === "success" &&
             !props.text &&
             !props.outlined &&
@@ -368,7 +368,7 @@ export const CustomTailwind: PrimeReactPTOptions = {
     header: ({ props }: PanelPassThroughMethodOptions) => ({
         className: classNames(
             'flex items-center justify-between', // flex and alignments
-            'border border-gray-300 text-gray-700 rounded-tl-lg rounded-tr-lg', // borders and colors
+            'border border-gray-300 bg-white text-gray-700 rounded-tl-lg rounded-tr-lg', // borders and colors
             'dark:bg-gray-900 dark:border-blue-900/40 dark:text-white/80', // Dark mode
             { 'p-5': !props.toggleable, 'py-3 px-5': props.toggleable } // condition
         )
