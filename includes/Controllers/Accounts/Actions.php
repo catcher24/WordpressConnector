@@ -45,6 +45,26 @@ class Actions
     ], 200);
   }
 
+
+  /**
+   * Verify the OAuth state parameter before allowing route execution.
+   */
+  public function verify_oauth_state(WP_REST_Request $request): bool
+  {
+    $state = $request->get_param('state');
+    if (empty($state)) {
+      // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+      $state = isset($_GET['state']) ? sanitize_text_field(wp_unslash($_GET['state'])) : '';
+    }
+
+    if (empty($state)) {
+      return false;
+    }
+
+    $saved_pkce = get_transient(CATCHER24_TRANSIENT_OAUTH2_STATE_PREFIX . $state);
+    return !empty($saved_pkce);
+  }
+
   public function callback(WP_REST_Request $request)
   {
     // phpcs:disable WordPress.Security.NonceVerification.Recommended -- Accessing OAuth callback parameters, which are validated via state parameter rather than nonces

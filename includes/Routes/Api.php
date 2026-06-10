@@ -18,9 +18,13 @@ Route::prefix(
   function (Route $route) {
 
     // Define accounts API routes.
-    $route->get('/accounts/signin', '\Catcher24\WordPress_Connector\Controllers\Accounts\Actions@signin', false);
-    $route->get('/accounts/register', '\Catcher24\WordPress_Connector\Controllers\Accounts\Actions@register', false);
-    $route->get('/accounts/callback', '\Catcher24\WordPress_Connector\Controllers\Accounts\Actions@callback', false);
+    $route->get('/accounts/signin', '\Catcher24\WordPress_Connector\Controllers\Accounts\Actions@signin');
+    $route->get('/accounts/register', '\Catcher24\WordPress_Connector\Controllers\Accounts\Actions@register');
+    $route->get(
+      '/accounts/callback',
+      '\Catcher24\WordPress_Connector\Controllers\Accounts\Actions@callback',
+      '\Catcher24\WordPress_Connector\Controllers\Accounts\Actions@verify_oauth_state'
+    );
     $route->get('/accounts/status', '\Catcher24\WordPress_Connector\Controllers\Accounts\Actions@status');
     $route->get('/accounts/info', '\Catcher24\WordPress_Connector\Controllers\Accounts\Actions@info');
     $route->get('/accounts/disconnect', '\Catcher24\WordPress_Connector\Controllers\Accounts\Actions@disconnect');
