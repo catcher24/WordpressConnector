@@ -103,7 +103,7 @@ export default function ApplicationLayout({ children }: { children?: React.React
               ref={menuRight}
               id="popup_menu_right"
               popupAlignment="right"
-              pt={{ root: { className: '!right-0 !left-auto !top-full mt-1 origin-top-right min-w-max' } }}
+              pt={{ root: { className: '!right-0 !left-auto !top-full mt-1 origin-top-right min-w-max rounded-lg bg-white p-1' } }}
             />
 
             <Button
