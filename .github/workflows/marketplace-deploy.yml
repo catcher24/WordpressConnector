@@ -147,4 +147,5 @@ jobs:
           SVN_USERNAME: ${{ secrets.SVN_USERNAME }}
           SVN_PASSWORD: ${{ secrets.SVN_PASSWORD }}
           BUILD_DIR: release/catcher24-connector
+          SLUG: catcher24-connector
           DRY_RUN: ${{ inputs.dry_run }}
