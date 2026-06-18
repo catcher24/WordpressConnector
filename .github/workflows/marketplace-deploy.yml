@@ -1,4 +1,4 @@
-name: Build and Release Plugin
+name: Deploy plugin to marketplace
 
 on:
   workflow_dispatch:
