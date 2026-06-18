@@ -128,7 +128,9 @@ jobs:
       - name: Get Plugin Version
         if: inputs.environment == 'prod'
         id: pkg
-        run: echo "version=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
+        run: |
+          VERSION=$(grep -E -i "^Stable tag:" readme.txt | awk -F':' '{print $2}' | xargs)
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
 
       - name: Create Public GitHub Release
         if: inputs.environment == 'prod' && inputs.dry_run == false
@@ -149,3 +151,4 @@ jobs:
           BUILD_DIR: release/catcher24-connector
           SLUG: catcher24-connector
           DRY_RUN: ${{ inputs.dry_run }}
+          VERSION: ${{ steps.pkg.outputs.version }}
