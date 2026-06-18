@@ -116,7 +116,7 @@ source files (including build scripts) here:
 
 1. The secure setup wizard connecting your WordPress site to your Catcher24 organization.
 2. A vulnerability scan in progress, featuring real-time progress tracking.
-3. Vulnerabilities, CVEs and risk levels displayed directly inside your WordPress dashboard.
+3. Vulnerabilities and risk levels displayed directly inside your WordPress dashboard.
 
 == Changelog ==
 
