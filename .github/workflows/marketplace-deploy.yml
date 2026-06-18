@@ -1,0 +1,150 @@
+name: Build and Release Plugin
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to build'
+        required: true
+        default: 'prod'
+        type: choice
+        options:
+          - dev
+          - stg
+          - prod
+      dry_run:
+        description: 'Perform a dry run (no releases or deployments)'
+        required: true
+        default: true
+        type: boolean
+
+jobs:
+  validate:
+    name: Validate Code
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          tools: composer, phpstan, phpcs
+
+      - name: Install PHP Dependencies
+        run: composer install
+
+      - name: Check PHP Syntax (Lint)
+        run: |
+          find . -name "*.php" -not -path "./vendor/*" -not -path "./node_modules/*" -print0 | xargs -0 -n1 php -l
+
+      - name: Composer Audit (PHP Security)
+        run: composer audit
+
+      - name: WordPress Coding Standards
+        run: ./vendor/bin/phpcs --standard=phpcs.xml.dist .
+
+      - name: PHPStan Analysis
+        run: phpstan analyse -c phpstan.neon
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 10.30.0
+
+      - name: Install Node Dependencies
+        run: pnpm install
+
+      - name: pnpm Audit (Node Security)
+        run: pnpm audit --audit-level critical
+
+  build:
+    name: Build for ${{ inputs.environment }}
+    needs: validate
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          tools: composer
+
+      - name: Install PHP Dependencies (Production)
+        run: composer install --optimize-autoloader --no-dev
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 10.30.0
+
+      - name: Install Node Dependencies
+        run: pnpm install
+
+      - name: Configure Environment Constants
+        run: |
+          ENV="${{ inputs.environment }}"
+          if [ "$ENV" = "prod" ]; then
+            DASH_URL="https://dashboard.catcher24.net/"
+            AUTH_URL="https://auth.catcher24.net/"
+            API_URL="https://wordpress-connector-api-gateway.prod.catcher24.net/"
+          elif [ "$ENV" = "stg" ]; then
+            DASH_URL="https://stg.catcher24.net/"
+            AUTH_URL="https://auth.stg.catcher24.net/"
+            API_URL="https://wordpress-connector-api-gateway.stg.catcher24.net/"
+          else
+            DASH_URL="https://dev.catcher24.net/"
+            AUTH_URL="https://auth.dev.catcher24.net/"
+            API_URL="https://wordpress-connector-api-gateway.dev.catcher24.net/"
+          fi
+
+          sed -i "s|define *( *'CATCHER24_DASHBOARD_URL' *, *'.*' *);|define('CATCHER24_DASHBOARD_URL', '$DASH_URL');|g" plugin.php
+          sed -i "s|define *( *'CATCHER24_AUTH_URL' *, *'.*' *);|define('CATCHER24_AUTH_URL', '$AUTH_URL');|g" plugin.php
+          sed -i "s|define *( *'CATCHER24_API_GATEWAY_URL' *, *'.*' *);|define('CATCHER24_API_GATEWAY_URL', '$API_URL');|g" plugin.php
+
+      - name: Build and Package
+        run: pnpm run release
+
+      - name: Upload Build Artifact (Private)
+        uses: actions/upload-artifact@v4
+        with:
+          name: catcher24-connector${{ inputs.environment != 'prod' && format('-{0}', inputs.environment) || '' }}
+          path: release/catcher24-connector
+          retention-days: 14
+
+      - name: Get Plugin Version
+        if: inputs.environment == 'prod'
+        id: pkg
+        run: echo "version=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
+
+      - name: Create Public GitHub Release
+        if: inputs.environment == 'prod' && inputs.dry_run == false
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ steps.pkg.outputs.version }}
+          name: Release v${{ steps.pkg.outputs.version }}
+          files: |
+            release/catcher24-connector.zip
+            release/catcher24-connector-${{ steps.pkg.outputs.version }}.zip
+
+      - name: Deploy to WordPress.org SVN
+        if: inputs.environment == 'prod'
+        uses: 10up/action-wordpress-plugin-deploy@stable
+        env:
+          SVN_USERNAME: ${{ secrets.SVN_USERNAME }}
+          SVN_PASSWORD: ${{ secrets.SVN_PASSWORD }}
+          BUILD_DIR: release/catcher24-connector
+          DRY_RUN: ${{ inputs.dry_run }}
