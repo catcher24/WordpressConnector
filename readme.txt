@@ -1,6 +1,8 @@
-=== Catcher24 Connector ===
+=== Catcher24 Connector - Vulnerability Scanner ===
 Contributors: catcherdev, catcher24
-Tags: security, vulnerability scanner, cybersecurity, malware scanner, firewall
+Tags: security, vulnerability scanner, security audit, port scanner, cve
+Author URI: https://catcher.security
+Plugin URI: https://catcher.security
 Requires at least: 6.5
 Tested up to: 7.0
 Stable tag: 1.0.0
@@ -8,13 +10,20 @@ Requires PHP: 7.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Connect your WordPress site to Catcher24 for automated vulnerability scanning and security analysis with zero performance impact.
+Connect your WordPress site to Catcher24 for automated vulnerability scanning and security analysis with minimal performance impact.
 
 == Description ==
 
-The **Catcher24 Connector** is a secure, lightweight integration tool designed to bridge the gap between your WordPress installation and the Catcher24 cybersecurity platform.
+The **Catcher24 Vulnerability Scanner** provides an automated, enterprise-grade security audit for your WordPress installation. Designed for IT teams, developers, and security-conscious site owners, this lightweight connector bridges your WordPress environment with Catcher24's powerful external scanning infrastructure.
+Instead of running heavy, resource-intensive scans locally on your web server - which can slow down site performance and degrade the user experience - our plugin acts as a secure conduit. It triggers on-demand, cloud-based assessments to identify critical security flaws.
 
-Managing security purely within your WordPress admin dashboard drains server resources and limits your visibility. This plugin solves that by acting as a secure conduit, offloading the heavy lifting of security analysis entirely to the Catcher24 cloud infrastructure.
+**Core Capabilities:**
+
+* **Targeted CMS Vulnerability Detection:** Identifies vulnerable, outdated plugins, themes, and WordPress core versions using continuously updated threat intelligence templates.
+* **External Exposure Checks:** Performs a non-intrusive perimeter check to discover exposed services or database ports that should not be publicly accessible.
+* **Minimal-Impact Auditing:** Black-box scanning is performed entirely on Catcher24’s infrastructure, ensuring minimal performance impact on your WordPress host.
+* **Centralized Reporting:** View high-level scan results directly within your WordPress admin dashboard, with deep-dive technical reports and remediation steps available in the Catcher24 dashboard.
+
 
 **How It Works:**
 
@@ -29,7 +38,11 @@ Managing security purely within your WordPress admin dashboard drains server res
 
 The **Catcher24 Connector** plugin and all its integrated functionality are completely **free to use**.
 
-Upon registering for a Catcher24 account—available via email, password, or social login—you will automatically receive an account that includes **one free WordPress target slot**. This allows you to perform automated vulnerability scans and security analysis on your site with no additional costs for the connector or the core scanning services.
+Upon registering for a Catcher24 account—available via email, password, or social login—you automatically receive **one free WordPress target**, allowing a single WordPress site to be scanned at no cost.
+
+**Upgrade Path:**
+The plugin provides on-demand vulnerability scanning for new users. To unlock continuous scheduled scanning, DNS configuration auditing (SPF/DKIM/DMARC), and proactive SSL certificate monitoring, users can upgrade their target configuration within the Catcher24 dashboard.
+Note: The free WordPress target is an introductory tier. Existing Catcher24 SaaS users cannot add a free target via the plugin.
 
 == Installation ==
 
@@ -44,7 +57,7 @@ Upon registering for a Catcher24 account—available via email, password, or soc
 Yes. This plugin connects your WordPress site to the Catcher24 dashboard. You must have an active organization and available target slots in Catcher24 to utilize the scanning features.
 
 = Will this plugin slow down my site? =
-No. The Catcher24 Connector is built to be extremely lightweight. All resource-intensive tasks, such as vulnerability scanning and malware analysis, are processed remotely on the Catcher24 infrastructure. The plugin only communicates with our API to start a scan and pull the results, meaning zero impact on your server performance or page load speeds.
+No. The Catcher24 Connector is built to be extremely lightweight. All resource-intensive tasks, such as vulnerability scanning and security analysis, are processed remotely on the Catcher24 infrastructure. The plugin only communicates with our API to start a scan and pull the results, meaning minimal impact on your server performance or page load speeds.
 
 = Can I use this alongside other security plugins (like Wordfence or Sucuri)? =
 Yes. Catcher24 Connector acts as an external auditor for your overall security posture and generally plays well with on-site firewalls and other security plugins.
@@ -103,7 +116,7 @@ source files (including build scripts) here:
 
 1. The secure setup wizard connecting your WordPress site to your Catcher24 organization.
 2. A vulnerability scan in progress, featuring real-time progress tracking.
-3. The high-level scan results overview displayed directly inside your WordPress dashboard.
+3. Vulnerabilities, CVEs and risk levels displayed directly inside your WordPress dashboard.
 
 == Changelog ==
 
