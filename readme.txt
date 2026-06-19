@@ -1,5 +1,5 @@
 === Catcher24 Connector - Vulnerability Scanner ===
-Contributors: catcherdev, catcher24
+Contributors: catcherdev
 Tags: security, vulnerability scanner, security audit, port scanner, cve
 Author URI: https://catcher.security
 Plugin URI: https://catcher.security
