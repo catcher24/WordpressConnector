@@ -69,7 +69,9 @@ When Catcher24 identifies a vulnerability, you will receive an overview of the r
 Yes. During the active scanning process, the Catcher24 infrastructure evaluates every discoverable endpoint on your site to test for vulnerabilities. Because comment forms are endpoints, the scanner may submit test comments to ensure those inputs are secure. You will see these test comments in your moderation queue, which you can safely review and delete.
 
 = How do I disconnect my site? =
-You can disconnect the connection entirely at any time simply by deleting the plugin from your WordPress installation.
+You can disconnect your site at any time simply by deleting the plugin from your WordPress installation.
+
+**Please note:** Deleting the plugin only disconnects your website's integration. It does not delete your Catcher24 account or any of your target data on the Catcher platform.
 
 = How do I delete separate targets or my entire account? =
 Individual target slots can be managed and deleted directly inside your Catcher24 cloud dashboard. If you wish to close your entire account, you can also initiate full account deletion from the dashboard settings.
