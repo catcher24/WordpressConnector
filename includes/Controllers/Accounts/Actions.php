@@ -53,7 +53,7 @@ class Actions
   {
     $state = $request->get_param('state');
     if (empty($state)) {
-      // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+      // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Accessing OAuth callback parameters, which are validated via state parameter rather than nonces
       $state = isset($_GET['state']) ? sanitize_text_field(wp_unslash($_GET['state'])) : '';
     }
 

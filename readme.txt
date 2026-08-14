@@ -4,7 +4,7 @@ Tags: security, vulnerability scanner, security audit, port scanner, cve
 Author URI: https://catcher.security
 Plugin URI: https://catcher.security
 Requires at least: 6.5
-Tested up to: 7.0
+Tested up to: 7.1
 Stable tag: 1.0.0
 Requires PHP: 7.4
 License: GPLv2 or later
@@ -109,8 +109,8 @@ This plugin connects to the external Catcher24 platform (including its API gatew
 
 == Development ==
 
-The source code for this plugin is managed in a public GitHub repository. 
-You can view the development history, report issues, and access the raw 
+The source code for this plugin is managed in a public GitHub repository.
+You can view the development history, report issues, and access the raw
 source files (including build scripts) here:
 [https://github.com/catcher24/WordpressConnector](https://github.com/catcher24/WordpressConnector)
 
