@@ -15,4 +15,11 @@ declare const catcher24Connector: {
   siteName: string;
   siteHostname: string;
   nonce: string;
+  php2shell: {
+    phpVersion: string;
+    fixedVersion: string;
+    confirmUrl: string;
+    siteHealthUrl: string;
+    advisoryUrl: string;
+  } | null;
 };

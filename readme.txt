@@ -5,7 +5,7 @@ Author URI: https://catcher.security
 Plugin URI: https://catcher.security
 Requires at least: 6.5
 Tested up to: 7.1
-Stable tag: 1.0.0
+Stable tag: 1.1.0
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -122,6 +122,11 @@ source files (including build scripts) here:
 4. Monitor your SSL certificates and DNS records (Requires SaaS package upgrade).
 
 == Changelog ==
+
+= 1.1.0 =
+* Added a check for the critical PHP vulnerabilities CVE-2026-109618 and CVE-2026-109619 ("php2shell") to Tools > Site Health.
+* Added a warning on the Dashboard, Plugins, Updates and Catcher24 screens when the server runs an unpatched PHP version.
+* Added the option for administrators to mark the server as patched when their host backported the fix, and the `catcher24_php2shell_patched` filter for hosts.
 
 = 1.0.0 =
 * Initial release of the Catcher24 Connector.

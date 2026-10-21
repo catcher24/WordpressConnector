@@ -1,7 +1,7 @@
 {
     "plugin_name":"Catcher24 wordpress connector",
     "plugin_description":"A boilerplate for WordPress plugins.",
-    "plugin_version":"1.0.0",
+    "plugin_version":"1.1.0",
     "plugin_file_name":"catcher24-connector.php",
     "author_name":"Catcher24",
     "author_uri":"https://catcher24.com",

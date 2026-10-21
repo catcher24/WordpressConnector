@@ -17,6 +17,7 @@ $catcher24_connector_options_to_delete = [
   'catcher24_selected_tenant',
   'catcher24_selected_organization',
   'catcher24_selected_target',
+  'catcher24_php2shell_confirmed_patched',
 ];
 
 foreach ($catcher24_connector_options_to_delete as $catcher24_connector_option) {

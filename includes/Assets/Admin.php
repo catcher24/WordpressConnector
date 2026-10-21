@@ -5,6 +5,7 @@ namespace Catcher24\WordPress_Connector\Assets;
 
 defined('ABSPATH') || exit;
 
+use Catcher24\WordPress_Connector\Core\Php2Shell;
 use Catcher24\WordPress_Connector\Core\Template;
 use Catcher24\WordPress_Connector\Libs\API\Catcher24Client;
 use Catcher24\WordPress_Connector\Libs\Assets;
@@ -199,6 +200,30 @@ class Admin
       'siteName' => get_bloginfo('name'),
       'siteHostname' => wp_parse_url(home_url(), PHP_URL_HOST),
       'nonce' => wp_create_nonce('wp_rest'),
+      'php2shell' => $this->get_php2shell_data(),
+    );
+  }
+
+  /**
+   * Get the php2shell banner data, or null when no banner should be shown.
+   *
+   * @return array|null
+   */
+  private function get_php2shell_data(): ?array
+  {
+    $php2shell = Php2Shell::get_instance();
+    if (!$php2shell->should_show_banner()) {
+      return null;
+    }
+
+    $status = $php2shell->get_status();
+
+    return array(
+      'phpVersion' => $status['php_version'],
+      'fixedVersion' => $status['fixed_version'],
+      'confirmUrl' => $php2shell->get_confirm_url(),
+      'siteHealthUrl' => admin_url('site-health.php'),
+      'advisoryUrl' => Php2Shell::ADVISORY_URL,
     );
   }
 

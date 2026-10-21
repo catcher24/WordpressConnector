@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { apiFetch } from "../../utils/api-fetch";
 import { useNavigate } from "react-router-dom";
 import Logo from "../../icons/Logo";
+import { Php2ShellBanner } from "../../components/Php2ShellBanner";
 
 export default function LoginPage() {
   const [loadingSignIn, setLoadingSignIn] = useState(false);
@@ -112,6 +113,9 @@ export default function LoginPage() {
     <div className="flex flex-col min-h-[600px] py-12 w-full items-center justify-center bg-gray-50 border border-gray-200 rounded-xl">
       <div className="mb-8">
         <Logo className="h-10 w-auto" />
+      </div>
+      <div className="w-full max-w-4xl px-4">
+        <Php2ShellBanner />
       </div>
       <div className="w-full max-w-4xl grid grid-cols-1 md:grid-cols-2 gap-6 p-4">
 

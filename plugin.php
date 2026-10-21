@@ -1,8 +1,11 @@
 <?php
 
 use Catcher24\WordPress_Connector\Admin\Menu;
+use Catcher24\WordPress_Connector\Admin\Notices;
 use Catcher24\WordPress_Connector\Assets\Admin;
 use Catcher24\WordPress_Connector\Core\Api;
+use Catcher24\WordPress_Connector\Core\Php2Shell;
+use Catcher24\WordPress_Connector\Core\SiteHealth;
 use Catcher24\WordPress_Connector\Core\Template;
 use Catcher24\WordPress_Connector\Traits\Base;
 
@@ -28,7 +31,7 @@ final class Catcher24_Connector
    */
   public function __construct()
   {
-    define('CATCHER24_VERSION', '1.0.0');
+    define('CATCHER24_VERSION', '1.1.0');
     define('CATCHER24_PLUGIN_FILE', __FILE__);
     define('CATCHER24_DIR', plugin_dir_path(__FILE__));
     define('CATCHER24_URL', plugin_dir_url(__FILE__));
@@ -59,12 +62,15 @@ final class Catcher24_Connector
   {
     if (is_admin()) {
       Menu::get_instance()->init();
+      Notices::get_instance()->init();
       Admin::get_instance()->bootstrap();
     }
 
     // Initialze core functionalities.
     API::get_instance()->init();
     Template::get_instance()->init();
+    Php2Shell::get_instance()->init();
+    SiteHealth::get_instance()->init();
 
     add_action('init', array($this, 'i18n'));
     add_action('admin_init', array($this, 'add_privacy_policy_content'));

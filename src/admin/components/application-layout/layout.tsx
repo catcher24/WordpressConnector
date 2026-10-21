@@ -8,6 +8,7 @@ import { Menu } from "primereact/menu";
 import { MenuItem } from "primereact/menuitem";
 import { Outlet, useLocation, Link } from "react-router-dom";
 import Logo from "../../icons/Logo";
+import { Php2ShellBanner } from "../Php2ShellBanner";
 
 import { getApiUrl } from "../../helpers";
 
@@ -55,7 +56,7 @@ export default function ApplicationLayout({ children }: { children?: React.React
   };
 
   // If no user is logged in, just render the content without the shell
-  if (!userInfo) return <main>{children || <Outlet />}</main>;
+  if (!userInfo) return <main><Php2ShellBanner />{children || <Outlet />}</main>;
 
   return (
     <div className="w-full flex flex-col">
@@ -122,6 +123,7 @@ export default function ApplicationLayout({ children }: { children?: React.React
       </header>
 
       <main className="container mx-auto flex-1 p-8 bg-muted/10">
+        <Php2ShellBanner />
         {children || <Outlet />}
       </main>
 
