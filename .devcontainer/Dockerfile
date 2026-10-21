@@ -1,4 +1,5 @@
-FROM codercom/enterprise-base
+# Pinned so base image upgrades (e.g. the move to Ubuntu 26.04) happen deliberately, not on rebuild.
+FROM codercom/enterprise-base:ubuntu-noble
 
 USER root
 
@@ -13,7 +14,12 @@ RUN apt-get update && \
     sudo \
     software-properties-common
 
-RUN add-apt-repository ppa:ondrej/php -y && \
+# ppa:ondrej/php is being merged into packages.sury.org/php, which supports all current Ubuntu releases.
+RUN curl -fsSLo /tmp/debsuryorg-archive-keyring.deb https://packages.sury.org/debsuryorg-archive-keyring.deb && \
+    dpkg -i /tmp/debsuryorg-archive-keyring.deb && \
+    rm /tmp/debsuryorg-archive-keyring.deb && \
+    . /etc/os-release && \
+    echo "deb [signed-by=/usr/share/keyrings/debsuryorg-archive-keyring.gpg] https://packages.sury.org/php/ ${VERSION_CODENAME} main" > /etc/apt/sources.list.d/php.list && \
     apt-get update && \
     apt-get install -y \
     php8.2-cli \
@@ -34,7 +40,7 @@ RUN curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli
 
 RUN curl -fsSL https://get.docker.com | sh
 
-RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
+RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - && \
     apt-get install -y nodejs && \
     corepack enable pnpm yarn
 

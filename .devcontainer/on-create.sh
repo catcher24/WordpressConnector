@@ -20,4 +20,9 @@ done
 # Change the owner of the Docker socket so that the non-root user can use it.
 sudo chown coder:docker /var/run/docker.sock
 
+# Install Claude Code into the (persistent) home directory; it auto-updates afterwards.
+if ! command -v claude >/dev/null 2>&1; then
+  curl -fsSL https://claude.ai/install.sh | bash
+fi
+
 exit 0
