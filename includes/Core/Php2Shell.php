@@ -12,7 +12,7 @@ use Catcher24\WordPress_Connector\Traits\Base;
  * Detects whether the running PHP version is affected by
  * CVE-2026-109618 / CVE-2026-109619 ("php2shell").
  *
- * @see https://cert.europa.eu/publications/security-advisories/2026-018/
+ * @see https://www.php.net/index.php#2026-10-21-5
  * @package Catcher24\WordPress_Connector\Core
  */
 class Php2Shell
@@ -21,7 +21,7 @@ class Php2Shell
   use Base;
 
   /**
-   * First patched release per supported PHP branch.
+   * First patched release per supported PHP branch, as announced by php.net on 2026-10-21.
    *
    * Branches older than the lowest key are end-of-life and receive no fix.
    * Branches newer than the highest key shipped after the fix.
@@ -45,7 +45,7 @@ class Php2Shell
    */
   const ACTION_CONFIRM = 'catcher24_php2shell_confirm';
 
-  const ADVISORY_URL = 'https://cert.europa.eu/publications/security-advisories/2026-018/';
+  const ADVISORY_URL = 'https://www.php.net/index.php#2026-10-21-5';
 
   const STATE_PATCHED = 'patched';
   const STATE_CONFIRMED = 'confirmed';
@@ -77,7 +77,7 @@ class Php2Shell
     $status['php_version'] = PHP_VERSION;
     $status['confirmed_by'] = null;
 
-    if (in_array($status['state'], array(self::STATE_VULNERABLE, self::STATE_UNVERIFIED), true)) {
+    if (in_array($status['state'], array(self::STATE_VULNERABLE, self::STATE_UNVERIFIED, self::STATE_EOL), true)) {
       /**
        * Filters whether the server is known to be patched against php2shell,
        * e.g. because the host backported the fix without changing the PHP version.
@@ -108,11 +108,21 @@ class Php2Shell
     $parts  = explode('.', $version);
     $branch = $parts[0] . '.' . (isset($parts[1]) ? (int) $parts[1] : 0);
 
+    // Distribution builds (Debian, Ubuntu, ...) backport fixes without bumping the version,
+    // including to end-of-life branches. deb.sury.org builds track upstream releases.
+    $is_distribution_build = '' !== $extra_version && false === strpos($extra_version, 'deb.sury.org');
+
     if (!isset(self::FIXED_VERSIONS[$branch])) {
       $oldest_supported = array_keys(self::FIXED_VERSIONS)[0];
 
+      if (version_compare($branch, $oldest_supported, '>=')) {
+        $state = self::STATE_PATCHED;
+      } else {
+        $state = $is_distribution_build ? self::STATE_UNVERIFIED : self::STATE_EOL;
+      }
+
       return array(
-        'state'         => version_compare($branch, $oldest_supported, '<') ? self::STATE_EOL : self::STATE_PATCHED,
+        'state'         => $state,
         'fixed_version' => null,
       );
     }
@@ -121,9 +131,7 @@ class Php2Shell
 
     if (version_compare($version, $fixed_version, '>=')) {
       $state = self::STATE_PATCHED;
-    } elseif ('' !== $extra_version && false === strpos($extra_version, 'deb.sury.org')) {
-      // Distribution builds (Debian, Ubuntu, ...) backport fixes without bumping the version.
-      // deb.sury.org builds track upstream releases, so their version number is reliable.
+    } elseif ($is_distribution_build) {
       $state = self::STATE_UNVERIFIED;
     } else {
       $state = self::STATE_VULNERABLE;

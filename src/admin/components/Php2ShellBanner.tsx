@@ -31,7 +31,7 @@ export const Php2ShellBanner: React.FC = () => {
             My host has patched this
           </a>
           <a href={php2shell.advisoryUrl} target="_blank" rel="noopener noreferrer" className="underline">
-            CERT-EU advisory
+            PHP security advisory
           </a>
         </div>
       </div>

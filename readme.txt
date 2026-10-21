@@ -126,6 +126,7 @@ source files (including build scripts) here:
 = 1.1.0 =
 * Added a check for the critical PHP vulnerabilities CVE-2026-109618 and CVE-2026-109619 ("php2shell") to Tools > Site Health.
 * Added a warning on the Dashboard, Plugins, Updates and Catcher24 screens when the server runs an unpatched PHP version.
+* Site Health shows the interim mitigations from the PHP security advisory and whether each one is applied on the server.
 * Added the option for administrators to mark the server as patched when their host backported the fix, and the `catcher24_php2shell_patched` filter for hosts.
 
 = 1.0.0 =
